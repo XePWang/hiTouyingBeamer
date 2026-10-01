@@ -1,6 +1,8 @@
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import zipfile
 
@@ -8,23 +10,16 @@ from build import ROOT, DOCUMENTS, THEMES, build_document, compile_tex
 
 
 def collect_release_files():
-    files = [ROOT / name for name in ('README.md', 'LICENSE', '.gitignore',
-                                     'starter.tex', 'build.ps1')]
-    files.extend(ROOT.glob('*.sty'))
-    extensions = {'.tex', '.md', '.txt', '.json', '.py', '.ps1', '.mjs', '.yml',
-                  '.pdf', '.png', '.jpg', '.jpeg', '.otf', '.ttf', '.mmd'}
-    for directory in ('slides', 'example', 'docs', 'scripts', 'tests', 'fonts',
-                      'assets', 'vi', '.github'):
-        for file in (ROOT / directory).rglob('*'):
-            if not file.is_file() or file.suffix.lower() not in extensions:
-                continue
-            if '__pycache__' in file.parts:
-                continue
-            relative = file.relative_to(ROOT).as_posix()
-            if relative in ('slides/starter.pdf', 'example/preview/starter.pdf',
-                            'example/preview/example.pdf', 'example/preview/layouts.pdf'):
-                continue
-            files.append(file)
+    # 只分发已经纳入 Git 的项目文件，未跟踪的个人资料不进入发布包。
+    result = subprocess.run(['git', 'ls-files', '-z'], cwd=ROOT,
+                            capture_output=True, check=True)
+    names = result.stdout.decode('utf-8').rstrip('\0').split('\0')
+    files = []
+    for name in names:
+        path = Path(name)
+        if any(part in ('.git', '.work', 'dist', '__pycache__') for part in path.parts) or name == 'CHANGELOG.md':
+            raise ValueError(f'本地文件不应被 Git 跟踪或发布：{name}')
+        files.append(ROOT / path)
     for file in files:
         if not file.is_file():
             raise FileNotFoundError(file)
@@ -54,12 +49,18 @@ def main():
             print(f'独立解压验证 {job}', flush=True)
             compile_tex(unpacked, unpacked / source, job, unpacked / '.work/build', theme)
             checks.append(job)
+    for script in ('check-template.py', 'check-authoring.py'):
+        subprocess.run([sys.executable, str(unpacked / 'scripts' / script)],
+                       cwd=unpacked, check=True)
+    authoring = json.loads((unpacked / '.work/author-check/validation.json').read_text(encoding='utf-8'))
     destination = ROOT / 'dist/hiTouyingBeamer-release.zip'
     destination.parent.mkdir(exist_ok=True)
     candidate.replace(destination)
-    report = {'status': 'SUCCESS', 'documents': checks,
+    report = {'status': 'SUCCESS', 'documents': checks, 'authoring': authoring,
               'verification_directory': str(unpacked),
               'files': [file.relative_to(ROOT).as_posix() for file in files],
+              'source_sha256': {file.relative_to(ROOT).as_posix(): hashlib.sha256(file.read_bytes()).hexdigest()
+                                for file in files},
               'sha256': hashlib.sha256(destination.read_bytes()).hexdigest()}
     (work / 'release-validation.json').write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

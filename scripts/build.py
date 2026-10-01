@@ -33,7 +33,9 @@ def compile_tex(root, source, job, out_dir, theme=None):
     pdf = out_dir / f'{job}.pdf'
     log = out_dir / f'{job}.log'
     if result.returncode or not pdf.is_file():
-        raise RuntimeError(f'编译失败：{source}；查看 {out_dir / (job + "-console.txt")}')
+        tail = (result.stdout + result.stderr).decode('utf-8', errors='replace').splitlines()[-40:]
+        raise RuntimeError(f'编译失败：{source}；查看 {out_dir / (job + "-console.txt")}\n'
+                           + '\n'.join(tail))
     warnings = [line for line in log.read_text(encoding='utf-8', errors='replace').splitlines()
                 if any(marker in line for marker in WARNING_MARKERS)]
     if warnings:

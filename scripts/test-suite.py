@@ -80,6 +80,8 @@ def main():
             if abs(float(box.width) / float(box.height) - 4 / 3) > .001:
                 raise AssertionError('4:3 页面比例错误')
         report['compatibility'][job] = pages
+    subprocess.run([sys.executable, str(ROOT / 'scripts/check-authoring.py')], cwd=ROOT, check=True)
+    report['authoring'] = json.loads((ROOT / '.work/author-check/validation.json').read_text(encoding='utf-8'))
     report.update(status='SUCCESS', rendered_preview_pages=rendered)
     (ROOT / '.work/test-summary.json').write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
