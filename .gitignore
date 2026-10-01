@@ -23,8 +23,8 @@ Thumbs.db
 *.run.xml
 *.synctex.gz
 
-# 可直接浏览的示例及插图随源码分发
+# 可直接浏览的示例及插图随源码分发：
+# example.pdf、starter.pdf、agenda-gallery.pdf、legacy-classic.pdf 与
+# theme-switch-*.pdf 由 build.ps1 生成在仓库根目录，作为已编译成品一起分发。
 *.vrb
-/starter.pdf
-!example.pdf
-!assets/figures/*.pdf
+!/assets/figures/*.pdf
