@@ -12,5 +12,13 @@
   \AgendaSlide{\AgendaItem{Line one\\Line two\\Line three}\AgendaItem{Another item}}
 \or
   \AgendaItem{Outside a slide}
+\or
+  \AgendaSlide{\AgendaItem[target-a]{First item}\AgendaItem[target-b]{Second item}}
+  \hypertarget{target-a}{}
+  \section{First section}
+  \begin{frame}{First section}First\end{frame}
+  \hypertarget{target-b}{}
+  \section{Second section}
+  \begin{frame}{Second section}Second\end{frame}
 \fi
 \end{document}

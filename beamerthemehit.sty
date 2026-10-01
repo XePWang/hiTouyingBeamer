@@ -50,6 +50,14 @@
 \usetikzlibrary{calc}
 \RequirePackage{etoolbox}
 \RequirePackage{totcount}
+% 文档写 fontset=none 时，ctex 不再提供中文字体，中文会落到只有西文的字体上。
+% 这种情况下改用随模板分发的字体；文档已自备中文字体时保持原样。
+% 字体集选项由 ctex 保存在一个内部变量里，这里是唯一读取它的地方。
+% 变量名带下划线，读取它的代码必须整段放在 \ExplSyntaxOn 内。
+\ExplSyntaxOn
+\str_if_eq:eeTF { \g__ctex_fontset_tl } { none }
+  { \RequirePackage{hit-fonts} } { }
+\ExplSyntaxOff
 
 \mode<presentation>
 

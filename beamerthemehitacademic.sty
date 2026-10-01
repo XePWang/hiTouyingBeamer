@@ -143,6 +143,10 @@
   \vspace{.22cm}
   \begin{beamercolorbox}[wd=\textwidth,sep=.4cm,center]{palette primary}
     {\fontsize{23}{30}\selectfont\bfseries\inserttitle\par}
+    % 标准 \subtitle 的内容在这里显示，不会被静默丢掉。
+    \ifx\insertsubtitle\@empty\else
+      \vspace{.22cm}{\fontsize{11.5}{15}\selectfont\insertsubtitle\par}%
+    \fi
     \vspace{.38cm}
     \usebeamertemplate*{hit title slot}
   \end{beamercolorbox}

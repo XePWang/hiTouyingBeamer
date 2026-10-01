@@ -1,0 +1,65 @@
+% 主题切换示例：同一份正文，只改 \usetheme 一行即可分别编译。
+% 三个变体：hit（经典主题）、hitacademic（Academic 主题）、madrid（内建主题）。
+% 只使用两种主题共同支持的内容与版式，因此可以逐行对照。
+% 变体入口见 tests/switch-hit.tex、tests/switch-hitacademic.tex、tests/switch-madrid.tex；
+% 它们只定义 \hitdemo，正文部分完全一致。
+\documentclass[aspectratio=169]{ctexbeamer}
+\providecommand{\hitdemo}{hitacademic}
+\usetheme{\hitdemo}
+\usepackage{beamercmdhit}
+
+\title[同一份正文]{同一份正文下的主题切换}
+\englishtitle{One Body, Three Themes}
+\titlecontext{公共接口一致性示例}
+\author{汇报人：待填写}
+\institute{哈尔滨工业大学}
+\date{汇报日期：待填写}
+
+\begin{document}
+
+\TitleSlide
+\OutlineSlide
+
+\section{公共接口}
+
+\begin{frame}{两种主题都支持的内容}
+  \subhead{正文与小标题}
+  这份正文只使用 \texttt{\textbackslash usetheme} 切换主题，其余各行不变。
+
+  \insight{\texttt{\textbackslash insight} 使用主题配色，不依赖某个主题的私有颜色。}
+  \notebox{\texttt{\textbackslash notebox} 在两种主题下都保留 2 pt 左侧竖线。}
+  \captiontext{\texttt{\textbackslash captiontext} 使用主题的淡色文字。}
+\end{frame}
+
+\begin{frame}{指标与条目}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{.30\textwidth}
+      \metric{\linewidth}{1.8×}{解析模型给出的加速比}
+    \end{column}
+    \begin{column}{.64\textwidth}
+      \begin{denseitems}
+        \item 同一条公共命令只定义一次。
+        \item 视觉参数由主题的版式槽位给出。
+        \item 内建主题下退回通用实现。
+      \end{denseitems}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{整页命令}
+
+\begin{frame}{整页命令的兼容调用}
+  \begin{itemize}
+    \item \texttt{\textbackslash TitleSlide}：两种主题各自的封面。
+    \item \texttt{\textbackslash OutlineSlide}：自动读取本节之前的正文主章节。
+    \item \texttt{\textbackslash FocusSlide\{内容\}}：单参数调用保持可用。
+    \item \texttt{\textbackslash EndSlide\{内容\}}：结束页。
+  \end{itemize}
+\end{frame}
+
+\FocusSlide{公共接口只维护一份}
+
+\EndSlide{感谢聆听\quad 欢迎讨论}
+
+\end{document}
+
