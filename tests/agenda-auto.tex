@@ -1,0 +1,31 @@
+\documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
+\usetheme{hit}
+\providecommand{\AgendaCount}{3}
+\begin{document}
+\OutlineSlide[title=Outline,subtitle=CONTENTS]
+\section{研究背景}
+\begin{frame}{研究背景}Context\end{frame}
+\section{问题定义}
+\begin{frame}{问题定义}Question\end{frame}
+\ifnum\AgendaCount>2
+  \section{研究方法}
+  \begin{frame}{研究方法}Method\end{frame}
+\fi
+\ifnum\AgendaCount>3
+  \section{实现过程}
+  \begin{frame}{实现过程}Implementation\end{frame}
+\fi
+\ifnum\AgendaCount>4
+  \section{实验评价}
+  \begin{frame}{实验评价}Evaluation\end{frame}
+\fi
+\ifnum\AgendaCount>5
+  \section{结论展望}
+  \begin{frame}{结论展望}Conclusion\end{frame}
+\fi
+\subsection{不进入主目录}
+\subsubsection{同样不进入主目录}
+\hitappendix
+\section{附录内容}
+\begin{frame}{附录内容}Appendix\end{frame}
+\end{document}

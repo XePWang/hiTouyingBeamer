@@ -1,0 +1,16 @@
+\documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
+\usetheme{hit}
+\providecommand{\AgendaCase}{1}
+\begin{document}
+\ifcase\AgendaCase
+  \AgendaSlide{\AgendaItem{One}\AgendaItem{Two}\AgendaItem{Three}\AgendaItem{Four}\AgendaItem{Five}\AgendaItem{Six}\AgendaItem{Seven}}
+\or
+  \AgendaSlide{\AgendaItem{Only one}}
+\or
+  \AgendaSlide[title=Outline]{\AgendaItem{Getting Started}\AgendaItem{Reviewing and Controlling\\the Work}}
+\or
+  \AgendaSlide{\AgendaItem{Line one\\Line two\\Line three}\AgendaItem{Another item}}
+\or
+  \AgendaItem{Outside a slide}
+\fi
+\end{document}

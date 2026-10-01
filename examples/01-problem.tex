@@ -1,0 +1,84 @@
+\section{问题与模型}
+\begin{frame}{研究问题：并行度如何转化为端到端收益？}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.61\textwidth}
+\subhead{从工作负载定义研究对象}
+\begin{denseitems}
+\item \textbf{输入规模：}固定问题大小，讨论 strong scaling。
+\item \textbf{执行语义：}并行实现与串行实现完成相同计算。
+\item \textbf{评价边界：}明确传输、计算、同步分别是否计入。
+\end{denseitems}
+\vspace{3mm}\subhead{可回答的问题}
+给定并行比例 $f$，增加执行资源 $p$ 的理论收益是多少？哪些额外成本需要进入实测模型？
+\end{column}
+\begin{column}{.34\textwidth}
+\metric{\linewidth}{$f$}{可并行工作占串行总时间的比例}
+\par\vspace{7mm}
+\metric{\linewidth}{$p$}{理想并行资源数量}
+\par\vspace{6mm}\captiontext{本示例的曲线与数值来自解析模型，变量不绑定具体 GPU。}
+\end{column}
+\end{columns}
+\insight{让听众先知道优化对象、时间范围与判断标准，再进入实现细节。}
+\end{frame}
+
+\begin{frame}{模型：串行部分给出了加速比的上限}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.56\textwidth}
+\subhead{固定问题规模的理想模型}
+\[T_p=T_1\left((1-f)+\frac{f}{p}\right)\]
+\[\boxed{S(p)=\frac{T_1}{T_p}=\frac{1}{(1-f)+f/p}}\]
+\vspace{3mm}
+\[\lim_{p\to\infty} S(p)=\frac{1}{1-f}\]
+\notebox{该模型假设并行部分均匀分配，且忽略通信、调度和同步的额外成本。}
+\end{column}
+\begin{column}{.39\textwidth}
+\subhead{符号与适用条件}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule 符号 & 含义 \\\midrule
+$T_1$ & 串行总时间 \\
+$T_p$ & 使用 $p$ 个资源的理想时间 \\
+$f$ & 可并行时间比例，$0\le f\le1$ \\
+$S(p)$ & Speedup，相同工作量下的时间比 \\\bottomrule
+\end{tabularx}
+\vspace{4mm}\captiontext{公式负责定义关系；符号表负责降低理解成本；注记负责限定结论范围。}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{方法对照：把决策依据放在同一张表中}
+\vspace{2mm}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.65cm}XXX@{}}
+\toprule 组织方式 & 适合的工作 & 需要关注的成本 & 主要验证指标 \\\midrule
+Thread-per-task & 独立且短小的任务 & 单线程状态量、访存合并 & Register、带宽、吞吐 \\
+Warp-per-task & 任务内存在协作 & Lane 利用率、shuffle 成本 & Warp efficiency、延迟 \\
+Block-per-task & 较大协作范围 & SMEM 容量、同步、占用率 & SMEM、barrier stall \\
+Pipeline & 可分阶段的批量任务 & 提交、依赖、批次尾部 & 端到端时间、阶段重叠 \\\bottomrule
+\end{tabularx}
+\vspace{4mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.48\textwidth}\subhead{对照维度保持一致}
+每行给出同一种信息，明确映射方式与工作负载的联系。
+\end{column}
+\begin{column}{.48\textwidth}\subhead{结论需要实测支持}
+这些条目用于形成实验假设；具体配置的收益取决于输入与硬件。
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{流程图：用数据依赖组织实现说明}
+\fig[height=2.0cm,keepaspectratio]{pipeline}
+\captiontext{有向边表示依赖顺序；每个阶段的计时边界需要在实验中单独定义。}
+\vspace{3mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.31\textwidth}\subhead{01\quad Input contract}
+输入类型、长度、布局和有效范围共同决定接口语义。
+\end{column}
+\begin{column}{.31\textwidth}\subhead{02\quad Parallel work}
+以明确的索引映射说明工作如何分配给线程。
+\end{column}
+\begin{column}{.31\textwidth}\subhead{03\quad Completion}
+输出有效性与完成时刻共同决定计时终点。
+\end{column}
+\end{columns}
+\insight{一张流程图对应一个抽象层次；并发关系与时间关系分别展开说明。}
+\end{frame}

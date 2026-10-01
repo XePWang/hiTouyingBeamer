@@ -1,0 +1,77 @@
+\section{实现与机制}
+\FocusSlide[IMPLEMENTATION]{把算法中的一次操作，\\落实为线程中的一次访问。}
+
+\begin{frame}[fragile]{代码与机制：一个线程负责一个有效元素}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.60\textwidth}
+\subhead{CUDA：element-wise vector addition}
+\begin{lstlisting}
+__global__ void add(const float* a,
+                    const float* b,
+                    float* c, size_t n) {
+  const size_t i =
+      size_t(blockIdx.x) * blockDim.x
+      + threadIdx.x;
+  if (i < n) {
+    c[i] = a[i] + b[i];
+  }
+}
+\end{lstlisting}
+\captiontext{代码片段用于解释索引与访问关系。调用者负责分配有效设备缓冲区并检查执行状态。}
+\end{column}
+\begin{column}{.35\textwidth}
+\subhead{三个阅读锚点}
+\textbf{索引}\par $i=\mathrm{blockIdx.x}\times B+\mathrm{threadIdx.x}$。
+\par\vspace{3mm}\textbf{边界}\par $i<n$ 控制最后一个 block 的有效线程。
+\par\vspace{3mm}\textbf{访问}\par 相邻线程处理连续元素，形成相邻地址访问。
+\notebox{越界保护限定有效索引；输入、输出缓冲区仍需满足接口契约。}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{访存布局：用地址表解释连续访问}
+\subhead{同一个 Warp 的前四个 Lane，32-bit 元素}
+\begin{tabularx}{\textwidth}{@{}p{3.4cm}XXXX@{}}
+\toprule 地址偏移（Byte） & Lane 0 & Lane 1 & Lane 2 & Lane 3 \\\midrule
+Stride = 1 element & 0 & 4 & 8 & 12 \\
+Stride = 32 elements & 0 & 128 & 256 & 384 \\
+\bottomrule
+\end{tabularx}
+\vspace{5mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.48\textwidth}
+\subhead{计算规则}
+\[\mathrm{offset}(\ell)=4s\ell\]
+\smalltext $\ell$ 为 Lane 编号，$s$ 为元素间距。地址表由公式直接计算。
+\end{column}
+\begin{column}{.48\textwidth}
+\subhead{与实测连接}
+使用内存事务、有效带宽与 Kernel 时间评估访问模式，并同时记录对齐条件。
+\notebox{内存事务数量还取决于参与 Lane、访问宽度、地址对齐和 GPU 架构。}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{机制说明：从局部计算走向完整执行路径}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.47\textwidth}
+\subhead{局部关系}
+\begin{denseitems}
+\item 连续地址访问影响访存事务。
+\item 线程状态影响 Register 需求。
+\item 协作范围影响同步方式。
+\end{denseitems}
+\vspace{3mm}\insight{局部机制用于解释观察结果。}
+\end{column}
+\begin{column}{.47\textwidth}
+\subhead{完整路径}
+\begin{denseitems}
+\item 调用与数据准备进入计时边界。
+\item 传输与 Kernel 的依赖需要明确。
+\item 输出完成后才能计算端到端延迟。
+\end{denseitems}
+\vspace{3mm}\insight{最终指标覆盖用户实际等待的过程。}
+\end{column}
+\end{columns}
+\vspace{3mm}\notebox{当局部收益与总时间变化不一致时，使用阶段计时检查成本转移，并保持输入与配置一致。}
+\end{frame}

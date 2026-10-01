@@ -1,0 +1,136 @@
+%% hiTouyingBeamer Academic, LPPL-1.3c or later.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{hit-agenda}[2026/10/01 v2.1 adaptive contents slide]
+\RequirePackage{tikz}
+\RequirePackage{expl3,xparse}
+\ExplSyntaxOn
+\seq_new:N \l__hit_agenda_entries_seq
+\tl_new:N \l__hit_agenda_title_tl
+\tl_new:N \l__hit_agenda_subtitle_tl
+\int_new:N \l__hit_agenda_count_int
+\int_new:N \l__hit_agenda_index_int
+\fp_new:N \l__hit_agenda_pitch_fp
+\fp_new:N \l__hit_agenda_y_fp
+\box_new:N \l__hit_agenda_label_box
+\keys_define:nn { hit / agenda }
+  {
+    title .tl_set:N = \l__hit_agenda_title_tl,
+    subtitle .tl_set:N = \l__hit_agenda_subtitle_tl
+  }
+\msg_new:nnn { hit-agenda } { item-count }
+  { Agenda~requires~2--6~items;~received~#1. }
+\msg_new:nnn { hit-agenda } { label-too-long }
+  { Agenda~item~#1~exceeds~two~lines.~Use~a~shorter~title. }
+\msg_new:nnn { hit-agenda } { outside-agenda }
+  { Use~AgendaItem~inside~AgendaSlide. }
+\NewDocumentCommand \AgendaItem { O{} m }
+  { \msg_error:nn { hit-agenda } { outside-agenda } }
+\cs_new_protected:Npn \hit_agenda_setup:n #1
+  {
+    \seq_clear:N \l__hit_agenda_entries_seq
+    \keys_set:nn { hit / agenda } { title = {目录}, subtitle = {CONTENTS}, #1 }
+  }
+\cs_new_protected:Npn \hit_agenda_add:nn #1#2
+  {
+    \seq_put_right:Nn \l__hit_agenda_entries_seq
+      { \hit_agenda_entry:nn {#1} {#2} }
+  }
+\cs_new:Npn \hit_agenda_link:nn #1#2
+  { \tl_if_blank:nTF {#1} {#2} { \hyperlink{#1}{#2} } }
+\cs_new_protected:Npn \hit_agenda_entry:nn #1#2
+  {
+    \int_incr:N \l__hit_agenda_index_int
+    \fp_set:Nn \l__hit_agenda_y_fp
+      { .5 + ((\l__hit_agenda_count_int+1)/2-\l__hit_agenda_index_int)
+        *\l__hit_agenda_pitch_fp }
+    \fill[brand,rounded~corners=.0525\paperheight]
+      (.455,{\fp_use:N\l__hit_agenda_y_fp-.0525}) rectangle
+      (.530,{\fp_use:N\l__hit_agenda_y_fp+.0525});
+    \fill[brand,rounded~corners=.0525\paperheight]
+      (.547,{\fp_use:N\l__hit_agenda_y_fp-.0525}) rectangle
+      (.945,{\fp_use:N\l__hit_agenda_y_fp+.0525});
+    \node[text=white,font=\bfseries\fontsize{12}{14}\selectfont,inner~sep=0pt]
+      at (.4925,\fp_use:N\l__hit_agenda_y_fp)
+      { \hit_agenda_link:nn {#1} {0\int_use:N\l__hit_agenda_index_int} };
+    \node[inner~sep=0pt,text=white,font=\bfseries\fontsize{11.5}{12}\selectfont]
+      at (.746,\fp_use:N\l__hit_agenda_y_fp)
+      {
+        \vbox_set:Nn \l__hit_agenda_label_box
+          {\hsize=.345\paperwidth\centering\strut #2\strut\par}
+        \dim_compare:nNnT
+          {\box_ht:N\l__hit_agenda_label_box+\box_dp:N\l__hit_agenda_label_box}
+          > {25pt}
+          {\msg_error:nnx {hit-agenda}{label-too-long}{\int_use:N\l__hit_agenda_index_int}}
+        \hit_agenda_link:nn {#1} {\box_use:N\l__hit_agenda_label_box}
+      };
+  }
+\cs_new_protected:Npn \hit_agenda_render:
+  {
+    \int_set:Nn \l__hit_agenda_count_int {\seq_count:N\l__hit_agenda_entries_seq}
+    \int_compare:nNnTF {\l__hit_agenda_count_int} < {2}
+      {\msg_error:nnx {hit-agenda}{item-count}{\int_use:N\l__hit_agenda_count_int}}
+      {
+        \int_compare:nNnTF {\l__hit_agenda_count_int} > {6}
+          {\msg_error:nnx {hit-agenda}{item-count}{\int_use:N\l__hit_agenda_count_int}}
+          {
+            \fp_set:Nn \l__hit_agenda_pitch_fp
+              {\int_case:nn {\l__hit_agenda_count_int}
+                {{2}{.24}{3}{.21}{4}{.18}{5}{.15}{6}{.125}}}
+            \int_zero:N \l__hit_agenda_index_int
+            \begin{frame}[plain]
+              \begin{tikzpicture}[remember~picture,overlay,x=\paperwidth,y=\paperheight]
+                \begin{scope}[shift={(current~page.south~west)}]
+                  \fill[canvas] (0,0) rectangle (1,1);
+                  \fill[brand!40!white] (-.02,.255) -- (.18,.255)
+                    arc[start~angle=-90,end~angle=90,x~radius=.15,y~radius=.245]
+                    -- (-.02,.745) -- cycle;
+                  \fill[brand] (-.02,.27) -- (.18,.27)
+                    arc[start~angle=-90,end~angle=90,x~radius=.137,y~radius=.23]
+                    -- (-.02,.73) -- cycle;
+                  \node[text=white,align=center,text~width=.28\paperwidth,
+                    font=\bfseries\fontsize{32}{36}\selectfont,inner~sep=0pt]
+                    at (.157,.55) {\tl_use:N\l__hit_agenda_title_tl};
+                  \node[text=white,align=center,text~width=.28\paperwidth,
+                    font=\bfseries\fontsize{10.5}{13}\selectfont,inner~sep=0pt]
+                    at (.157,.415) {\tl_use:N\l__hit_agenda_subtitle_tl};
+                  \seq_map_function:NN \l__hit_agenda_entries_seq \use:n
+                \end{scope}
+              \end{tikzpicture}
+            \end{frame}
+          }
+      }
+  }
+\NewDocumentCommand \AgendaSlide { O{} +m }
+  {
+    \group_begin:
+    \hit_agenda_setup:n {#1}
+    \RenewDocumentCommand \AgendaItem { O{} m }
+      {\hit_agenda_add:nn {##1}{##2}}
+    #2
+    \hit_agenda_render:
+    \group_end:
+  }
+\NewDocumentCommand \OutlineSlide { O{} }
+  {
+    \group_begin:
+    \hit_agenda_setup:n {#1}
+    \cs_set_protected:cpn {beamer@sectionintoc} ##1##2##3##4##5
+      {\int_compare:nNnT {##4} = {0} {\hit_agenda_add:nn {Navigation##3}{##2}}}
+    \cs_set_protected:cpn {beamer@subsectionintoc} ##1##2##3##4##5##6 {}
+    \cs_set_protected:cpn {beamer@subsubsectionintoc} ##1##2##3##4##5##6##7 {}
+    \file_if_exist:nTF {\jobname.toc}
+      {
+        \char_set_catcode_letter:n {64}
+        \file_input:n {\jobname.toc}
+        \hit_agenda_render:
+      }
+      {
+        \PackageWarning{hit-agenda}{Rerun~LaTeX~to~load~section~titles}
+        \begin{frame}[plain]\centering\color{brand}
+          \tl_use:N\l__hit_agenda_title_tl\par
+          \smallskip\normalfont\small Rerun~LaTeX~to~load~the~outline.
+        \end{frame}
+      }
+    \group_end:
+  }
+\ExplSyntaxOff
