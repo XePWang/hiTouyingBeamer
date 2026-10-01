@@ -1,70 +1,864 @@
-%% hiTouyingBeamer Academic, LPPL-1.3c or later.
-%% Derived from hithesis/hiTouyingBeamer, author SchrodingerBlume.
-%% Upstream: a1b947ed63671135884f4417d2c91cb9e9555b59.
-%% Modification history and maintenance information: CHANGELOG.md, README.md.
+%% beamerthemehit.sty
+%% 哈尔滨工业大学 Beamer 幻灯片主题 (Beamer Slide Theme for HIT)
+%%
+%% License: LaTeX Project Public License 1.3c
+%%
+%% This work may be distributed and/or modified under the conditions of the
+%% LaTeX Project Public License, either version 1.3c of this license or (at
+%% your option) any later version: https://www.latex-project.org/lppl.txt
+%% This work has the LPPL maintenance status `maintained'.
+%% The Current Maintainer of this work is SchrodingerBlume.
+%%
+%% 本文件是经典主题 hit 的样式：颜色、字体、模板、版式，与上游 v1.2026b 视觉一致。
+%% \TitleSlide、\OutlineSlide 这些给文档用的命令在 beamercmdhit.sty 里，
+%% 本主题会自动加载它。同一套公共命令在 \usetheme{hitacademic} 下由 Academic 样式实现。
+%%
+%%
+%% 更新记录
+%%   v2.2      2026/10/01  接入公共命令层：本文件只保留经典样式，并把上游的
+%%                        封面、目录、重点页、结束页实现挂到主题版式槽位。
+%%                        新增 Academic 主题后，两者共用 beamercmdhit.sty。
+%%   v1.2026b  2026/09/02
+%%     - 修正校训图会随标题内容上下浮动的问题。原先图和帧标题排在同一行里，
+%%       行的基线由标题末行决定，于是带副标题或标题换到第二行时，图会被顶得
+%%       离下方横线越来越远。现在图改为零高零深的盒子，贴着横线单独放置，
+%%       图与横线的间距恒定，与标题几行、有无副标题无关。
+%%     - 标题行补上最小高度垫片 \hit@ftminheight，补回校训图移出该行后少掉的
+%%       行高，单行标题时横线位置不变；两行标题也落在同一位置。
+%%     - 章节过渡页同样处理：天际线图移出标题行，贴着横线放，间距恒定。
+%%     - 章节过渡页的横线不再随标题长短跳动。原先兜底加在行高上（不足 .85cm
+%%       按 .85cm 算），而定位用的是兜底值不是实际行高；
+%%       现在兜底只加在上方留白上，行底恒定落在 35.5% 页高处。
+%%     - 标题行改为按整体定位，并用 \nointerlineskip 去掉随盒高变化的行间胶。
+%%   v1.2026a  2026/08/31
+%%     - 首次发布。
+%%
+%% Usage:
+%%   \documentclass[aspectratio=169]{ctexbeamer}
+%%   \usetheme{hit}
+%%
+%% Options:
+%%   serif         - 用衬线字体；不写则用非衬线
+%%   top           - 正文顶部对齐；不写则跟正文垂直居中
+%%   navsymbols    - 显示右下角的翻页按钮；不写则隐藏
+%%   nosectionpage - 不在每个 \section 处自动插入章节过渡页
+
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerthemehit}[2026/09/27 v2.0 hiTouyingBeamer Academic]
-\PackageInfo{beamerthemehit}{hiTouyingBeamer Academic; derived work; see CHANGELOG.md}
-\RequirePackage{iftex}
-\RequireXeTeX
-\RequirePackage{lmodern}
-\RequirePackage{hit-fonts}
-\RequirePackage{booktabs,tabularx,array,listings,amsmath,bm,colortbl,etoolbox}
-\usefonttheme{professionalfonts}
-\definecolor{brand}{HTML}{0070BE}
-\definecolor{cyan}{HTML}{00A3D9}
-\definecolor{ink}{HTML}{263B4D}
-\definecolor{muted}{HTML}{526779}
-\definecolor{pale}{HTML}{EDF4FA}
-\definecolor{canvas}{HTML}{F7F9FB}
-\definecolor{linegray}{HTML}{D5E0E8}
-\definecolor{risk}{HTML}{BD5A32}
-\definecolor{good}{HTML}{287763}
-\setbeamercolor{normal text}{fg=ink,bg=canvas}
-\setbeamercolor{background canvas}{bg=canvas}
-\setbeamercolor{frametitle}{fg=white,bg=brand}
-\setbeamercolor{itemize item}{fg=brand}
-\setbeamercolor{alerted text}{fg=risk}
-\setbeamercolor{structure}{fg=brand}
-\setbeamercolor{palette primary}{fg=white,bg=brand}
-\setbeamercolor{block title}{fg=brand,bg=pale}
-\setbeamercolor{block body}{fg=ink,bg=pale}
-\setbeamersize{text margin left=.58cm,text margin right=.58cm}
-\setbeamerfont{normal text}{size=\fontsize{9.5}{13}\selectfont}
-\setbeamerfont{frametitle}{size=\fontsize{15}{19}\selectfont,series=\bfseries}
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{background}{}
-\setbeamertemplate{section in head/foot}{\colorbox{brand}{\strut\color{white}\bfseries\insertsectionhead}}
-\setbeamertemplate{section in head/foot shaded}{\colorbox{canvas}{\strut\color{muted}\insertsectionhead}}
-\newcommand{\hit@logo}{assets/hit-logo.png}
-\newcommand{\hitlogo}[1]{\renewcommand{\hit@logo}{#1}}
-\newcommand{\hit@footer}{\insertshorttitle}
-\newcommand{\hitfooter}[1]{\renewcommand{\hit@footer}{#1}}
-\newcommand{\hit@nav}{\insertsectionnavigationhorizontal{.70\paperwidth}{}{\hfill}}
-\setbeamertemplate{headline}{%
-  \hbox{\hspace{.58cm}%
-    \parbox[c][.67cm][c]{.24\paperwidth}{\includegraphics[width=2.9cm]{\hit@logo}}%
-    \parbox[c][.67cm][c]{.70\paperwidth}{\fontsize{7.7}{10}\selectfont\hit@nav}}%
-  \nointerlineskip{\color{linegray}\rule{\paperwidth}{.45pt}}}
-\setbeamertemplate{frametitle}{%
-  \vskip1.7mm
-  \begin{beamercolorbox}[wd=\textwidth,sep=.20cm,leftskip=.03cm,rightskip=.03cm]{frametitle}
-    \usebeamerfont{frametitle}\strut\insertframetitle\strut
-  \end{beamercolorbox}\vskip1.2mm}
-\setbeamertemplate{footline}{%
-  \hbox to\paperwidth{\hspace{.58cm}\color{muted}\fontsize{6.3}{8}\selectfont
-    \hit@footer\hfill\insertpagenumber\hspace{.58cm}}\vskip2.3mm}
-\setbeamertemplate{itemize items}{\raisebox{.15ex}{\tiny\color{brand}$\bullet$}}
-\setbeamertemplate{enumerate items}[default]
-\setbeamertemplate{section in toc}{\color{brand}\inserttocsectionnumber\quad\color{ink}\inserttocsection\par\vspace{3mm}}
-\lstset{language=C++,basicstyle=\ttfamily\fontsize{7.3}{10}\selectfont,
-  keywordstyle=\color{brand}\bfseries,commentstyle=\color{muted},stringstyle=\color{good},
-  showstringspaces=false,breaklines=true,columns=fullflexible,keepspaces=true,
-  backgroundcolor=\color{pale},frame=none,aboveskip=5pt,belowskip=5pt,
-  xleftmargin=5pt,xrightmargin=5pt,rulecolor=\color{linegray}}
-\renewcommand{\arraystretch}{1.18}
-\renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
-\setlength{\tabcolsep}{5pt}
+\ProvidesPackage{beamerthemehit}[2026/10/01 v2.2 HIT beamer theme]
+
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage{etoolbox}
+\RequirePackage{totcount}
+
+\mode<presentation>
+
+% ---------------------------------------------------------------- options ----
+\newif\ifhit@sectionpage \hit@sectionpagetrue
+\DeclareOptionBeamer{sectionpage}{\hit@sectionpagetrue}
+\DeclareOptionBeamer{nosectionpage}{\hit@sectionpagefalse}
+% serif: 用衬线字体；默认用非衬线字体。
+\newif\ifhit@serif \hit@seriffalse
+\DeclareOptionBeamer{serif}{\hit@seriftrue}
+\DeclareOptionBeamer{sans}{\hit@seriffalse}
+% top: 正文顶部对齐；默认正文垂直居中。
+% 想临时置顶也可以用文档类选项 t，或在单个 frame 上写 [t]。
+\newif\ifhit@top \hit@topfalse
+\DeclareOptionBeamer{top}{\hit@toptrue}
+% navsymbols: 显示 beamer 右下角那组翻页按钮；默认隐藏。
+\newif\ifhit@navsymbols \hit@navsymbolsfalse
+\DeclareOptionBeamer{navsymbols}{\hit@navsymbolstrue}
+\ProcessOptionsBeamer
+
+% 主题加载标记。beamercmdhit.sty 里的公共命令据此选择主题实现，
+% 未置位时改用标准 Beamer 写法，因此换成 Madrid 等内建主题仍可直接编译。
+\def\hit@theme@loaded{}
+% 当前主题名，供公共命令区分两套实现。
+\def\hit@theme@name{hit}
+% 公共命令层。先加载它，本文件随后覆盖其中的样式钩子。
 \RequirePackage{beamercmdhit}
-\AtBeginEnvironment{frame}{\bodytext}
-\AtBeginDocument{\renewcommand{\normalsize}{\fontsize{9.5}{13}\selectfont}\normalsize}
+
+% ----------------------------------------------------------------- colors ----
+% 主色取自校徽 vi/hit-vi-logo-horizontal.png 上的蓝色，实测色值为 #166183。
+\definecolor{hitprimary}{HTML}{166183}
+\definecolor{hitneutraldarkest}{HTML}{000000}
+\definecolor{hitneutraldark}{HTML}{202020}
+\definecolor{hitneutrallight}{HTML}{F3F3F3}
+\definecolor{hitneutrallightest}{HTML}{FFFFFF}
+
+\setbeamercolor{normal text}{fg=hitneutraldarkest,bg=hitneutrallightest}
+\setbeamercolor{structure}{fg=hitprimary}
+\setbeamercolor{alerted text}{fg=hitprimary}
+\setbeamerfont{alerted text}{series=\bfseries}
+
+\setbeamercolor{frametitle}{fg=hitprimary,bg=}
+\setbeamercolor{framesubtitle}{fg=hitprimary}
+\setbeamercolor{title}{fg=hitprimary}
+\setbeamercolor{subtitle}{fg=hitprimary}
+\setbeamercolor{author}{fg=hitneutraldark}
+\setbeamercolor{institute}{fg=hitneutraldark}
+\setbeamercolor{date}{fg=hitneutraldark}
+
+\setbeamercolor{section in head/foot}{fg=hitprimary}
+\setbeamercolor{subsection in head/foot}{fg=hitprimary}
+\setbeamercolor{mini frame}{fg=hitprimary}
+
+\setbeamercolor{section in toc}{fg=hitneutraldarkest}
+\setbeamercolor{subsection in toc}{fg=hitneutraldarkest}
+
+% 页脚：左边的文字淡 40%，右边的页码淡 20%。
+\setbeamercolor{footline left}{fg=hitneutraldarkest!60!white}
+\setbeamercolor{footline right}{fg=hitneutraldarkest!80!white}
+
+\setbeamercolor{block title}{fg=hitprimary,bg=hitneutrallight}
+\setbeamercolor{block body}{fg=hitneutraldarkest,bg=hitneutrallight!60!white}
+\setbeamercolor{block title example}{fg=hitprimary,bg=hitneutrallight}
+\setbeamercolor{block body example}{fg=hitneutraldarkest,bg=hitneutrallight!60!white}
+\setbeamercolor{block title alerted}{fg=hitneutrallightest,bg=hitprimary}
+\setbeamercolor{block body alerted}{fg=hitneutraldarkest,bg=hitneutrallight!60!white}
+
+\setbeamercolor{bibliography item}{fg=hitneutraldarkest}
+\setbeamercolor{bibliography entry author}{fg=hitneutraldarkest}
+\setbeamercolor{bibliography entry title}{fg=hitneutraldarkest}
+\setbeamercolor{bibliography entry location}{fg=hitneutraldarkest}
+\setbeamercolor{bibliography entry note}{fg=hitneutraldarkest}
+
+% 公共内容组件的配色，取自主色与浅灰。
+\setbeamercolor{hit note rule}{fg=hitprimary}
+\setbeamercolor{hit insight}{fg=hitneutraldarkest,bg=hitneutrallight!60!white}
+
+% ------------------------------------------------------------------ fonts ----
+\ifhit@serif
+  \usefonttheme{serif}
+\fi
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\small,series=\mdseries}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large,series=\bfseries}
+\setbeamerfont{author}{size=\normalsize,series=\mdseries}
+\setbeamerfont{date}{size=\normalsize}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{section in head/foot}{size=\tiny}
+\setbeamerfont{footline}{size=\tiny}
+\setbeamerfont{section in toc}{size=\normalsize}
+\setbeamerfont{subsection in toc}{size=\small}
+\setbeamerfont{section title}{size=\huge,series=\bfseries}
+\setbeamerfont{hit outline title}{size=\LARGE,series=\bfseries}
+% 蓝色标题页的字体。这里用 \Large 这类相对字号，文档基础字号在 8pt 到 20pt 之间改时会跟着变。
+\setbeamerfont{hit blue title}{size=\Large,series=\bfseries}
+\setbeamerfont{hit blue subtitle}{size=\normalsize,series=\bfseries}
+\setbeamerfont{hit blue text}{size=\normalsize,series=\bfseries}
+\setbeamerfont{hit blue institute}{size=\small,series=\bfseries}
+% 公共内容组件沿用上游的字号。
+\setbeamerfont{hit content subhead}{size=\normalsize,series=\bfseries}
+\setbeamerfont{hit content caption}{size=\small,series=\mdseries}
+\setbeamerfont{hit content insight}{size=\normalsize,series=\mdseries}
+\setbeamerfont{hit content note}{size=\small,series=\mdseries}
+
+% ------------------------------------------------------------ layout misc ----
+% 让顶部导航的圆点挤在一行，效果同文档类选项 compress。
+% 正文的垂直对齐交给 beamer，也就是居中；加了 top 选项才改成顶部对齐。
+\beamer@compresstrue
+\ifhit@top\beamer@centeredfalse\fi
+% beamer 把翻页按钮塞进 LaTeX 的页脚（\@oddfoot），plain 帧上照画，位置和我们的
+% 页脚对不齐。清空它的模板断掉这套摆放，按钮改由 \hit@navsyms 自己画。
+\setbeamertemplate{navigation symbols}{}
+\newcommand{\hit@navsyms}{%
+  \usebeamercolor[fg]{navigation symbols}%
+  \hbox{\insertslidenavigationsymbol\insertframenavigationsymbol
+        \insertsubsectionnavigationsymbol\insertsectionnavigationsymbol
+        \insertdocnavigationsymbol\insertbackfindforwardnavigationsymbol}}
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{frametitle continuation}{}
+\setbeamertemplate{section in head/foot shaded}[default][40]
+\setbeamertemplate{subsection in head/foot shaded}[default][40]
+% 当前章节的圆点一律满色，别的章节淡到 40%，和章节名一样。
+\setbeamertemplate{mini frame in other subsection}[default][100]
+\setbeamertemplate{mini frame in other section}[default][40]
+% 不在任何小节里的帧，比如章节过渡页，不画圆点。
+\let\hit@slideentry@orig\slideentry
+\def\slideentry#1#2#3#4#5#6{%
+  \ifnum#2>0 \hit@slideentry@orig{#1}{#2}{#3}{#4}{#5}{#6}\fi\ignorespaces}
+\setbeamersize{text margin left=.7cm,text margin right=.7cm}
+\setbeamersize{mini frame size=.09cm,mini frame offset=.03cm}
+
+% 目录条目：黑色文字，小节缩进。中间那两个 hook 平时是空的，留给自动缩小字号用。
+\setbeamertemplate{section in toc}{%
+  {\usebeamerfont{section in toc}\hit@tocsechook\raggedright\inserttocsection\par}\vskip.9ex}
+\setbeamertemplate{subsection in toc}{%
+  {\usebeamerfont{subsection in toc}\hit@tocsubhook\raggedright
+   \leftskip1.2em\inserttocsubsection\par}\vskip.7ex}
+
+% ---------------------------------------------------------------- headline ----
+% 顶部导航条：一行章节名，每帧一个圆点，当前章节高亮，其余淡化。
+% 章节名太长排不下时，先算出不换行需要多宽，再把整条按比例缩小塞进页面。
+\newdimen\hit@navnat
+\newif\ifhit@navmeasured
+\newcommand{\hit@measurenav}{%
+  \begingroup
+  \global\hit@navnat=\z@
+  \setbeamertemplate{section in toc}{%
+    \setbox\@tempboxa=\hbox{{\usebeamerfont{section in head/foot}\inserttocsection}}%
+    \global\advance\hit@navnat by\wd\@tempboxa
+    \global\advance\hit@navnat by.6cm}%
+  \setbeamertemplate{subsection in toc}{}%
+  \setbox\z@=\vbox{\hsize=\textwidth\tableofcontents[sectionstyle=show,subsectionstyle=hide]}%
+  \endgroup
+  \@tempcnta=\inserttotalframenumber\relax
+  \@tempdimb=\beamer@boxsize\relax
+  \multiply\@tempdimb\@tempcnta
+  \global\advance\hit@navnat by\@tempdimb
+  \global\advance\hit@navnat by1.2cm}
+
+% 导航条盒子的固定高与深，附录页的占位也用同一组值。
+\newdimen\hit@navht
+\newdimen\hit@navdp
+\AtBeginDocument{{\usebeamerfont{section in head/foot}%
+  \global\hit@navht=2.1ex
+  \global\hit@navdp=\dimexpr\beamer@vboxoffset+\beamer@boxsize+.05cm\relax}}
+
+\defbeamertemplate*{headline}{hit}{%
+  \vskip1.2mm%
+  \begin{beamercolorbox}[wd=\paperwidth,leftskip=.7cm,rightskip=.7cm]{section in head/foot}%
+    \usebeamerfont{section in head/foot}%
+    \ifhit@navmeasured\else\hit@measurenav\global\hit@navmeasuredtrue\fi
+    \ifdim\hit@navnat>\dimexpr\paperwidth-1.4cm\relax
+      \setbox\@tempboxa=\hbox{%
+        \resizebox{\dimexpr\paperwidth-1.4cm\relax}{!}{\hbox{\insertnavigation{\hit@navnat}}}}%
+    \else
+      \setbox\@tempboxa=\hbox{\insertnavigation{\dimexpr\paperwidth-1.4cm\relax}}%
+    \fi
+    % 盒子高度取决于这一行里最高的字形，逐页会差一点，横线跟着抖。
+    % 这里把高和深都钉死，正文页、附录页的横线才始终在同一位置。
+    \ht\@tempboxa=\hit@navht \dp\@tempboxa=\hit@navdp
+    \box\@tempboxa
+  \end{beamercolorbox}%
+  % 中文字形和圆点会伸到 beamer 给这行定的高度之外，按字号补一点间距，以免遮盖下面的标题。
+  {\usebeamerfont{section in head/foot}\vskip\dimexpr.3em+1.2mm\relax}%
+}
+
+% -------------------------------------------------------------- frametitle ----
+% 标题行：粗体标题配右边的校训图，下面一条主色横线。
+% 标题超过约 2.5 行就把字号往下调一档，\large -> \normalsize -> \small；换行时左对齐。
+\newbox\hit@fttlbox
+\newcommand{\hit@ft@try}[1]{%
+  \setbox\hit@fttlbox=\hbox{%
+    \begin{minipage}[b]{\dimexpr\textwidth-2.7cm\relax}%
+      \usebeamerfont{frametitle}#1\raggedright
+      % \vphantom 让每行的高与深一致；\rule 撑起标题行的最小高度，
+      % 补上 v1.2026b 把校训图移出这一行后少掉的那部分行高，
+      % 保证单行标题时横线仍停在原来的位置。
+      \rule{0pt}{\hit@ftminheight}%
+      \vphantom{汉Ag}\insertframetitle%
+      \ifdefempty{\insertframesubtitle}{}{%
+        \\[.2ex]{\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle}}%
+    \end{minipage}}%
+  \begingroup\usebeamerfont{frametitle}#1%
+    \xdef\hit@ft@cap{\the\dimexpr2.6\baselineskip\relax}%
+  \endgroup}
+
+% 标题行的最小高度，等于校训图原先在行内占的高度。
+\newcommand{\hit@ftminheight}{9mm}
+% 校训图底边高出横线多少。
+\newcommand{\hit@ftmottoraise}{.6mm}
+
+\defbeamertemplate*{frametitle}{hit}{%
+  \nointerlineskip
+  \vskip1.6mm%
+  \hit@ft@try{}%
+  \ifdim\dimexpr\ht\hit@fttlbox+\dp\hit@fttlbox\relax>\hit@ft@cap\relax
+    \hit@ft@try{\normalsize}%
+  \fi
+  \ifdim\dimexpr\ht\hit@fttlbox+\dp\hit@fttlbox\relax>\hit@ft@cap\relax
+    \hit@ft@try{\small}%
+  \fi
+  \begin{beamercolorbox}[wd=\textwidth]{frametitle}%
+    \box\hit@fttlbox\par
+  \end{beamercolorbox}%
+  \vskip1.2mm%
+  % v1.2026b：校训图原先和标题排在同一行里，行的基线由标题末行决定，
+  % 于是带副标题或标题换行时图会被顶得离横线越来越远。改成零高零深的盒子
+  % 贴着横线放，图与横线的间距就固定了。
+  % 标题盒子的宽度已经预留了右侧 2.7cm，两者不会冲突。
+  \nointerlineskip
+  \hbox to \textwidth{\hfill
+    \raisebox{\hit@ftmottoraise}[0pt][0pt]{%
+      \includegraphics[width=2.4cm]{\hitvipath hit-vi-motto}}}%
+  \nointerlineskip
+  {\color{hitprimary}\hrule height .8pt}%
+  \vskip2.2mm%
+}
+
+% ---------------------------------------------------------------- footline ----
+% 页脚左边默认显示 \institute 的短名。
+% 改它用 \hitfooter，此命令定义在 beamercmdhit.sty 中。
+\newcommand{\hit@footerleft}{\insertshortinstitute}
+
+\newbox\hit@footbox
+
+% 进入 \appendix 则隐藏页脚上的文字，同时把正文部分的总页数写进 aux 文件，
+% 这样页码的分母不会把附录算进去。
+% 开了 navsymbols 时页脚仍然画出来，只是不写文字，让按钮停在与正文页相同的位置。
+\newcommand{\hit@drawfootline}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=2.4ex,dp=1.8ex,leftskip=.7cm,rightskip=.7cm]{footline}%
+    \setbox\@tempboxa=\hbox{\ifhit@appendix\else
+      \usebeamerfont{footline}\usebeamercolor[fg]{footline left}\hit@footerleft\fi}%
+    \setbox\hit@footbox=\hbox{\hit@footright{\hit@framenumber}}%
+    \@tempdima=\dimexpr\paperwidth-1.4cm-\wd\hit@footbox-.5cm\relax
+    \ifdim\wd\@tempboxa>\@tempdima
+      \setbox\@tempboxa=\hbox{\resizebox{\@tempdima}{!}{\box\@tempboxa}}%
+    \fi
+    \box\@tempboxa\hfill\box\hit@footbox
+  \end{beamercolorbox}}
+
+\defbeamertemplate*{footline}{hit}{%
+  \ifhit@appendix
+    \ifhit@navsymbols\hit@drawfootline\fi
+  \else
+    \hit@drawfootline
+  \fi
+}
+
+% --------------------------------------------------------------- title page ----
+% 底图的主楼在右下方，左上角是空的，所以标题和信息都靠左上排。
+% 左侧可用宽度随高度收窄：上部约到 57% 页宽，中部约到 45%，所以标题块比信息块宽，
+% 且都留出余量，免得长行压到楼上。
+% 两块分开量高度，太高就往下调字号，调到最小还是太高就整体缩小。
+\newbox\hit@tpboxa
+\newbox\hit@tpboxb
+% 缩进是从版心左边（页边距 0.7cm）再算起的，这里取 0.25cm，
+% 让文字落在距纸边 0.95cm 处，与蓝色封面的标题左缘对齐。
+\newcommand{\hit@tpindent}{.25cm}
+% 短线与上下两块之间的间距，取同一个值，两边看起来才一样宽。
+\newcommand{\hit@tprulesep}{.045\paperheight}
+\newcommand{\hit@tp@try}[4]{%
+  \setbox\hit@tpboxa=\hbox{%
+    \begin{minipage}{.44\paperwidth}\raggedright
+      {\usebeamerfont{title}#1\usebeamercolor[fg]{title}\inserttitle\par}%
+      \ifdefempty{\insertsubtitle}{}{%
+        \vskip1.6ex
+        {\usebeamerfont{subtitle}#2\usebeamercolor[fg]{subtitle}\insertsubtitle\par}}%
+    \end{minipage}}%
+  \setbox\hit@tpboxb=\hbox{%
+    \begin{minipage}{.38\paperwidth}\raggedright
+      {\usebeamerfont{author}#3\usebeamercolor[fg]{author}\insertauthor\par}%
+      \vskip2.2ex
+      {\usebeamerfont{date}#3\usebeamercolor[fg]{date}\insertdate\par}%
+      \vskip1.6ex
+      {\usebeamerfont{institute}#4\usebeamercolor[fg]{institute}\insertinstitute\par}%
+    \end{minipage}}}
+
+\defbeamertemplate*{title page}{hit}{%
+  \hit@tp@try{}{}{}{}%
+  \@tempswafalse
+  \ifdim\dimexpr\ht\hit@tpboxa+\dp\hit@tpboxa\relax>.34\paperheight\@tempswatrue\fi
+  \ifdim\dimexpr\ht\hit@tpboxb+\dp\hit@tpboxb\relax>.26\paperheight\@tempswatrue\fi
+  \if@tempswa\hit@tp@try{\Large}{\normalsize}{\small}{\footnotesize}\fi
+  \@tempswafalse
+  \ifdim\dimexpr\ht\hit@tpboxa+\dp\hit@tpboxa\relax>.34\paperheight\@tempswatrue\fi
+  \ifdim\dimexpr\ht\hit@tpboxb+\dp\hit@tpboxb\relax>.26\paperheight\@tempswatrue\fi
+  \if@tempswa\hit@tp@try{\large}{\small}{\footnotesize}{\scriptsize}\fi
+  \ifdim\dimexpr\ht\hit@tpboxa+\dp\hit@tpboxa\relax>.34\paperheight
+    \hit@scaleboxto\hit@tpboxa{.34\paperheight}\fi
+  \ifdim\dimexpr\ht\hit@tpboxb+\dp\hit@tpboxb\relax>.26\paperheight
+    \hit@scaleboxto\hit@tpboxb{.26\paperheight}\fi
+  % 标题块从 12% 页高处起排，紧跟一道主色短线当下划线，和帧标题、章节页的横线呼应。
+  % 短线上下留同样的间距，信息块紧接在后面。
+  \vspace*{.12\paperheight}%
+  \noindent\hspace*{\hit@tpindent}\box\hit@tpboxa\par
+  \vspace*{\hit@tprulesep}%
+  \noindent\hspace*{\hit@tpindent}{\color{hitprimary}\rule{2.4cm}{1.2pt}}\par
+  \vspace*{\hit@tprulesep}%
+  \noindent\hspace*{\hit@tpindent}\box\hit@tpboxb\par
+}
+
+% ------------------------------------------------------------ section page ----
+% 章节过渡页：大标题、校训图、横线，下面把目录按章节横排成几栏，
+% 当前章节高亮，其余淡化。
+% 章节总数需要自己统计：\appendix 会把 section 计数器清零，直接读会算少。
+\newcounter{hit@sectiontotal}
+\regtotcounter{hit@sectiontotal}
+\newcount\hit@secidx
+\newdimen\hit@natwd
+\newdimen\hit@coltotal
+\newdimen\hit@colavail
+\newdimen\hit@colcap
+\def\hit@colgap{.55cm}
+\def\hit@tocsechook{}
+\def\hit@tocsubhook{}
+
+% 量出第 #1 节里最长的一条排成单行有多宽，存入 \hit@natwd。超过单栏上限则按上限计。
+\newcommand{\hit@measurecol}[1]{%
+  \begingroup
+  \global\hit@natwd=\z@
+  \setbeamertemplate{section in toc}{%
+    \setbox\@tempboxa=\hbox{{\usebeamerfont{section in toc}\hit@tocsechook\bfseries\inserttocsection}}%
+    \ifdim\wd\@tempboxa>\hit@natwd\global\hit@natwd=\wd\@tempboxa\fi}%
+  \setbeamertemplate{subsection in toc}{%
+    \setbox\@tempboxa=\hbox{{\usebeamerfont{subsection in toc}\hit@tocsubhook
+      \raisebox{.18ex}{\scriptsize$\circ$}\hspace{.55em}\inserttocsubsection}}%
+    \ifdim\wd\@tempboxa>\hit@natwd\global\hit@natwd=\wd\@tempboxa\fi}%
+  \setbox\z@=\vbox{\hsize=\textwidth
+    \edef\hit@toccall{\noexpand\tableofcontents[sections={#1}]}\hit@toccall}%
+  \endgroup
+  \ifdim\hit@natwd>\hit@colcap\global\hit@natwd=\hit@colcap\fi}
+
+% 按当前字号把每一栏都量一遍，各自的宽度存入 \hit@colw@N。
+% 分多行排列时，\hit@coltotal 记录最宽一行的总宽度。
+\newcount\hit@perrow
+\newdimen\hit@rowacc
+\newcommand{\hit@trycols}{%
+  \hit@coltotal=\z@
+  \hit@rowacc=\z@
+  \@tempcntb=\z@
+  \hit@secidx=0
+  \loop
+    \advance\hit@secidx\@ne
+    \advance\@tempcntb\@ne
+    \hit@measurecol{\the\hit@secidx}%
+    \expandafter\xdef\csname hit@colw@\the\hit@secidx\endcsname{\the\hit@natwd}%
+    \advance\hit@rowacc by\hit@natwd
+    \ifnum\@tempcntb=\hit@perrow
+      \ifdim\hit@rowacc>\hit@coltotal\hit@coltotal=\hit@rowacc\fi
+      \hit@rowacc=\z@
+      \@tempcntb=\z@
+    \fi
+  \ifnum\hit@secidx<\totvalue{hit@sectiontotal}\relax\repeat
+  \ifdim\hit@rowacc>\hit@coltotal\hit@coltotal=\hit@rowacc\fi}
+
+% 每行最多 5 栏，章节再多则折成多行。
+% 每栏按量到的宽度占位。一行放不下则缩小字号重新测量，仍放不下则按比例压缩各栏。
+\newcommand{\hit@computecols}{%
+  \hit@colcap=.34\textwidth
+  % 行数 = ceil(n/5)，每行栏数 = ceil(n/行数)
+  \@tempcnta=\totvalue{hit@sectiontotal}\relax
+  \@tempcntb=\@tempcnta\advance\@tempcntb by4 \divide\@tempcntb by5
+  \hit@perrow=\@tempcnta\advance\hit@perrow\@tempcntb\advance\hit@perrow\m@ne
+  \divide\hit@perrow\@tempcntb
+  \hit@colavail=\textwidth
+  \@tempcnta=\hit@perrow\advance\@tempcnta\m@ne
+  \@tempdimb=\hit@colgap\relax
+  \multiply\@tempdimb\@tempcnta
+  \advance\hit@colavail by-\@tempdimb
+  \def\hit@tocsechook{}\def\hit@tocsubhook{}%
+  \hit@trycols
+  \ifdim\hit@coltotal>\hit@colavail
+    \def\hit@tocsechook{\small}\def\hit@tocsubhook{\footnotesize}%
+    \hit@trycols
+  \fi
+  \ifdim\hit@coltotal>\hit@colavail
+    \def\hit@tocsechook{\footnotesize}\def\hit@tocsubhook{\scriptsize}%
+    \hit@trycols
+  \fi
+  \ifdim\hit@coltotal>\hit@colavail
+    \def\hit@tocsechook{\scriptsize}\def\hit@tocsubhook{\tiny}%
+    \hit@trycols
+  \fi
+  \ifdim\hit@coltotal>\hit@colavail
+    \hit@secidx=0
+    \loop
+      \advance\hit@secidx\@ne
+      \pgfmathsetlength\@tempdima{\csname hit@colw@\the\hit@secidx\endcsname/\hit@coltotal*\hit@colavail}%
+      \expandafter\xdef\csname hit@colw@\the\hit@secidx\endcsname{\the\@tempdima}%
+    \ifnum\hit@secidx<\totvalue{hit@sectiontotal}\relax\repeat
+  \fi}
+
+% 每章排一栏，宽度取刚才量到的值；栏与栏之间用弹性间距撑开，因此两端能对齐页边。
+\newcommand{\hit@sectiontoc}{%
+  \begingroup
+  \setbeamercolor{section in toc}{fg=hitprimary}%
+  \setbeamercolor{subsection in toc}{fg=hitprimary}%
+  \setbeamertemplate{section in toc shaded}[default][40]%
+  \setbeamertemplate{subsection in toc shaded}[default][40]%
+  \ifnum\totvalue{hit@sectiontotal}>1
+    \hit@computecols
+    \setbeamertemplate{section in toc}{%
+      {\usebeamerfont{section in toc}\hit@tocsechook\bfseries\raggedright\inserttocsection\par}\vskip1.1ex}%
+    \setbeamertemplate{subsection in toc}{%
+      {\usebeamerfont{subsection in toc}\hit@tocsubhook\raggedright
+       \hangindent1.15em\hangafter\@ne
+       \raisebox{.18ex}{\scriptsize$\circ$}\hspace{.55em}\inserttocsubsection\par}\vskip.7ex}%
+    \hit@secidx=0
+    \@tempcnta=\z@
+    \loop
+      \advance\hit@secidx\@ne
+      \advance\@tempcnta\@ne
+      \begin{minipage}[t]{\dimexpr\csname hit@colw@\the\hit@secidx\endcsname+.8pt\relax}%
+        \edef\hit@toccall{\noexpand\tableofcontents[sections={\the\hit@secidx},currentsection]}%
+        \hit@toccall
+      \end{minipage}%
+    \ifnum\hit@secidx<\totvalue{hit@sectiontotal}\relax
+      \ifnum\@tempcnta<\hit@perrow
+        \hfill
+      \else
+        \par\nointerlineskip\vskip4.5mm\noindent
+        \@tempcnta=\z@
+      \fi
+    \repeat
+  \else
+    \setbeamertemplate{section in toc}{%
+      {\usebeamerfont{section in toc}\bfseries\raggedright\inserttocsection\par}\vskip1.1ex}%
+    \setbeamertemplate{subsection in toc}{%
+      {\usebeamerfont{subsection in toc}\raggedright
+       \raisebox{.18ex}{\scriptsize$\circ$}\hspace{.55em}\inserttocsubsection\par}\vskip.7ex}%
+    \tableofcontents[currentsection]%
+  \fi
+  \endgroup}
+
+% 章节大标题：先试着排一行，排不下就把字号往下调，\huge -> \LARGE -> \Large -> \large。
+% 调到 \large 仍排不下则允许换行并左对齐；若高度仍超出，最后整体缩小。
+%
+% 标题很长时不再一味压字号，而是让右边那张图让位：按标题排成单行的自然宽度，
+% 先给图 40% 页宽，不够就收到 24%，再不够就干脆不放图，把整行让给标题。
+\newbox\hit@secttlbox
+\newbox\hit@sectocbox
+\newbox\hit@secbannerbox
+\newdimen\hit@secbannerwd
+\newdimen\hit@seccolwd
+\newcommand{\hit@pickbannerwd}{%
+  \setbox\@tempboxa=\hbox{{\usebeamerfont{section title}\insertsection}}%
+  \hit@secbannerwd=.40\paperwidth
+  \hit@seccolwd=\dimexpr\textwidth-.44\paperwidth\relax
+  \ifdim\wd\@tempboxa>\dimexpr2\hit@seccolwd\relax   % 两行都放不下
+    \hit@secbannerwd=.24\paperwidth
+    \hit@seccolwd=\dimexpr\textwidth-.28\paperwidth\relax
+    \ifdim\wd\@tempboxa>\dimexpr2\hit@seccolwd\relax % 还是放不下就不要图了
+      \hit@secbannerwd=\z@
+      \hit@seccolwd=\textwidth
+    \fi
+  \fi
+  % 图先排进盒子，不放图时就是个空盒。条件判断不能写在帧体里，
+  % beamer 收集帧体时会把它和 \begin/\end 一起数错。
+  \ifdim\hit@secbannerwd>\z@
+    \setbox\hit@secbannerbox=\hbox{%
+      \includegraphics[width=\hit@secbannerwd]{\hitvipath hit-vi-motto-skyline}}%
+  \else
+    \setbox\hit@secbannerbox=\hbox{}%
+  \fi}
+\newcommand{\hit@makesectiontitle}{%
+  \hit@pickbannerwd
+  \def\hit@st@try##1{%
+    \setbox\hit@secttlbox=\hbox{%
+      \begin{minipage}{\hit@seccolwd}%
+        \usebeamercolor[fg]{frametitle}%
+        {\usebeamerfont{section title}##1\raggedright\insertsection\par}%
+      \end{minipage}}}%
+  \def\hit@st@single##1{%
+    \setbox\@tempboxa=\hbox{{\usebeamerfont{section title}##1\insertsection}}%
+    \ifdim\wd\@tempboxa<\hit@seccolwd
+      \@tempswatrue\else\@tempswafalse\fi}%
+  \hit@st@single{}%
+  \if@tempswa\hit@st@try{}\else
+    \hit@st@single{\LARGE}%
+    \if@tempswa\hit@st@try{\LARGE}\else
+      \hit@st@single{\Large}%
+      \if@tempswa\hit@st@try{\Large}\else
+        \hit@st@single{\large}%
+        \if@tempswa\hit@st@try{\large}\else
+          \hit@st@try{\Large}% 放不下单行：\Large 换行
+        \fi
+      \fi
+    \fi
+  \fi
+  \ifdim\dimexpr\ht\hit@secttlbox+\dp\hit@secttlbox\relax>.24\paperheight
+    \hit@scaleboxto\hit@secttlbox{.24\paperheight}%
+  \fi}
+
+% 天际线图底边高出横线多少。
+\newcommand{\hit@secbannerraise}{.6mm}
+\newbox\hit@secrowbox
+
+\newcommand{\hit@sectionframe}{%
+  \begingroup
+  \setbeamertemplate{headline}{}%
+  \begin{frame}[t]
+    \hit@makesectiontitle
+    % v1.2026b：标题整体按实际高度定位。原先用的是内层盒子的高度，
+    % 而外面还套了一层 minipage，两者对不上，以致横线位置于是随标题行数乱跳。
+    \setbox\hit@secrowbox=\hbox{%
+      \begin{minipage}[b]{\hit@seccolwd}%
+        \box\hit@secttlbox
+      \end{minipage}}%
+    % 兜底只加在上方留白上。原先是给行高兜底（不足 .85cm 按 .85cm 算），
+    % 可定位用的是这个兜底值而不是实际行高，结果钉住的是行顶不是行底，
+    % 横线于是随标题长短乱跳。
+    \@tempdima=\dimexpr\ht\hit@secrowbox+\dp\hit@secrowbox\relax
+    \@tempdimb=\dimexpr.355\paperheight-\@tempdima\relax
+    \ifdim\@tempdimb<.03\paperheight\@tempdimb=.03\paperheight\fi
+    \hit@secavail=\dimexpr\textheight-\@tempdimb-\@tempdima-1.6mm-7mm-3mm\relax
+    \vspace*{\@tempdimb}%
+    % 不加 \nointerlineskip 的话，TeX 会按盒子高度插入行间胶，
+    % 盒子越高胶越少，等于把行顶而不是行底钉住，横线就又跟着标题行数跑了。
+    \nointerlineskip
+    \noindent\box\hit@secrowbox\par
+    \vskip1.6mm
+    % v1.2026b：天际线图原先和标题排在同一行里，挂在行的基线上，标题换行时
+    % 就被顶得离横线忽远忽近。改成零高零深的盒子贴着横线单独放。
+    \nointerlineskip
+    \hbox to \textwidth{\hfill
+      \raisebox{\hit@secbannerraise}[0pt][0pt]{\box\hit@secbannerbox}}%
+    \nointerlineskip
+    {\color{hitprimary}\hrule height .8pt}%
+    \vskip7mm
+    % 分栏内容超出剩余高度时，整体缩小后放入。
+    \setbox\hit@sectocbox=\vbox{\hsize=\textwidth\hit@sectiontoc}%
+    \ifdim\dimexpr\ht\hit@sectocbox+\dp\hit@sectocbox\relax>\hit@secavail
+      \hit@scaleboxto\hit@sectocbox{\hit@secavail}%
+    \fi
+    \noindent\box\hit@sectocbox
+  \end{frame}
+  \endgroup}
+
+% 无论是否插入过渡页，章节都要统计。\section* 不进目录，也不会走到这里，自然不计入。
+\AtBeginSection[]{%
+  \stepcounter{hit@sectiontotal}%
+  \ifhit@sectionpage\hit@sectionframe\fi}
+
+% ==================================================== 公共命令的主题实现 ====
+% 公共命令在 beamercmdhit.sty 中只定义一次，这里挂上经典主题的实现。
+
+% 字体族与公共内容组件的钩子。公共命令在组内取用，同名命令重新定义即可。
+\renewcommand{\metric}[3]{\begin{minipage}[t]{#1}\color{hitprimary}%
+  \usebeamerfont{hit content metric}\bfseries #2\par\vspace{1.5mm}%
+  {\color{hitneutraldarkest!70}\usebeamerfont{hit content metric note}\mdseries #3}\end{minipage}}
+\renewcommand{\subhead}[1]{\par{\color{hitprimary}\bfseries #1}\par\vspace{1.4mm}}
+\renewcommand{\captiontext}[1]{{\color{hitneutraldarkest!70}%
+  \usebeamerfont{hit content caption}#1\par}}
+
+% 目录页不接受 Academic 的 title/subtitle 选项，沿用原有的 \hitoutlinetitle。
+\renewcommand{\hit@parseoutlineoptions}[1]{\hit@outlineoptions@unsupported{#1}}
+
+% 结束页附注。
+\setbeamertemplate{hit end slot}{{\color{hitneutraldarkest!70}\insertshorttitle\par}}
+
+% ------------------------------------------------------------- title page ----
+% 白色封面的背景：底部校园线稿，右上角校徽，右下角翻页按钮。
+% 背景在帧体内设置：beamer 对 plain 帧另存一套模板，帧外的设置会被丢掉。
+\renewcommand{\hit@whitebackground}{%
+  \setbeamertemplate{background}{%
+    \begin{tikzpicture}
+      \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
+      \node[anchor=south west,inner sep=0] at (0,0)
+        {\includegraphics[width=\paperwidth]{\hitvipath hit-vi-mainbuilding-outline}};
+      \node[anchor=north east,inner sep=0]
+        at ($(\paperwidth,\paperheight)+(-.35cm,-.3cm)$)
+        {\includegraphics[height=.95cm]{\hitvipath hit-vi-logo-horizontal}};
+      \hit@navinbg
+    \end{tikzpicture}}}
+% 白色封面的帧体：布置背景，再由 title page 模板排出标题与信息。
+\renewcommand{\hit@titleslidepage}{\titlepage}
+
+% 蓝色标题页：上半是校园照片，下半是主色色块。
+% 色块高度随文字变化，但有上限和下限，文字在色块内垂直居中。
+% 文字过多则先降字号，降到最小仍超出则整体缩小。
+\newbox\hit@bluebox
+\newbox\hit@blueauthbox
+\newdimen\hit@bluehgt
+\newdimen\hit@blueT
+\newdimen\hit@bluelogoy
+
+% 作者信息单独装一个盒子：一份排入文字块，另一份用于计算校徽的高度。
+% 蓝色封面照片的取景高度：16:9 与 4:3 值不同，正值越大，照片越往上。
+\newdimen\hit@photoy
+\newcommand{\hit@photoraisewide}{.058\paperwidth}
+\newcommand{\hit@photoraisenarrow}{0pt}
+
+\newcommand{\hit@bt@try}[3]{%
+  \setbox\hit@blueauthbox=\hbox{%
+    \begin{minipage}{.58\paperwidth}%
+      \color{hitneutrallightest}\raggedright
+      {\usebeamerfont{hit blue text}#2\insertauthor\par}%
+      \vskip1.6mm
+      {\usebeamerfont{hit blue text}#2\insertdate\par}%
+      \vskip1.6mm
+      {\usebeamerfont{hit blue institute}#3\insertinstitute\par}%
+    \end{minipage}}%
+  \setbox\hit@bluebox=\hbox{%
+    \begin{minipage}{\dimexpr\paperwidth-2.2cm\relax}
+      \color{hitneutrallightest}\raggedright
+      {\usebeamerfont{hit blue title}#1\inserttitle\par}%
+      \ifdefempty{\insertsubtitle}{}{%
+        \vskip1.8mm{\usebeamerfont{hit blue subtitle}#2\insertsubtitle\par}}%
+      \vskip5mm
+      \noindent\copy\hit@blueauthbox\par
+    \end{minipage}}}
+
+% 蓝色封面的背景：上方校园照片，下方主色色块、白色校名与翻页按钮。
+% 封面文字全部排进背景，因此帧体为空，没有 title page 模板参与。
+\renewcommand{\hit@bluebackground}{%
+  \setbeamertemplate{background}{%
+    \hit@bt@try{}{}{}%
+    \ifdim\dimexpr\ht\hit@bluebox+\dp\hit@bluebox+1.25cm\relax>.60\paperheight
+      \hit@bt@try{\large}{\small}{\footnotesize}%
+    \fi
+    \ifdim\dimexpr\ht\hit@bluebox+\dp\hit@bluebox+1.25cm\relax>.60\paperheight
+      \hit@bt@try{\normalsize}{\footnotesize}{\scriptsize}%
+    \fi
+    \hit@blueT=\dimexpr\ht\hit@bluebox+\dp\hit@bluebox\relax
+    \ifdim\dimexpr\ht\hit@bluebox+\dp\hit@bluebox+1.25cm\relax>.60\paperheight
+      \hit@scaleboxto\hit@bluebox{.60\paperheight-1.25cm}%
+    \fi
+    \hit@bluehgt=\dimexpr\ht\hit@bluebox+\dp\hit@bluebox+1.25cm\relax
+    \ifdim\hit@bluehgt<.545\paperheight\hit@bluehgt=.545\paperheight\fi
+    % 校徽的高度对准作者信息的中心。前面若整体缩小过，这里按缩放比例折算。
+    \@tempdima=\dimexpr\ht\hit@bluebox+\dp\hit@bluebox\relax
+    \@tempdimb=\dimexpr\ht\hit@blueauthbox+\dp\hit@blueauthbox\relax
+    \pgfmathsetlength\hit@bluelogoy{%
+      .5\hit@bluehgt-.5\@tempdima+.5\@tempdimb/\hit@blueT*\@tempdima}%
+    \begin{tikzpicture}
+      \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
+      % 两种画幅露出的照片高度不同，因此取景位置不同：
+      %   16:9 可见带窄（约 0.25 倍页宽），照片往上放一点，裁掉多余天空，塔尖靠近页顶；
+      %   4:3  可见带高，照片顶边直接对齐页顶。
+      % 值为正表示把照片往上放。改图后重新对一下这两个数即可。
+      \ifdim\paperheight<.6\paperwidth
+        \hit@photoy=\dimexpr\paperheight+\hit@photoraisewide\relax
+      \else
+        \hit@photoy=\dimexpr\paperheight+\hit@photoraisenarrow\relax
+      \fi
+      \node[anchor=north west,inner sep=0] at (0,\hit@photoy)
+        {\includegraphics[width=\paperwidth]{\hitvipath hit-vi-mainbuilding-photo}};
+      \fill[hitprimary] (0,0) rectangle (\paperwidth,\hit@bluehgt);
+      \draw[hitneutrallight,line width=.8pt]
+        (0,\hit@bluehgt) -- (\paperwidth,\hit@bluehgt);
+      \node[anchor=east,inner sep=0]
+        at ($(\paperwidth,\hit@bluelogoy)+(-.95cm,0)$)
+        {\includegraphics[width=.27\paperwidth]{\hitvipath hit-vi-logo-horizontal-white}};
+      \node[anchor=west,inner sep=0] at (.95cm,.5\hit@bluehgt) {\box\hit@bluebox};
+      \hit@navinbglight
+    \end{tikzpicture}}}
+% 蓝色封面的帧体同样为空。
+\renewcommand{\hit@bluetitleslidepage}{}
+% ----------------------------------------------------------------- outline ----
+% 目录页专用的条目样式：浅色大编号，主色粗体章节名，灰色 ○ 小节。
+% 只在 \OutlineSlide 内生效，文档里自己写的 \tableofcontents 不受影响。
+\newcommand{\hit@ol@settemplates}{%
+  \setbeamertemplate{section in toc}{%
+    \vskip1.2ex
+    {\usebeamerfont{section in toc}\hit@tocsechook\bfseries\raggedright
+     \hangindent2.6em\hangafter\@ne
+     \leavevmode\hbox to 2.6em{{\color{hitprimary!45}\large
+       \two@digits{\inserttocsectionnumber}}\hfil}%
+     {\color{hitprimary}\inserttocsection}\par}%
+    \nopagebreak\vskip.7ex}%
+  \setbeamertemplate{subsection in toc}{%
+    {\usebeamerfont{subsection in toc}\hit@tocsubhook\raggedright
+     \leftskip2.6em\color{hitneutraldarkest!70}%
+     \raisebox{.18ex}{\scriptsize$\circ$}\hspace{.5em}\inserttocsubsection\par}\vskip.5ex}}
+
+% 目录正文：不到 3 章排单栏，否则对半分成两栏，两栏均顶部对齐。
+% 这里不用 multicols，它为了让两栏等高会把条目间距拉开。
+% 内容过高则先降字号，降完仍过高则整体缩小。
+\newbox\hit@outbox
+\newdimen\hit@secavail
+\newcommand{\hit@outlinetoc}{%
+  \@tempcnta=\totvalue{hit@sectiontotal}\relax
+  \@tempcntb=\@tempcnta\advance\@tempcntb\@ne\divide\@tempcntb\tw@
+  \edef\hit@ol@callA{\noexpand\tableofcontents[sections={1-\the\@tempcntb}]}%
+  \edef\hit@ol@callB{\noexpand\tableofcontents[sections={\the\numexpr\@tempcntb+1\relax-\the\@tempcnta}]}%
+  \def\hit@ol@try##1##2{%
+    \def\hit@tocsechook{##1}\def\hit@tocsubhook{##2}%
+    \ifnum\@tempcnta<3
+      \setbox\hit@outbox=\vbox{\hsize=\textwidth\tableofcontents}%
+    \else
+      \setbox\hit@outbox=\vbox{\hsize=\textwidth\noindent
+        \begin{minipage}[t]{.47\textwidth}\hit@ol@callA\end{minipage}%
+        \hfill
+        \begin{minipage}[t]{.47\textwidth}\hit@ol@callB\end{minipage}\par}%
+    \fi}%
+  \hit@ol@try{}{}%
+  \ifdim\dimexpr\ht\hit@outbox+\dp\hit@outbox\relax>\hit@secavail
+    \hit@ol@try{\small}{\footnotesize}%
+  \fi
+  \ifdim\dimexpr\ht\hit@outbox+\dp\hit@outbox\relax>\hit@secavail
+    \hit@ol@try{\footnotesize}{\scriptsize}%
+  \fi
+  \ifdim\dimexpr\ht\hit@outbox+\dp\hit@outbox\relax>\hit@secavail
+    \hit@scaleboxto\hit@outbox{\hit@secavail}%
+  \fi
+  \noindent\box\hit@outbox}
+
+% 经典目录沿用原有的无参数调用，子章节照常显示。显式目录标题参数优先。
+\renewcommand{\hit@OutlineSlide@themed}[1][]{%
+  \begingroup
+  \hit@outlineoptions{#1}%
+  \stepcounter{hit@front}\hit@frontmattertrue
+  \setbeamertemplate{headline}{}%
+  \hit@ol@settemplates
+  \begin{frame}[t,noframenumbering]
+    \vskip2mm
+    \setbox\@tempboxa=\hbox{{\usebeamerfont{hit outline title}%
+      \usebeamercolor[fg]{frametitle}\hitoutlinetitle}}%
+    \hit@secavail=\dimexpr\textheight-\ht\@tempboxa-\dp\@tempboxa-2mm-1.6mm-6mm-8mm\relax
+    \begin{minipage}[b]{\dimexpr\textwidth-.24\paperwidth\relax}%
+      \box\@tempboxa
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[b]{.22\paperwidth}%
+      \raggedleft\includegraphics[width=.21\paperwidth]{\hitvipath hit-vi-motto}%
+    \end{minipage}\par
+    \vskip1.6mm
+    {\color{hitprimary}\hrule height .8pt}%
+    \vskip6mm
+    \hit@outlinetoc
+  \end{frame}
+  \endgroup}
+
+% ------------------------------------------------------------- focus slide ----
+\renewcommand{\hit@focuspage}[2]{%
+  \setbeamercolor{background canvas}{bg=hitprimary}%
+  \setbeamertemplate{background}{%
+    \begin{tikzpicture}
+      \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
+      \hit@navinbglight
+    \end{tikzpicture}}%
+  \begin{frame}[c,plain,noframenumbering]
+    \centering
+    {\color{hitneutrallightest}\Large #2\par}%
+  \end{frame}}
+
+% -------------------------------------------------------------- end slides ----
+% 结束页底图和封面是同一张，主楼在右下方，所以内容同样靠左上排，
+% 起排位置和左缘都跟封面一致。竖版校徽在上，致谢文字在下。
+\renewcommand{\hit@endbackground}{%
+  \setbeamertemplate{background}{%
+    \begin{tikzpicture}
+      \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
+      \node[anchor=south west,inner sep=0] at (0,0)
+        {\includegraphics[width=\paperwidth]{\hitvipath hit-vi-mainbuilding-outline}};
+      \hit@navinbg
+    \end{tikzpicture}}}
+\renewcommand{\hit@endpage}[1]{%
+  \begin{frame}[t,plain,noframenumbering]
+    \hit@endbackground
+    \vspace*{.075\paperheight}%
+    \noindent\hspace*{\hit@tpindent}%
+    \includegraphics[width=4.2cm]{\hitvipath hit-vi-logo-vertical}\par
+    \vspace*{.055\paperheight}%
+    \noindent\hspace*{\hit@tpindent}%
+    \begin{minipage}{.44\paperwidth}\raggedright
+      {\LARGE\bfseries\color{hitprimary}#1\par}%
+    \end{minipage}%
+  \end{frame}}
+
+% ----------------------------------------------------------------- appendix ----
+% 进入附录则隐藏页脚上的文字，同时把正文部分的总页数写进 aux 文件，
+% 这样页码的分母不会把附录算进去。
+% 开了 navsymbols 时页脚仍然画出来，只是不写文字，让按钮停在与正文页相同的位置。
+\apptocmd{\appendix}{%
+  \immediate\write\@auxout{\string\gdef\string\hit@maintotal{\the\c@framenumber}}%
+  % 附录里不画导航条，但要留出它原来占的高度，好让帧标题和正文页停在同一位置。
+  % 高度直接用正文页那组固定值（\appendix 会另起一个 part，此时 \insertnavigation
+  % 是空的，现量量不到）；末尾那段按字号补偿的间距也要照抄，否则横线会上移。
+  \setbeamertemplate{headline}{%
+    \vskip1.2mm%
+    \begin{beamercolorbox}[wd=\paperwidth]{section in head/foot}%
+      \usebeamerfont{section in head/foot}%
+      \hbox{\vrule width\z@ height\hit@navht depth\hit@navdp}%
+    \end{beamercolorbox}%
+    {\usebeamerfont{section in head/foot}\vskip\dimexpr.3em+1.2mm\relax}%
+  }%
+}{}{}
+
+\mode<all>
+\endinput

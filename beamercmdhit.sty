@@ -1,57 +1,295 @@
-%% hiTouyingBeamer Academic, LPPL-1.3c or later.
-%% Derived from hithesis/hiTouyingBeamer, author SchrodingerBlume.
-%% Modification history and maintenance information: CHANGELOG.md, README.md.
+%% beamercmdhit.sty
+%% 哈尔滨工业大学 Beamer 模板公共命令层 (Shared Document Commands)
+%%
+%% License: LaTeX Project Public License 1.3c
+%%
+%% 本文件是两种主题共用的唯一命令层，派生自 hithesis/hiTouyingBeamer
+%% 提交 a1b947ed63671135884f4417d2c91cb9e9555b59，上游作者 SchrodingerBlume。
+%% 修改记录与维护信息见 CHANGELOG.md、README.md。
+%%
+%% 职责划分：
+%%   beamercmdhit.sty          公共命令、参数、内容语义与主题实现接口（本文件）
+%%   beamerthemehit.sty        经典主题 hit 的样式与原有选项
+%%   beamerthemehitacademic.sty Academic 主题 hitacademic 的样式
+%%   hit-agenda.sty            目录模块：章节收集、条目管理、跳转与输入校验
+%%
+%% 公共命令只在此定义一次，主题通过设置模板提供各自实现。未加载这两种主题时，
+%% 公共命令退回标准 Beamer 或主题无关的通用实现，因此配 Madrid 等内建主题仍可直接编译。
+%%
+%% 加载顺序：写在 \usetheme 之前或之后皆可；主题会自动加载本文件。
+%%
+%% 更新记录
+%%   v2.2     2026/10/01  拆分为公共接口加主题实现，新增 hitacademic 主题支持。
+%%   v1.2026b 2026/09/02  配合主题修正校训图定位，本文件无功能改动。
+%%   v1.2026a 2026/08/16  首次发布。
+%%
+%% Usage:
+%%   \usepackage{beamercmdhit}    % 写在 \usetheme 前后皆可
+
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamercmdhit}[2026/10/01 v2.1 hiTouyingBeamer Academic commands]
-\newcommand{\hit@english}{Academic Presentation}
-\newcommand{\englishtitle}[1]{\renewcommand{\hit@english}{#1}}
-\newcommand{\hit@source}{}
-\newcommand{\titlecontext}[1]{\renewcommand{\hit@source}{#1}}
-\newcommand{\TitleSlide}{%
-  \begin{frame}[plain]
-    \vspace{.1cm}
-    \begin{center}\includegraphics[width=4.4cm]{\hit@logo}\end{center}
-    \vspace{.22cm}
-    \begin{beamercolorbox}[wd=\textwidth,sep=.4cm,center]{palette primary}
-      {\fontsize{23}{30}\selectfont\bfseries\inserttitle\par}
-      \vspace{.38cm}
-      {\fontsize{12.1}{16}\selectfont\hit@english\par}
-    \end{beamercolorbox}
-    \vspace{.22cm}
-    \begin{center}\smalltext
-      \hit@source\par\vspace{.14cm}\insertauthor\par\smallskip
-      \insertinstitute\par\smallskip\insertdate
-    \end{center}
-  \end{frame}}
-\RequirePackage{hit-agenda}
-\newcommand{\FocusSlide}[2][]{%
+\ProvidesPackage{beamercmdhit}[2026/10/01 v2.2 shared document commands for the HIT beamer themes]
+
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage{etoolbox}
+\RequirePackage{graphicx}
+
+% ======================================================== 共享工具与接口 ====
+% vi/ 视觉形象资产目录。放在别处则 \renewcommand{\hitvipath}{<路径>/}。
+% 经典主题用这里的图片，Academic 主题只把它当默认值，不使用其中素材。
+\newcommand{\hitvipath}{vi/}
+
+% 主题实现接口的兜底值。主题只覆盖自己有的那一项，其余保持主题无关的通用行为。
+% 用 \providecommand 声明，主题可以直接 \renewcommand 覆盖，不会产生重复定义。
+\providecommand{\hit@englishtitleimg}{}
+\providecommand{\hit@appendixbanner}{}
+\providecommand{\hit@firstframestyle}{}
+\providecommand{\hit@outlinepage}{}
+\providecommand{\hit@focuspage}{}
+\providecommand{\hit@endpage}{}
+\providecommand{\hit@titleslidepage}{\usebeamertemplate*{title page}}
+\providecommand{\hit@bluetitleslidepage}{\titlepage}
+% 封面在帧体内要设置的背景，由主题填写；内建主题下为无操作。
+% 三种背景槽位分别对应白色封面、蓝色封面与结束页。
+% beamer 对 plain 帧另存一套模板，帧开始前设的背景会被丢掉，所以必须在帧体内设置。
+\providecommand{\hit@whitebackground}{}
+\providecommand{\hit@bluebackground}{}
+\providecommand{\hit@endbackground}{}
+% 公共命令选择的封面背景，由主题按需取用。
+\providecommand{\hit@titlebackground}{}
+
+\mode<presentation>
+
+% 当前主题名由主题在加载本文件之前定义（hit 或 hitacademic），公共命令据此选择实现。
+% 这里给一个空值兜底，主题自行 \def 覆盖，不会产生重复定义。
+% 附录状态。与 beamer 自带的 \ifbeamer@inappendix 同步，两者可以互相代替。
+\newif\ifhit@appendix
+
+% 把盒子等比缩到指定高度，高与深一起计算。
+% 不用 \resizebox{!}{h}，它只管基线以上的部分，遇到基线居中的 minipage 会缩不到位。
+\newcommand{\hit@scaleboxto}[2]{%
+  \pgfmathsetmacro\hit@sc{(#2)/(\ht#1+\dp#1)}%
+  \setbox#1=\hbox{\scalebox{\hit@sc}{\box#1}}}
+
+% 封面、目录属于前置页，用小写罗马数字单独计数，不占用正文页码。
+\newcounter{hit@front}
+\newif\ifhit@frontmatter \hit@frontmatterfalse
+
+% 封面、结束页这些 plain 帧 Beamer 不画页脚，翻页按钮会跟着消失。
+% 这里把按钮画进背景，坐标与页脚里的一致，翻页时按钮不会跳。
+% 开关由主题声明；没加载这两套主题时补一个假值，下面的判断才有东西可查。
+\@ifundefined{ifhit@navsymbols}{\newif\ifhit@navsymbols}{}
+\newcommand{\hit@navinbg}{%
+  \ifhit@navsymbols
+    \node[anchor=base east,inner sep=0]
+      at (\the\dimexpr\paperwidth-.7cm\relax,\the\hit@footbase) {\hit@footright{}};
+  \fi}
+% 深色底的页面上按钮要提亮，否则看不见。
+\newcommand{\hit@navinbglight}{%
   \begingroup
-  \setbeamercolor{background canvas}{bg=brand}
-  \begin{frame}[plain]
-    \color{white}\vspace{6mm}
-    {\fontsize{10}{14}\selectfont\bfseries #1\par}\vspace{7mm}
-    {\fontsize{25}{34}\selectfont\bfseries #2\par}\vspace{6mm}
-    {\color{cyan}\rule{3cm}{2pt}}
-  \end{frame}\endgroup}
-\newcommand{\EndSlide}[1]{%
-  \begin{frame}[plain]
-    \centering\includegraphics[width=4.4cm]{\hit@logo}\par\vspace{.9cm}
-    {\color{brand}\fontsize{26}{34}\selectfont\bfseries #1\par}
-    \vspace{.4cm}{\color{muted}\insertshorttitle\par}
-  \end{frame}}
-\newcommand{\hitappendix}{\appendix\renewcommand{\hit@nav}{\hfill\color{muted}APPENDIX\hspace{.4cm}}}
-\newcommand{\subhead}[1]{\par{\color{brand}\bfseries #1}\par\vspace{1.4mm}}
-\newcommand{\captiontext}[1]{{\fontsize{7.7}{10}\selectfont\color{muted}#1\par}}
-\newcommand{\insight}[1]{\par\vspace{2mm}\noindent\colorbox{pale}{\parbox{\dimexpr\linewidth-2\fboxsep}{\vspace{.8mm}\color{brand}\bfseries\fontsize{9}{12}\selectfont #1\vspace{.8mm}}}\par}
-\newsavebox{\hit@notebox}
-\newcommand{\notebox}[1]{%
-  \par\vspace{1.5mm}\noindent
-  \sbox{\hit@notebox}{\begin{minipage}[t]{\dimexpr\linewidth-8pt}\fontsize{8}{11}\selectfont #1\end{minipage}}%
-  {\color{risk}\rule[-\dp\hit@notebox]{2pt}{\dimexpr\ht\hit@notebox+\dp\hit@notebox\relax}}%
-  \hspace{1.5mm}\usebox{\hit@notebox}\par}
-\newcommand{\fig}[2][]{\par\noindent\includegraphics[width=\linewidth,#1]{assets/figures/#2.pdf}\par}
-\newcommand{\metric}[3]{\begin{minipage}[t]{#1}\color{brand}\fontsize{24}{28}\selectfont\bfseries #2\par\vspace{1.5mm}\color{muted}\fontsize{8.3}{11}\selectfont\mdseries #3\end{minipage}}
+  \setbeamercolor{navigation symbols}{fg=hitneutrallightest!60!hitprimary}%
+  \hit@navinbg
+  \endgroup}
+
+% 设置页脚左边的文字，两种主题都支持。未加载这两种主题时退回标准 Beamer 写法。
+\providecommand{\hitfooter}[1]{%
+  \ifdefined\hit@footerleft\renewcommand{\hit@footerleft}{#1}\fi}
+
+% ================================================================ 封面 ====
+% 白色封面：右上角校徽，底部校园线稿背景。布局由主题的 title page 模板给出。
+\newcommand{\TitleSlide}{%
+  \ifdefined\hit@theme@loaded\expandafter\hit@TitleSlide@themed
+  \else\expandafter\hit@TitleSlide@plain\fi}
+\newcommand{\hit@TitleSlide@plain}{%
+  \begin{frame}[plain,noframenumbering]\titlepage\end{frame}}
+\newcommand{\hit@TitleSlide@themed}{%
+  \begingroup
+  \hit@firstframestyle
+  \stepcounter{hit@front}%
+  \renewcommand{\hit@titlebackground}{\hit@whitebackground}%
+  % 背景必须在 \begin{frame} 之前设置：帧体内的设置要到下一帧才生效。
+  \hit@titlebackground
+  % 标题页自行计算上下间距，这里固定顶部对齐，不受正文对齐选项影响。
+  \begin{frame}[t,plain,noframenumbering]
+    \hit@titleslidepage
+  \end{frame}
+  \endgroup}
+% 蓝色封面：上半是校园照片，下半是主色色块，文字在色块内垂直居中。
+\newcommand{\BlueTitleSlide}{%
+  \ifdefined\hit@theme@loaded\expandafter\hit@BlueTitleSlide@themed
+  \else\expandafter\hit@TitleSlide@plain\fi}
+\newcommand{\hit@BlueTitleSlide@themed}{%
+  \begingroup
+  \hit@firstframestyle
+  \stepcounter{hit@front}%
+  \renewcommand{\hit@titlebackground}{\hit@bluebackground}%
+  \hit@titlebackground
+  \begin{frame}[t,plain,noframenumbering]
+    \hit@bluetitleslidepage
+  \end{frame}
+  \endgroup}
+
+% ================================================================ 目录 ====
+% 目录模块统一管理章节收集、条目校验与跳转；具体绘制由主题的模板给出。
+% \OutlineSlide 支持可选参数 title 与 subtitle；经典主题沿用原有的无参数调用。
+\RequirePackage{hit-agenda}
+
+% 目录页标题。两种主题都认这个命令，\renewcommand 依旧有效。
+\newcommand{\hitoutlinetitle}{目录}
+% 目录可选参数。显式传入的 title 优先于 \hitoutlinetitle。
+\newcommand{\hit@outlineoptions}[1]{%
+  \ifstrempty{#1}{}{%
+    \ifdefined\hit@parseoutlineoptions\hit@parseoutlineoptions{#1}%
+    \else\hit@outlineoptions@unsupported{#1}\fi}}
+% 经典主题沿用原有的无参数目录，选项只由 Academic 主题理解，这里给出明确提示。
+\newcommand{\hit@outlineoptions@unsupported}[1]{%
+  \PackageWarning{beamercmdhit}{hit 主题的 \string\OutlineSlide\space 不接受目录选项，%
+    已忽略 [\detokenize{#1}]；目录标题请用 \string\renewcommand\string\hitoutlinetitle}}
+\newcommand{\OutlineSlide}{%
+  \ifdefined\hit@theme@loaded\expandafter\hit@OutlineSlide@themed
+  \else\expandafter\hit@OutlineSlide@plain\fi}
+\providecommand{\hit@OutlineSlide@themed}[1][]{%
+  \begin{frame}{\hitoutlinetitle}\tableofcontents\end{frame}}
+\newcommand{\hit@OutlineSlide@plain}[1][]{%
+  \begin{frame}{\hitoutlinetitle}\tableofcontents\end{frame}}
+
+% 目录模块的入口。带下划线与冒号的名字只在 \ExplSyntaxOn 内有效，
+% 主题在普通 catcode 下调用，因此在这里包一层无下划线的命令。
+\ExplSyntaxOn
+\cs_new_protected:Npn \hit@collectsections { \hit_agenda_collect_sections: }
+\cs_new_protected:Npn \hit@renderoutline { \hit_agenda_render: }
+\ExplSyntaxOff
+
+% ============================================================ 重点与结束 ====
+% 强调页：整页主色，适合放一句话。#1 是主题可选的栏目文字，未给时为空。
+\newcommand{\FocusSlide}{%
+  \ifdefined\hit@theme@loaded\expandafter\hit@FocusSlide@themed
+  \else\expandafter\hit@FocusSlide@plain\fi}
+\newcommand{\hit@FocusSlide@plain}[2][]{%
+  \begin{frame}[c,plain,noframenumbering]\centering{\Large #2\par}\end{frame}}
+\newcommand{\hit@FocusSlide@themed}[2][]{%
+  \begingroup
+  \hit@focuspage{#1}{#2}%
+  \endgroup}
+
+% 结束页。#1 是结束语。
+\newcommand{\EndSlide}{%
+  \ifdefined\hit@theme@loaded\expandafter\hit@EndSlide@themed
+  \else\expandafter\hit@EndSlide@plain\fi}
+\newcommand{\hit@EndSlide@plain}[1]{%
+  \begin{frame}[c,plain,noframenumbering]\centering{\LARGE\bfseries #1\par}\end{frame}}
+\newcommand{\hit@EndSlide@themed}[1]{%
+  \begingroup
+  \hit@endpage{#1}%
+  \endgroup}
+
+% ================================================================ 附录 ====
+% 附录状态与 beamer 自带的 \ifbeamer@inappendix 同步，页脚与导航等行为交给主题处理。
+% \appendix 是 LaTeX 与 beamer 的标准入口，本层只挂接状态同步，不替换原命令。
+\newcommand{\hit@appendixhook}{\global\hit@appendixtrue}
+\pretocmd{\appendix}{\hit@appendixhook}{}{%
+  \PackageWarning{beamercmdhit}{无法在 \string\appendix 上挂接附录状态，%
+    附录页的页码与导航按 beamer 默认行为处理}}
+
+% Academic 的兼容入口。经典主题与内建主题下与 \appendix 等价。
+\newcommand{\hitappendix}{\appendix}
+
+% ============================================================ 页脚计数 ====
+\newcommand{\hit@totalframenumber}{%
+  \ifdefined\hit@maintotal\hit@maintotal\else\inserttotalframenumber\fi}
+% 封面到目录用小写罗马数字，正文从 1 重新起算，附录只留位置不写数字。
+\newcommand{\hit@framenumber}{%
+  \ifhit@appendix\else
+    \ifhit@frontmatter\roman{hit@front}%
+    \else\insertframenumber{} / \hit@totalframenumber\fi
+  \fi}
+% 页脚右边那一整块：翻页按钮加一个固定宽度的页码格，#1 是格子里要写的东西。
+% 封面等 plain 帧的背景里也调用它，这样按钮在所有页面同一位置。
+\newbox\hit@numbox
+\newcommand{\hit@footright}[1]{%
+  % 按钮之间的空隙随当前字号变化，这里固定用页脚字号，
+  % 背景里画的按钮才能和页脚里的一样宽、落在同一位置。
+  \usebeamerfont{footline}%
+  \ifhit@navsymbols\raisebox{-.25ex}{\hit@navsyms}\hskip.8em\fi
+  {\scriptsize\usebeamercolor[fg]{footline right}%
+   \setbox\hit@numbox=\hbox{\hit@totalframenumber{} / \hit@totalframenumber}%
+   \hbox to \wd\hit@numbox{\hfil #1}}}
+% 页脚基线离纸张底边的高度，等于页脚色框声明的深度 1.8ex。封面等 plain 帧靠它
+% 把按钮摆到同一高度。这一步必须在正文环境里算：背景是在 pgf 画布上定坐标的，
+% 那里当前字体是 nullfont，ex 会算成 0。
+\newdimen\hit@footbase
+\AtBeginDocument{{\usebeamerfont{footline}\global\hit@footbase=1.8ex}}
+
+% ======================================================== 内容组件语义 ====
+% 下列命令是文档级内容语义，两种主题共用同一份定义。
+% 视觉参数由主题通过 hit 字体的版式槽位与 \subhead、\metric 钩子给出。
+
+% 封面下方与正文下方的字号辅助命令。
 \newcommand{\smalltext}{\fontsize{8.5}{11.5}\selectfont}
 \newcommand{\bodytext}{\fontsize{9.5}{13}\selectfont\setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}\setlength{\jot}{3pt}}
 \newcommand{\minitext}{\fontsize{7.5}{10}\selectfont}
 \newenvironment{denseitems}{\begin{itemize}\setlength\itemsep{2.6mm}\setlength\parskip{0pt}}{\end{itemize}}
+
+% 内容小标题。默认跟随主题的结构色；主题可在加载后重定义以使用自己的配色。
+\newcommand{\subhead}[1]{\par{\usebeamercolor[fg]{structure}%
+  \usebeamerfont{hit content subhead}\bfseries #1}\par\vspace{1.4mm}}
+
+% 图注、条件与单位。
+\newcommand{\captiontext}[1]{{\usebeamerfont{hit content caption}%
+  \usebeamercolor[fg]{hit content muted}#1\par}}
+
+% 结论区。
+\newcommand{\insight}[1]{\par\vspace{2mm}\noindent
+  \begin{beamercolorbox}[wd=\linewidth,sep=2mm,rounded=false]{hit insight}
+    \usebeamerfont{hit content insight}#1
+  \end{beamercolorbox}\par}
+
+% 注记：左侧竖线与整段文字上下边界对齐。
+\newsavebox{\hit@notebox}
+\newcommand{\notebox}[1]{%
+  \par\vspace{1.5mm}\noindent
+  \sbox{\hit@notebox}{\begin{minipage}[t]{\dimexpr\linewidth-8pt}%
+    \usebeamerfont{hit content note}#1\end{minipage}}%
+  {\usebeamercolor[fg]{hit note rule}%
+   \rule[-\dp\hit@notebox]{2pt}{\dimexpr\ht\hit@notebox+\dp\hit@notebox\relax}}%
+  \hspace{1.5mm}\usebox{\hit@notebox}\par}
+
+% 插图：读取 \hit@figpath 下的 PDF。
+\newcommand{\hit@figpath}{assets/figures/}
+\newcommand{\fig}[2][]{\par\noindent\includegraphics[width=\linewidth,#1]{\hit@figpath#2.pdf}\par}
+
+% 指标：大数字与小字说明。默认跟随主题的结构色；主题可在加载后重定义。
+\newcommand{\metric}[3]{\begin{minipage}[t]{#1}%
+  {\usebeamercolor[fg]{structure}%
+   \usebeamerfont{hit content metric}\bfseries #2\par}\vspace{1.5mm}%
+  {\usebeamercolor[fg]{hit content muted}%
+   \usebeamerfont{hit content metric note}\mdseries #3}\end{minipage}}
+
+% ==================================================== 主题版式槽位默认值 ====
+% 主题只覆盖自己需要的项。以下默认值保证公共命令在任何主题下都能编译。
+% 放在这里而不是 \AtBeginDocument，是为了让主题在加载时可以直接覆盖。
+\setbeamerfont{hit outline title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{hit content subhead}{size=\normalsize,series=\bfseries}
+\setbeamerfont{hit content caption}{size=\small,series=\mdseries}
+\setbeamerfont{hit content insight}{size=\normalsize,series=\mdseries}
+\setbeamerfont{hit content note}{size=\small,series=\mdseries}
+\setbeamerfont{hit content metric}{size=\fontsize{24}{28},series=\bfseries}
+\setbeamerfont{hit content metric note}{size=\fontsize{8.3}{11},series=\mdseries}
+% 图注与指标说明的淡色。默认取正常文字的七成。
+\setbeamercolor{hit content muted}{fg=normal text.fg!70}
+% 结论区与注记竖线的配色。默认取主题结构色，主题可覆盖为自己的配色。
+\setbeamercolor{hit insight}{fg=normal text.fg,bg=structure.fg!8}
+\setbeamercolor{hit note rule}{fg=structure.fg}
+
+% 封面英文标题的默认值。主题可用自己的版式槽位覆盖。
+\setbeamertemplate{hit title slot}{}
+\newcommand{\hit@english}{}
+\newcommand{\englishtitle}[1]{\renewcommand{\hit@english}{#1}}
+\newcommand{\hit@source}{}
+\newcommand{\titlecontext}[1]{\renewcommand{\hit@source}{#1}}
+
+% 结束页附注的默认值。主题可用自己的版式槽位覆盖。
+\setbeamertemplate{hit end slot}{}
+
+\mode<all>
+\endinput

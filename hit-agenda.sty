@@ -1,43 +1,173 @@
-%% hiTouyingBeamer Academic, LPPL-1.3c or later.
+%% hit-agenda.sty
+%% hiTouyingBeamer 目录模块 (Shared Outline Module for the HIT beamer themes)
+%%
+%% License: LaTeX Project Public License 1.3c，派生自 hithesis/hiTouyingBeamer。
+%% 章节收集、条目管理、跳转与输入校验在本文件；具体绘制由主题给出。
+%%
+%% 公共命令 \OutlineSlide、\AgendaSlide、\AgendaItem 在 beamercmdhit.sty 中定义，
+%% 本文件提供它们的实现。\OutlineSlide 由公共命令层调用，\AgendaSlide 与
+%% \AgendaItem 由这里直接提供。
+%%
+%% 两种用法：
+%%   \OutlineSlide[选项]      自动读取正文主章节。选项 title、subtitle。
+%%                            2–6 项且主题提供版块版式时用版块版式，否则用普通列表。
+%%   \AgendaSlide[选项]{条目} 手动指定目录，条目个数须为 2–6，标题最多两行。
+%%
+%% 选项（两种用法通用）：
+%%   title=...      目录标题，默认取 \hitoutlinetitle（即“目录”）
+%%   subtitle=...   目录副标题，默认 CONTENTS，仅在版块版式下显示
+%%
+%% 验证：自动目录排除子章节与附录章节，保留章节跳转；手动目录条目由
+%% \AgendaItem[跳转目标]{标题} 给出，非法输入给出明确错误。
+
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{hit-agenda}[2026/10/01 v2.1 adaptive contents slide]
+\ProvidesPackage{hit-agenda}[2026/10/01 v2.2 shared outline module]
+
 \RequirePackage{tikz}
 \RequirePackage{expl3,xparse}
 \ExplSyntaxOn
+
+% ------------------------------------------------------------ 状态与选项 ====
 \seq_new:N \l__hit_agenda_entries_seq
 \tl_new:N \l__hit_agenda_title_tl
 \tl_new:N \l__hit_agenda_subtitle_tl
 \int_new:N \l__hit_agenda_count_int
 \int_new:N \l__hit_agenda_index_int
+\int_new:N \l__hit_agenda_section_int
+\bool_new:N \l__hit_agenda_block_bool
 \fp_new:N \l__hit_agenda_pitch_fp
 \fp_new:N \l__hit_agenda_y_fp
 \box_new:N \l__hit_agenda_label_box
-\keys_define:nn { hit / agenda }
-  {
-    title .tl_set:N = \l__hit_agenda_title_tl,
-    subtitle .tl_set:N = \l__hit_agenda_subtitle_tl
-  }
+\box_new:N \l__hit_agenda_list_box
+
 \msg_new:nnn { hit-agenda } { item-count }
   { Agenda~requires~2--6~items;~received~#1. }
 \msg_new:nnn { hit-agenda } { label-too-long }
   { Agenda~item~#1~exceeds~two~lines.~Use~a~shorter~title. }
 \msg_new:nnn { hit-agenda } { outside-agenda }
   { Use~AgendaItem~inside~AgendaSlide. }
+\msg_new:nnn { hit-agenda } { no-section }
+  { No~section~titles~found;~cannot~build~an~outline. }
+
+% 目录是主题相关的，主题可以在加载后重新定义这三个钩子。默认值给出普通列表版式。
+\cs_new_protected:Npn \hit_agenda_render_block: { }
+\cs_new_protected:Npn \hit_agenda_render_list: { }
+\cs_new_protected:Npn \hit_agenda_block_available:TF #1#2 { #2 }
+
+\keys_define:nn { hit / agenda }
+  {
+    title .tl_set:N = \l__hit_agenda_title_tl,
+    subtitle .tl_set:N = \l__hit_agenda_subtitle_tl
+  }
+
+% 公共命令层调用的选项解析。title 与 subtitle 原样保存在内部变量里。
+\cs_new_protected:Npn \hit_agenda_parse_options:n #1
+  {
+    \keys_set:nn { hit / agenda } { #1 }
+  }
+\cs_set_eq:NN \hit@parseoutlineoptions \hit_agenda_parse_options:n
+% 主题绘制版块版式时读取目录标题与副标题。公共命令层同样可以用这两个命令。
+% 节点的文字会被展开，因此这里保存展开后的文本，避免标题在画布上丢失。
+% 标题为空时退回 \hitoutlinetitle，副标题为空时用 CONTENTS；
+% 文档里 \renewcommand 改过的目录标题照样生效。
+\tl_new:N \hit@agendatitle
+\tl_new:N \hit@agendasubtitle
+\cs_new_protected:Npn \hit_agenda_titles_set:
+  {
+    \tl_if_blank:VTF \l__hit_agenda_title_tl
+      { \tl_set_eq:NN \hit@agendatitle \hitoutlinetitle }
+      { \tl_set_eq:NN \hit@agendatitle \l__hit_agenda_title_tl }
+    \tl_if_blank:VTF \l__hit_agenda_subtitle_tl
+      { \tl_set:Nn \hit@agendasubtitle { CONTENTS } }
+      { \tl_set_eq:NN \hit@agendasubtitle \l__hit_agenda_subtitle_tl }
+  }
+
+% ---------------------------------------------------------------- 条目 ====
 \NewDocumentCommand \AgendaItem { O{} m }
   { \msg_error:nn { hit-agenda } { outside-agenda } }
+
 \cs_new_protected:Npn \hit_agenda_setup:n #1
   {
     \seq_clear:N \l__hit_agenda_entries_seq
-    \keys_set:nn { hit / agenda } { title = {目录}, subtitle = {CONTENTS}, #1 }
+    \tl_set:Nn \l__hit_agenda_title_tl { }
+    \tl_set:Nn \l__hit_agenda_subtitle_tl { CONTENTS }
+    \keys_set:nn { hit / agenda } { #1 }
   }
+
 \cs_new_protected:Npn \hit_agenda_add:nn #1#2
   {
     \seq_put_right:Nn \l__hit_agenda_entries_seq
-      { \hit_agenda_entry:nn {#1} {#2} }
+      { \hit_agenda_entry_block:nn {#1} {#2} }
   }
+
 \cs_new:Npn \hit_agenda_link:nn #1#2
   { \tl_if_blank:nTF {#1} {#2} { \hyperlink{#1}{#2} } }
-\cs_new_protected:Npn \hit_agenda_entry:nn #1#2
+
+% 检查条目数量，返回真表示合法。版块版式要求 2–6 项，列表版式不设上限。
+\prg_new_conditional:Npnn \hit_agenda_block_count: { p, TF }
+  {
+    \int_compare:nNnTF { \l__hit_agenda_count_int } < { 2 }
+      { \prg_return_false: }
+      {
+        \int_compare:nNnTF { \l__hit_agenda_count_int } > { 6 }
+          { \prg_return_false: } { \prg_return_true: }
+      }
+  }
+
+% ------------------------------------------------------------ 章节收集 ====
+% 读取 \jobname.toc，只收集主章节：子章节与子子章节模板置空，附录章节由
+% beamer 的 \beamer@donofonumber 标记排除，因此附录章节不会进入目录。
+\cs_new_protected:Npn \hit_agenda_collect_sections:
+  {
+    \seq_clear:N \l__hit_agenda_entries_seq
+    \int_zero:N \l__hit_agenda_section_int
+    \cs_set_protected:cpn {beamer@sectionintoc} ##1##2##3##4##5
+      {
+        \int_incr:N \l__hit_agenda_section_int
+        \int_compare:nNnT {##4} = { 0 }
+          {
+            \int_compare:nNnTF {##5} = { 1 }
+              { \hit_agenda_add:nn { Navigation##3 } {##2} }
+              { \hit_agenda_add:nn {##3} {##2} }
+          }
+      }
+    \cs_set_protected:cpn {beamer@subsectionintoc} ##1##2##3##4##5##6 { }
+    \cs_set_protected:cpn {beamer@subsubsectionintoc} ##1##2##3##4##5##6##7 { }
+    \file_if_exist:nTF { \jobname.toc }
+      {
+        \char_set_catcode_letter:n { 64 }
+        \file_input:n { \jobname.toc }
+      }
+      {
+        \PackageWarning{hit-agenda}{Rerun~LaTeX~to~load~section~titles}
+      }
+    \int_set:Nn \l__hit_agenda_count_int { \seq_count:N \l__hit_agenda_entries_seq }
+  }
+
+% 目录尚未生成时的占位页。
+\cs_new_protected:Npn \hit_agenda_placeholder:
+  {
+    \begin{frame}[plain]
+      \centering
+      \tl_use:N \l__hit_agenda_title_tl \par
+      \smallskip
+      \normalfont\small Rerun~LaTeX~to~load~the~outline.
+    \end{frame}
+  }
+
+% ------------------------------------------------------------ 版块版式 ====
+% 左侧标题色块与右侧编号圆角横条。要求条目数量为 2–6。
+\cs_new_protected:Npn \hit_agenda_block_entries:
+  {
+    \int_zero:N \l__hit_agenda_index_int
+    % 序列里的每个条目本身带一层花括号，所以用内联映射展开，不能直接映射函数。
+    \seq_map_inline:Nn \l__hit_agenda_entries_seq { ##1 }
+  }
+
+% 条目标题是否限制为两行。手动目录限制两行，自动目录按实际章节名排出。
+\bool_new:N \l__hit_agenda_strict_bool
+
+\cs_new_protected:Npn \hit_agenda_entry_block:nn #1#2
   {
     \int_incr:N \l__hit_agenda_index_int
     \fp_set:Nn \l__hit_agenda_y_fp
@@ -57,49 +187,100 @@
       {
         \vbox_set:Nn \l__hit_agenda_label_box
           {\hsize=.345\paperwidth\centering\strut #2\strut\par}
-        \dim_compare:nNnT
-          {\box_ht:N\l__hit_agenda_label_box+\box_dp:N\l__hit_agenda_label_box}
-          > {25pt}
-          {\msg_error:nnx {hit-agenda}{label-too-long}{\int_use:N\l__hit_agenda_index_int}}
+        \bool_if:NT \l__hit_agenda_strict_bool
+          {
+            \dim_compare:nNnT
+              {\box_ht:N\l__hit_agenda_label_box+\box_dp:N\l__hit_agenda_label_box}
+              > {25pt}
+              {\msg_error:nnx {hit-agenda}{label-too-long}{\int_use:N\l__hit_agenda_index_int}}
+          }
         \hit_agenda_link:nn {#1} {\box_use:N\l__hit_agenda_label_box}
       };
   }
-\cs_new_protected:Npn \hit_agenda_render:
+
+% 版块版式的页面。背景与左侧标题色块由主题的钩子绘制。
+\cs_new_protected:Npn \hit_agenda_render_block_page:
   {
-    \int_set:Nn \l__hit_agenda_count_int {\seq_count:N\l__hit_agenda_entries_seq}
-    \int_compare:nNnTF {\l__hit_agenda_count_int} < {2}
-      {\msg_error:nnx {hit-agenda}{item-count}{\int_use:N\l__hit_agenda_count_int}}
+    \fp_set:Nn \l__hit_agenda_pitch_fp
+      {\int_case:nn {\l__hit_agenda_count_int}
+        {{2}{.24}{3}{.21}{4}{.18}{5}{.15}{6}{.125}}}
+    \int_zero:N \l__hit_agenda_index_int
+    \begin{frame}[plain]
+      \begin{tikzpicture}[remember~picture,overlay,x=\paperwidth,y=\paperheight]
+        \begin{scope}[shift={(current~page.south~west)}]
+          \hit_agenda_paint_block:%
+          \hit_agenda_block_entries:
+        \end{scope}
+      \end{tikzpicture}
+    \end{frame}
+  }
+
+% 主题提供：版块版式的背景、标题色块与副标题。
+\cs_new_protected:Npn \hit_agenda_paint_block: { }
+
+% ------------------------------------------------------------ 列表版式 ====
+% 版块版式不适用时使用：主题一致的普通章节列表，条目不截断。
+\cs_new_protected:Npn \hit_agenda_render_list_page:
+  {
+    \begin{frame}[t]
+      \vskip1mm
+      \tl_if_blank:VTF \l__hit_agenda_title_tl { }
+        {
+          \begingroup
+          \usebeamerfont{hit outline title}%
+          \usebeamercolor[fg]{frametitle}%
+          \tl_use:N \l__hit_agenda_title_tl \par
+          \endgroup
+          \vskip2mm
+          {\usebeamercolor[fg]{hit outline rule}\hrule height .8pt}%
+          \vskip5mm
+        }
+      \hit_agenda_draw_list:
+    \end{frame}
+  }
+
+% 主题提供：普通列表的绘制。
+\cs_new_protected:Npn \hit_agenda_draw_list: { }
+
+\cs_new_protected:Npn \hit_agenda_render_list_entries:
+  {
+    \int_zero:N \l__hit_agenda_index_int
+    \seq_map_inline:Nn \l__hit_agenda_entries_seq
       {
-        \int_compare:nNnTF {\l__hit_agenda_count_int} > {6}
-          {\msg_error:nnx {hit-agenda}{item-count}{\int_use:N\l__hit_agenda_count_int}}
-          {
-            \fp_set:Nn \l__hit_agenda_pitch_fp
-              {\int_case:nn {\l__hit_agenda_count_int}
-                {{2}{.24}{3}{.21}{4}{.18}{5}{.15}{6}{.125}}}
-            \int_zero:N \l__hit_agenda_index_int
-            \begin{frame}[plain]
-              \begin{tikzpicture}[remember~picture,overlay,x=\paperwidth,y=\paperheight]
-                \begin{scope}[shift={(current~page.south~west)}]
-                  \fill[canvas] (0,0) rectangle (1,1);
-                  \fill[brand!40!white] (-.02,.255) -- (.18,.255)
-                    arc[start~angle=-90,end~angle=90,x~radius=.15,y~radius=.245]
-                    -- (-.02,.745) -- cycle;
-                  \fill[brand] (-.02,.27) -- (.18,.27)
-                    arc[start~angle=-90,end~angle=90,x~radius=.137,y~radius=.23]
-                    -- (-.02,.73) -- cycle;
-                  \node[text=white,align=center,text~width=.28\paperwidth,
-                    font=\bfseries\fontsize{32}{36}\selectfont,inner~sep=0pt]
-                    at (.157,.55) {\tl_use:N\l__hit_agenda_title_tl};
-                  \node[text=white,align=center,text~width=.28\paperwidth,
-                    font=\bfseries\fontsize{10.5}{13}\selectfont,inner~sep=0pt]
-                    at (.157,.415) {\tl_use:N\l__hit_agenda_subtitle_tl};
-                  \seq_map_function:NN \l__hit_agenda_entries_seq \use:n
-                \end{scope}
-              \end{tikzpicture}
-            \end{frame}
-          }
+        \int_incr:N \l__hit_agenda_index_int
+        \par\nointerlineskip
+        {\usebeamercolor[fg]{hit agenda list number}%
+         \usebeamerfont{hit agenda list number}\bfseries
+         \int_to_arabic:n { \l__hit_agenda_index_int }}\hspace{4mm}%
+        ##1\par
+        \vspace{3.2mm}
       }
   }
+
+% 供主题在普通 catcode 下调用的包装。带下划线与冒号的名字只在 \ExplSyntaxOn 内有效。
+\cs_set_eq:NN \hit@agendalistentries \hit_agenda_render_list_entries:
+\cs_set_eq:NN \hit@agendalistbox \l__hit_agenda_list_box
+
+% ---------------------------------------------------------------- 渲染 ====
+\cs_new_protected:Npn \hit_agenda_render:
+  {
+    \int_set:Nn \l__hit_agenda_count_int { \seq_count:N \l__hit_agenda_entries_seq }
+    \hit_agenda_titles_set:
+    \bool_set_false:N \l__hit_agenda_strict_bool
+    \int_compare:nNnTF { \l__hit_agenda_count_int } < { 1 }
+      { \hit_agenda_placeholder: }
+      {
+        \hit_agenda_block_available:TF
+          {
+            \hit_agenda_block_count:TF
+              { \hit_agenda_render_block_page: }
+              { \hit_agenda_render_list_page: }
+          }
+          { \hit_agenda_render_list_page: }
+      }
+  }
+
+% ------------------------------------------------------------ 手动目录 ====
 \NewDocumentCommand \AgendaSlide { O{} +m }
   {
     \group_begin:
@@ -107,30 +288,15 @@
     \RenewDocumentCommand \AgendaItem { O{} m }
       {\hit_agenda_add:nn {##1}{##2}}
     #2
-    \hit_agenda_render:
+    \int_set:Nn \l__hit_agenda_count_int { \seq_count:N \l__hit_agenda_entries_seq }
+    \hit_agenda_titles_set:
+    \bool_set_true:N \l__hit_agenda_strict_bool
+    \hit_agenda_block_count:TF
+      { \hit_agenda_render_block_page: }
+      { \msg_error:nnx { hit-agenda } { item-count }
+          { \int_use:N \l__hit_agenda_count_int } }
     \group_end:
   }
-\NewDocumentCommand \OutlineSlide { O{} }
-  {
-    \group_begin:
-    \hit_agenda_setup:n {#1}
-    \cs_set_protected:cpn {beamer@sectionintoc} ##1##2##3##4##5
-      {\int_compare:nNnT {##4} = {0} {\hit_agenda_add:nn {Navigation##3}{##2}}}
-    \cs_set_protected:cpn {beamer@subsectionintoc} ##1##2##3##4##5##6 {}
-    \cs_set_protected:cpn {beamer@subsubsectionintoc} ##1##2##3##4##5##6##7 {}
-    \file_if_exist:nTF {\jobname.toc}
-      {
-        \char_set_catcode_letter:n {64}
-        \file_input:n {\jobname.toc}
-        \hit_agenda_render:
-      }
-      {
-        \PackageWarning{hit-agenda}{Rerun~LaTeX~to~load~section~titles}
-        \begin{frame}[plain]\centering\color{brand}
-          \tl_use:N\l__hit_agenda_title_tl\par
-          \smallskip\normalfont\small Rerun~LaTeX~to~load~the~outline.
-        \end{frame}
-      }
-    \group_end:
-  }
+
 \ExplSyntaxOff
+\endinput
