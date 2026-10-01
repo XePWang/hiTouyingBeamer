@@ -26,5 +26,14 @@ Thumbs.db
 # 可直接浏览的示例及插图随源码分发：
 # example.pdf、starter.pdf、agenda-gallery.pdf、legacy-classic.pdf 与
 # theme-switch-*.pdf 由 build.ps1 生成在仓库根目录，作为已编译成品一起分发。
+# 打包产物与本地编辑器临时文件
+dist/
+*.zip
+.vscode/
+.idea/
+*.swp
+*.bak
+*.synctex(busy)
+
 *.vrb
 !/assets/figures/*.pdf

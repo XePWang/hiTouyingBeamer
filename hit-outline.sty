@@ -226,13 +226,12 @@
   {
     \prop_if_in:NnTF \g__hit_outline_subsecs_prop {#1}
       {
-        \clist_map_inline:xn { \prop_item:Nn \g__hit_outline_subsecs_prop {#1} }
-          { \exp_args:No \__hit_outline_subsec_do:nn {##1} {#2} }
+        \clist_set:Nx \l_tmpa_clist { \prop_item:Nn \g__hit_outline_subsecs_prop {#1} }
+        \clist_map_inline:Nn \l_tmpa_clist
+          { #2 ##1 }
       }
       { }
   }
-\cs_new_protected:Npn \__hit_outline_subsec_do:nn #1#2
-  { \exp_last_unbraced:No #2 #1 }
 \cs_set_eq:NN \hit@subsecsdo \hit_outline_subsecs_do:nn
 
 % 循环执行 #3，参数为数字 #1 到 #2
@@ -285,7 +284,7 @@
             \hit_outline_title:n {##1} \strut\par }
         \dim_compare:nNnT
           { \box_ht:N \l__hit_outline_row_box + \box_dp:N \l__hit_outline_row_box }
-          > { 25pt }
+          > { 31pt }
           { \msg_error:nnx { hit-outline } { label-too-long } {##1} }
       }
     \bool_set_false:N \l__hit_outline_strict_bool
@@ -322,17 +321,15 @@
 \cs_new_protected:Npn \hit_outline_build_block:
   {
     \tl_clear:N \l__hit_outline_block_tl
-    \fp_set:Nn \l__hit_outline_pitch_fp
+    \int_case:nnF { \l__hit_outline_count_int }
       {
-        \int_case:nn { \l__hit_outline_count_int }
-          {
-            { 2 } { 0.22 }
-            { 3 } { 0.19 }
-            { 4 } { 0.16 }
-            { 5 } { 0.13 }
-            { 6 } { 0.11 }
-          }
+        { 2 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.22 } }
+        { 3 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.19 } }
+        { 4 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.16 } }
+        { 5 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.13 } }
+        { 6 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.11 } }
       }
+      { \fp_set:Nn \l__hit_outline_pitch_fp { 0.15 } }
     \int_step_inline:nnn { 1 } { \l__hit_outline_count_int }
       {
         \fp_set:Nn \l__hit_outline_y_fp

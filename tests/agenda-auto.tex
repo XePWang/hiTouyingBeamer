@@ -1,12 +1,18 @@
 \documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
-\usetheme{hitacademic}
+\providecommand{\ThemeChoice}{hitacademic}
+\usetheme{\ThemeChoice}
 \providecommand{\AgendaCount}{3}
 \begin{document}
 \OutlineSlide[title=Outline,subtitle=CONTENTS]
-\section{研究背景}
-\begin{frame}{研究背景}Context\end{frame}
-\section{问题定义}
-\begin{frame}{问题定义}Question\end{frame}
+\ifnum\AgendaCount>0
+  \section{研究背景}
+  \begin{frame}{研究背景}Context\end{frame}
+  \subsection{背景补充}
+\fi
+\ifnum\AgendaCount>1
+  \section{问题定义}
+  \begin{frame}{问题定义}Question\end{frame}
+\fi
 \ifnum\AgendaCount>2
   \section{研究方法}
   \begin{frame}{研究方法}Method\end{frame}
@@ -23,8 +29,18 @@
   \section{结论展望}
   \begin{frame}{结论展望}Conclusion\end{frame}
 \fi
-\subsection{不进入主目录}
-\subsubsection{同样不进入主目录}
+\ifnum\AgendaCount>6
+  \section{第七章节}
+  \begin{frame}{第七章节}Section Seven\end{frame}
+\fi
+\ifnum\AgendaCount>7
+  \section{第八章节}
+  \begin{frame}{第八章节}Section Eight\end{frame}
+\fi
+\ifnum\AgendaCount>8
+  \section{第九章节}
+  \begin{frame}{第九章节}Section Nine\end{frame}
+\fi
 \hitappendix
 \section{附录内容}
 \begin{frame}{附录内容}Appendix\end{frame}

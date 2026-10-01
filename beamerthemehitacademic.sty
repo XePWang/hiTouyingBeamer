@@ -120,7 +120,11 @@
 \newcommand{\hit@nav}{%
   \insertsectionnavigationhorizontal{\hit@navavailwd}{}{\hfill}}
 \newcommand{\hit@headnav}{%
+  \begingroup
+  \hfuzz=\paperwidth
+  \hbadness=100000
   \setbox\hit@navbox=\hbox{\fontsize{7.7}{10}\selectfont\hit@nav}%
+  \endgroup
   \hit@navavail=\hit@navavailwd
   \ifdim\wd\hit@navbox>\hit@navavail
     \setbox\hit@navbox=\hbox{\resizebox{\hit@navavail}{!}{\box\hit@navbox}}%
