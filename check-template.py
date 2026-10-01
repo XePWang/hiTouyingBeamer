@@ -30,7 +30,7 @@ if font_count != 10:
 # 经典主题的文档没有写 fontset=none，中文用系统字体，因此不限制字体来源。
 DOCUMENTS = {
     'example.pdf': (22, 16 / 9, True),
-    'starter.pdf': (7, 16 / 9, True),
+    'starter.pdf': (6, 16 / 9, True),
     'agenda-gallery.pdf': (6, 16 / 9, True),
     'legacy-classic.pdf': (28, 16 / 9, False),
     'theme-switch-hit.pdf': (9, 16 / 9, False),

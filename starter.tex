@@ -1,35 +1,27 @@
+% 在项目根目录使用 XeLaTeX 编译此文件；正文在 slides/content.tex。
 \documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
+
+% 主题：hitacademic 或 hit。切换后正文保持不变。
 \usetheme{hitacademic}
-\title[研究主题]{中文研究标题}
-\subtitle{标准副标题}
-\englishtitle{English Research Title}
-\titlecontext{学术汇报 · 快速起步}
-\author{汇报人：待填写\qquad 学号：待填写}
-\institute{哈尔滨工业大学}
-\date{汇报日期：待填写}
+\hitnosectionpages              % 使用 \hitsectionpages 开启章节过渡页
+\hitnooutlinesubs               % 使用 \hitoutlinesubs 在目录显示子章节
+\hitfigures{slides/images/}     % 自己的图片放在此目录，也可以填写完整相对路径
+
+% 封面：方括号为导航用短标题；以下三个补充字段均可整行删除。
+\title[汇报主题]{我的汇报标题}
+\subtitle{副标题（可选）}
+\englishtitle{Presentation Title}
+\titlecontext{学术汇报}
+\author{汇报人：待填写}
+\institute{单位：待填写}
+\date{日期：待填写}
+
 \begin{document}
-\TitleSlide
-\OutlineSlide
-\section{研究问题}
-\begin{frame}{用一句话描述这一页的研究问题}
-\subhead{问题与目标}
-填写研究对象、输入条件与评价标准。
-\insight{填写本页最重要的判断。}
-\end{frame}
-\section{研究方法}
-\begin{frame}{用公式、图表或代码解释关键机制}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\textwidth}\subhead{方法}填写方法内容。\end{column}
-\begin{column}{.48\textwidth}\subhead{条件}填写适用条件。\notebox{填写需要随正文说明的重要条件。}\end{column}
-\end{columns}
-\end{frame}
-\section{实验评价}
-\begin{frame}{用结果与条件支撑结论}
-\subhead{实验结果}填写已验证的结果与对应设置。
-\end{frame}
-\section{结论讨论}
-\begin{frame}{围绕研究问题给出结论}
-\subhead{结论}填写结论和适用范围。
-\end{frame}
-\EndSlide{感谢聆听\quad 欢迎讨论}
+  \TitleSlide
+  \OutlineSlide[title={目录}]
+
+  % 正文：增删章节、复制页面、填写内容。
+  \input{slides/content}
+
+  \EndSlide{感谢聆听\quad 欢迎讨论}
 \end{document}

@@ -158,7 +158,20 @@
 \renewcommand{\arraystretch}{1.08}
 \renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
 \setlength{\tabcolsep}{4.5pt}
-\AtBeginEnvironment{frame}{\bodytext}
+\AtBeginEnvironment{frame}{\bodytext\hitcolumnratio{.5}}
+
+% 两栏总宽为正文的 96%，余下空间由 columns 分配为栏间距。
+\newlength{\hitleftwidth}
+\newlength{\hitrightwidth}
+\newcommand{\hitcolumnratio}[1]{%
+  \pgfmathtruncatemacro{\hit@validratio}{(#1>0) && (#1<1)}%
+  \ifnum\hit@validratio=1
+    \pgfmathsetlength{\hitleftwidth}{.96*(#1)*\textwidth}%
+    \pgfmathsetlength{\hitrightwidth}{.96*(1-#1)*\textwidth}%
+  \else
+    \PackageError{hit-content}{Column ratio must be between 0 and 1}%
+      {Use a left-column share such as 0.5 or 0.6.}%
+  \fi}
 
 % 组件上下留白，主题可按自己的版式调整。
 \newdimen\hit@subheadskip     \hit@subheadskip=1.4mm
@@ -195,7 +208,8 @@
   {\usebeamercolor[bg]{hit insight}%
    \colorbox{hit insight.bg}{%
      \parbox{\dimexpr\linewidth-2\fboxsep}{\vspace{\hit@insightpad}%
-       \usebeamerfont{hit content insight}#1\vspace{\hit@insightpad}}}}\par}
+       \usebeamercolor[fg]{hit insight}\usebeamerfont{hit content insight}#1%
+       \vspace{\hit@insightpad}}}}\par}
 
 % 注记：左侧竖线与整段文字上下边界对齐。
 % 宽度先减掉竖线、间距与段落缩进，整行恰好等于行宽，不会横向溢出。
@@ -211,9 +225,13 @@
      {\dimexpr\ht\hit@notebox+\dp\hit@notebox\relax}}%
   \hspace{\hit@notegap}\usebox{\hit@notebox}\par}
 
-% 插图：读取 \hit@figpath 下的 PDF。
-\newcommand{\fig}[2][]{\par\noindent
-  \includegraphics[width=\linewidth,#1]{\hit@figpath#2.pdf}\par}
+% 接受完整相对路径，或插图目录下的文件名；省略扩展名时优先 PDF。
+% 宽度与高度同时限制，默认等比缩放；trim 与 clip 由作者显式指定。
+\newcommand{\fig}[2][]{\par\begingroup\centering
+  \graphicspath{{\hit@figpath}}%
+  \DeclareGraphicsExtensions{.pdf,.png,.jpg,.jpeg,.PDF,.PNG,.JPG,.JPEG}%
+  \includegraphics[width=\linewidth,height=.58\textheight,keepaspectratio,#1]{#2}%
+  \par\endgroup}
 
 % 指标：大数字与小字说明。两段之间把段落间距置零，
 % 高度只由字号与 \hit@metricsep 决定，两块指标同页也不会互相挤。

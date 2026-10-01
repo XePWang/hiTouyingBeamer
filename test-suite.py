@@ -98,8 +98,9 @@ def stage_3_semantic_check():
     pdf_s_hit = compile_tex(starter_hit_tex, 'starter-classic', OUT_DIR)
 
     starter_fields = [
-        '中文研究标题', '标准副标题', 'EnglishResearchTitle', '学术汇报・快速起步',
-        '汇报人', '哈尔滨工业大学', '目录', '研究问题', '研究方法', '实验评价', '结论讨论', '感谢聆听'
+        '我的汇报标题', '副标题', 'PresentationTitle', '学术汇报',
+        '汇报人', '目录', '研究问题', '研究方法', '结果与讨论', '感谢聆听',
+        '填写本页最重要的判断', '填写有证据支持的比较结论'
     ]
     t_s_acad = re.sub(r'\s+', '', '\n'.join(p.extract_text() for p in PdfReader(pdf_s_acad).pages))
     t_s_hit = re.sub(r'\s+', '', '\n'.join(p.extract_text() for p in PdfReader(pdf_s_hit).pages))
