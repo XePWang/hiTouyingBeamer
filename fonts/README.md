@@ -14,6 +14,8 @@
 
 `manifest.json` 记录每个字体及许可证的官方原始地址、发布标签、不可变 Git commit、文件大小和 SHA-256；字体还记录内部版本与 `OS/2.fsType`。校验以原始许可为依据，`fsType` 仅作为技术元数据补充。
 
+许可证保留上游原始字节，`.gitattributes` 禁止 Git 对这三个文件转换换行，确保 Windows 与 Linux 检出的校验值一致。
+
 中文使用大陆简体中文区域字体 Source Han Sans CN。中文的 italic 配置使用直立字形；英文保留真实 italic 字体。数学字符由 TeX Live 的标准数学字体提供，并随 PDF 嵌入。
 
 分享完整模板时保留整个 `fonts/` 目录。单独分享生成的 PDF 时，文档中已经嵌入其实际使用的字形。
