@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Install TeX Live and Poppler
+        uses: teatimeguest/setup-texlive@v3
+        with:
+          packages: |
+            scheme-medium
+            latexmk
+            xetex
+            ctex
+            beamer
+            pgf
+            etoolbox
+            booktabs
+            tabularx
+            colortbl
+            listings
+            amsmath
+            tools
+            totcount
+            anyfontsize
+            lmodern
+            amsfonts
+            translator
+            zhnumber
+            xecjk
+            fontspec
+        continue-on-error: true
+
+      - name: Install system dependencies (Poppler & fonts-noto-cjk fallback)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils texlive-xetex texlive-lang-chinese texlive-science
+
+      - name: Build all distribution documents
+        run: |
+          python build.py --document all
+
+      - name: Run complete test suite
+        run: |
+          python test-suite.py

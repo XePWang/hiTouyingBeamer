@@ -266,6 +266,31 @@
   }
 \cs_set_eq:NN \hit@outlinerenderlist \hit_outline_render_list:
 
+% 单页列表正文排布：有小节且跨 3 章以上时分两栏，单栏排不下时防止溢出
+\cs_new_protected:Npn \hit_outline_render_list_body:nn #1#2
+  {
+    \ifhit@outlinesubs
+      \int_compare:nNnTF { #2 - #1 + 1 } > { 2 }
+        {
+          \int_set:Nn \l_tmpa_int { \int_div_truncate:nn { #1 + #2 } { 2 } }
+          \int_set:Nn \l_tmpb_int { \l_tmpa_int + 1 }
+          \noindent
+          \begin{minipage}[t]{.48\textwidth}
+            \int_step_inline:nnn { #1 } { \l_tmpa_int } { \hit@outlinerow {##1} }
+          \end{minipage}\hfill
+          \begin{minipage}[t]{.48\textwidth}
+            \int_step_inline:nnn { \l_tmpb_int } { #2 } { \hit@outlinerow {##1} }
+          \end{minipage}\par
+        }
+        {
+          \int_step_inline:nnn { #1 } { #2 } { \hit@outlinerow {##1} }
+        }
+    \else
+      \int_step_inline:nnn { #1 } { #2 } { \hit@outlinerow {##1} }
+    \fi
+  }
+\cs_set_eq:NN \hit@outlinelistbody \hit_outline_render_list_body:nn
+
 % ------------------------------------------------------------ 输入校验 ====
 % 手动目录：条目数须为 2–6，标题最多两行。
 \cs_new_protected:Npn \hit_outline_validate_manual:

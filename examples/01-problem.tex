@@ -46,7 +46,6 @@ $S(p)$ & Speedup，相同工作量下的时间比 \\\bottomrule
 \end{frame}
 
 \begin{frame}{方法对照：把决策依据放在同一张表中}
-\vspace{2mm}
 \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.65cm}XXX@{}}
 \toprule 组织方式 & 适合的工作 & 需要关注的成本 & 主要验证指标 \\\midrule
 Thread-per-task & 独立且短小的任务 & 单线程状态量、访存合并 & Register、带宽、吞吐 \\
@@ -54,7 +53,6 @@ Warp-per-task & 任务内存在协作 & Lane 利用率、shuffle 成本 & Warp e
 Block-per-task & 较大协作范围 & SMEM 容量、同步、占用率 & SMEM、barrier stall \\
 Pipeline & 可分阶段的批量任务 & 提交、依赖、批次尾部 & 端到端时间、阶段重叠 \\\bottomrule
 \end{tabularx}
-\vspace{4mm}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{.48\textwidth}\subhead{对照维度保持一致}
 每行给出同一种信息，明确映射方式与工作负载的联系。

@@ -58,12 +58,17 @@ for name, (expected_pages, expected_ratio, bundled_only) in DOCUMENTS.items():
             raise ValueError(f'{name} 画幅异常：第 {number} 页')
         if not page.extract_text().strip():
             raise ValueError(f'{name} 空白页面：第 {number} 页')
-    log = root / '.work' / 'w' / name.replace('.pdf', '.log')
-    problems = []
-    if log.exists():
-        text = log.read_text(encoding='utf-8', errors='replace')
-        problems = [line for line in text.splitlines()
-                    if any(marker in line for marker in WARNING_MARKERS)]
+    log_name = {
+        'theme-switch-hit.pdf': 'switch-hit.log',
+        'theme-switch-hitacademic.pdf': 'switch-hitacademic.log',
+        'theme-switch-madrid.pdf': 'switch-madrid.log',
+    }.get(name, name.replace('.pdf', '.log'))
+    log = root / '.work' / 'w' / log_name
+    if not log.exists():
+        raise FileNotFoundError(f'缺少 {name} 对应的编译日志：{log}，请先运行构建脚本')
+    text = log.read_text(encoding='utf-8', errors='replace')
+    problems = [line for line in text.splitlines()
+                if any(marker in line for marker in WARNING_MARKERS)]
     if problems:
         raise ValueError(f'{name} 编译日志有告警：\n' + '\n'.join(problems[:5]))
 

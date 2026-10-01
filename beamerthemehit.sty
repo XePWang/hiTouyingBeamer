@@ -137,14 +137,6 @@
 \setbeamerfont{hit blue subtitle}{size=\normalsize,series=\bfseries}
 \setbeamerfont{hit blue text}{size=\normalsize,series=\bfseries}
 \setbeamerfont{hit blue institute}{size=\small,series=\bfseries}
-% 内容组件字号沿用上游的取值。
-\setbeamerfont{hit content subhead}{size=\normalsize,series=\bfseries}
-\setbeamerfont{hit content caption}{size=\small,series=\mdseries}
-\setbeamerfont{hit content insight}{size=\normalsize,series=\mdseries}
-\setbeamerfont{hit content note}{size=\small,series=\mdseries}
-\setbeamerfont{hit content metric}{size=\fontsize{24}{28},series=\bfseries}
-\setbeamerfont{hit content metric note}{size=\fontsize{8.3}{11},series=\mdseries}
-
 % ------------------------------------------------------------ layout misc ----
 % 让顶部导航的圆点挤在一行，效果同文档类选项 compress。
 \beamer@compresstrue
@@ -221,7 +213,7 @@
     \box\@tempboxa
   \end{beamercolorbox}%
   % 中文字形和圆点会伸到 beamer 给这行定的高度之外，按字号补一点间距。
-  {\usebeamerfont{section in head/foot}\vskip\dimexpr.3em+1.2mm\relax}%
+  {\usebeamerfont{section in head/foot}\vskip\dimexpr.15em+.6mm\relax}%
 }
 
 % -------------------------------------------------------------- frametitle ----
@@ -241,12 +233,12 @@
     \xdef\hit@ft@cap{\the\dimexpr2.6\baselineskip\relax}%
   \endgroup}
 
-\newcommand{\hit@ftminheight}{9mm}
+\newcommand{\hit@ftminheight}{6.2mm}
 \newcommand{\hit@ftmottoraise}{.6mm}
 
 \defbeamertemplate*{frametitle}{hit}{%
   \nointerlineskip
-  \vskip1.6mm%
+  \vskip.8mm%
   \hit@ft@try{}%
   \ifdim\dimexpr\ht\hit@fttlbox+\dp\hit@fttlbox\relax>\hit@ft@cap\relax
     \hit@ft@try{\normalsize}%
@@ -257,7 +249,7 @@
   \begin{beamercolorbox}[wd=\textwidth]{frametitle}%
     \box\hit@fttlbox\par
   \end{beamercolorbox}%
-  \vskip1.2mm%
+  \vskip1.0mm%
   % 校训图改成零高零深的盒子贴着横线放，图与横线的间距恒定。
   \nointerlineskip
   \hbox to \textwidth{\hfill
@@ -265,7 +257,7 @@
       \includegraphics[width=2.4cm]{\hit@vipath hit-vi-motto}}}%
   \nointerlineskip
   {\color{hitprimary}\hrule height .8pt}%
-  \vskip2.2mm%
+  \vskip1.0mm%
 }
 
 % ---------------------------------------------------------------- footline ----

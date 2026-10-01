@@ -77,7 +77,12 @@
 \newcommand{\hit@ifsource}[2]{\ifdefempty{\hit@source}{#2}{#1}}
 \newcommand{\hit@ifsubtitle}[2]{\ifdefempty{\insertsubtitle}{#2}{#1}}
 % 任意一个参数为空时取第 3 个参数，用于可选栏目这类可能留空的字段。
-\newcommand{\hit@iffocuslabel}[3]{\ifdefempty{#1}{#3}{#2}}
+\newcommand{\hit@iffocuslabel}[3]{%
+  \if\relax\detokenize{#1}\relax
+    #3%
+  \else
+    #2%
+  \fi}
 
 % 页脚左侧文字。两种主题都支持；未加载主题时用标准 Beamer 的短机构名。
 \newcommand{\hit@footertext}{\insertshortinstitute}
@@ -213,12 +218,11 @@
       \hit@outlinelink{#1}{\hit@outlinetitleof{#1}}\strut}};%
 }
 
-% 列表版式：条目多时按页均分（每页最多 6 条），保持可读字号，不截断不无限缩小。
 \newcommand{\hit@outlinelistframe}[3]{%
   \begin{frame}[t]
     \vskip1mm
     \hit@drawlistheader{#1}%
-    \hit@stepitems{#2}{#3}{\hit@outlinerow}%
+    \hit@outlinelistbody{#2}{#3}%
   \end{frame}}
 
 \newcommand{\hit@outlinerow}[1]{%

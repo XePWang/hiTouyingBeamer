@@ -39,6 +39,7 @@
 \RequirePackage{expl3}
 \RequirePackage{xparse}
 \RequirePackage{totcount}
+\RequirePackage{anyfontsize}
 \RequirePackage{iftex}
 
 % 若文档类指定 fontset=none 且使用 XeTeX，自动加载模板配套的开源字体
@@ -143,15 +144,21 @@
 
 % size 里只写 \fontsize，不写 \selectfont：beamer 取用 size 时会当场求值，
 % 带上 \selectfont 会把当前行的基线间距也改掉，正文行高随之变大。
-\setbeamerfont{hit content subhead}{size=\normalsize,series=\bfseries}
-\setbeamerfont{hit content caption}{size=\small,series=\mdseries}
-\setbeamerfont{hit content insight}{size=\normalsize,series=\mdseries}
-\setbeamerfont{hit content note}{size=\small,series=\mdseries}
+\setbeamerfont{hit content subhead}{size=\fontsize{9.5}{13},series=\bfseries}
+\setbeamerfont{hit content caption}{size=\fontsize{7.7}{10},series=\mdseries}
+\setbeamerfont{hit content insight}{size=\fontsize{9}{12},series=\mdseries}
+\setbeamerfont{hit content note}{size=\fontsize{8}{11},series=\mdseries}
 \setbeamerfont{hit content metric}{size=\fontsize{24}{28},series=\bfseries}
 \setbeamerfont{hit content metric note}{size=\fontsize{8.3}{11},series=\mdseries}
 \setbeamerfont{hit outline title}{size=\LARGE,series=\bfseries}
 \setbeamerfont{hit outline entry}{size=\normalsize,series=\mdseries}
 \setbeamerfont{hit agenda list number}{size=\fontsize{13}{16},series=\bfseries}
+
+% 表格与正文排版约束统一
+\renewcommand{\arraystretch}{1.08}
+\renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setlength{\tabcolsep}{4.5pt}
+\AtBeginEnvironment{frame}{\bodytext}
 
 % 组件上下留白，主题可按自己的版式调整。
 \newdimen\hit@subheadskip     \hit@subheadskip=1.4mm
