@@ -2,7 +2,7 @@
 
 | 资源 | 来源与用途 |
 | --- | --- |
-| `hit-logo.png` | 用户提供的 `PPT模板.pptx` 中的校名标识，与 `cuDilithium-方班汇报` 使用同一素材 |
+| `hit-logo.png` | 哈尔滨工业大学标准校名标识，用于 Academic 主题封面展示 |
 | `figures/amdahl.pdf` | `build-plots.py` 根据 Amdahl 解析式生成 |
 | `figures/roofline.pdf` | `build-plots.py` 根据归一化 Roofline 解析式生成 |
 | `figures/pipeline.pdf` | 从 `figures/pipeline.mmd` 生成的 Mermaid 矢量图 |
