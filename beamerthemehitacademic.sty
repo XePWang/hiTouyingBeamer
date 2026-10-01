@@ -62,11 +62,21 @@
 \setbeamercolor{hit content muted}{fg=muted}
 \setbeamercolor{hit agenda list number}{fg=brand}
 \setbeamercolor{hit outline rule}{fg=linegray}
-\setbeamerfont{hit agenda list number}{size=\fontsize{13}{16}\selectfont,series=\bfseries}
+\setbeamerfont{hit agenda list number}{size=\fontsize{13}{16},series=\bfseries}
+% 公共内容组件的字号沿用加入主题层之前的取值，版式高度保持不变。
+% size 里只写 \fontsize，不写 \selectfont：beamer 取用 size 时会当场求值，
+% 带上 \selectfont 会把当前行的基线间距也改掉，正文行高随之变大。
+\setbeamerfont{hit content subhead}{size=\fontsize{9.5}{13},series=\bfseries}
+\setbeamerfont{hit content caption}{size=\fontsize{7.7}{10},series=\mdseries}
+% 指标不用字体模板：见下面 \metric 的说明。
+\setbeamerfont{hit content insight}{size=\fontsize{9}{12},series=\mdseries}
+\setbeamerfont{hit content note}{size=\fontsize{8}{11},series=\mdseries}
 
 \setbeamersize{text margin left=.58cm,text margin right=.58cm}
-\setbeamerfont{normal text}{size=\fontsize{9.5}{13}\selectfont}
-\setbeamerfont{frametitle}{size=\fontsize{15}{19}\selectfont,series=\bfseries}
+% size 里不写 \selectfont：beamer 取用 size 时会当场求值，带上 \selectfont
+% 会把当前行的基线间距一并改掉，正文行高随之变大。
+\setbeamerfont{normal text}{size=\fontsize{9.5}{13}}
+\setbeamerfont{frametitle}{size=\fontsize{15}{19},series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{background}{}
 \setbeamertemplate{section in head/foot}{\colorbox{brand}{\strut\color{white}\bfseries\insertsectionhead}}
@@ -122,9 +132,12 @@
 % 内容组件：主题配色。
 \renewcommand{\subhead}[1]{\par{\color{brand}\bfseries #1}\par\vspace{1.4mm}}
 \renewcommand{\captiontext}[1]{{\fontsize{7.7}{10}\selectfont\color{muted}#1\par}}
+% 大数字与说明各占一段。
+% 这里用固定的字号与颜色，而不是 \usebeamerfont：beamer 的字体模板会在每段前
+% 追加一个支撑盒，两块指标叠在一页上就会超出画布，因此保持加入主题层之前的写法。
 \renewcommand{\metric}[3]{\begin{minipage}[t]{#1}\color{brand}%
-  \usebeamerfont{hit content metric}\bfseries #2\par\vspace{1.5mm}%
-  {\color{muted}\usebeamerfont{hit content metric note}\mdseries #3}\end{minipage}}
+  \fontsize{24}{28}\selectfont\bfseries #2\par\vspace{1.5mm}%
+  \color{muted}\fontsize{8.3}{11}\selectfont\mdseries #3\end{minipage}}
 
 \renewcommand{\insight}[1]{\par\vspace{2mm}\noindent\colorbox{pale}{%
   \parbox{\dimexpr\linewidth-2\fboxsep}{\vspace{.8mm}%

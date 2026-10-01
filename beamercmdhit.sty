@@ -238,11 +238,14 @@
 \newcommand{\captiontext}[1]{{\usebeamerfont{hit content caption}%
   \usebeamercolor[fg]{hit content muted}#1\par}}
 
-% 结论区。
+% 结论区。用 \colorbox 包一个固定宽度的 \parbox，与加入主题层之前的版式一致：
+% 段落宽度等于行宽减去两侧留白，行数不会因此增加。
+% 底色取主题的 hit insight 背景色，两种主题各自覆盖。
 \newcommand{\insight}[1]{\par\vspace{2mm}\noindent
-  \begin{beamercolorbox}[wd=\linewidth,sep=2mm,rounded=false]{hit insight}
-    \usebeamerfont{hit content insight}#1
-  \end{beamercolorbox}\par}
+  {\usebeamercolor[bg]{hit insight}%
+   \colorbox{hit insight.bg}{%
+     \parbox{\dimexpr\linewidth-2\fboxsep}{\vspace{.8mm}%
+       \usebeamerfont{hit content insight}#1\vspace{.8mm}}}}\par}
 
 % 注记：左侧竖线与整段文字上下边界对齐。
 \newsavebox{\hit@notebox}
