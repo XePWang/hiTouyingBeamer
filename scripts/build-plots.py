@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-root = Path(__file__).resolve().parent
+root = Path(__file__).resolve().parents[1]
 os.environ.setdefault('MPLCONFIGDIR', str(root / '.work' / 'matplotlib'))
 import matplotlib
 matplotlib.use('Agg')

@@ -1,157 +1,86 @@
 # hiTouyingBeamer
 
-用于论文阅读、研究进展与学术答辩的现代哈尔滨工业大学 Beamer 幻灯片模板。
+哈尔滨工业大学 Beamer 幻灯片模板。两种主题共用正文和内容组件，通过一行主题声明切换风格。
 
-模板原生支持两种风格，**正文、章节、公式、表格、代码、图表与元数据 100% 共享**，用户仅需修改主题声明行即可自由切换：
-- `\usetheme{hitacademic}`：**Academic 风格**（蓝色标题栏、浅灰画布、顶部章节导航、双语封面与结构化内容组件）
-- `\usetheme{hit}`：**Classic 经典主题**（上游经典白底蓝字风格、校徽校训与大号章节过渡页）
+## 开始写作
 
----
+1. 安装含 XeLaTeX、latexmk 的 TeX Live 2024 或更新版本。模板附带字体和示例图片，普通编译无需 Python、Node.js 或浏览器。
+2. 打开唯一推荐起点 **[starter.tex](starter.tex)**，填写标题、作者、单位和日期。副标题、英文标题和汇报类别均可整行删除。
+3. 编辑 **[slides/content.tex](slides/content.tex)**，增删章节和页面。自己的图片放在 `slides/images/`。
+4. 按下面的编译命令生成 PDF，检查文字、图片和图注。
 
-## 快速上手（5 步完成汇报）
+## 设置标题层级
 
-### 1. 准备 TeX 环境
-推荐安装标准 **TeX Live 2024+**（Windows、macOS 或 Linux 均可）。确保系统环境变量中包含 `xelatex` 与 `latexmk`。  
-模板自带所需的开源字体与预生成矢量图，普通用户**无需安装** Python、Node.js 或 Chrome。
+| 写法 | 用途 |
+| --- | --- |
+| `\title[短标题]{完整标题}` | 整份汇报的标题 |
+| `\section{章节}` | 章节、目录和导航 |
+| `\subsection{子章节}` | 可选的二级分组 |
+| `\begin{frame}{页面标题}` | 当前页标题 |
+| `\subhead{页内小标题}` | 页内内容分组 |
 
-### 2. 打开推荐起步文档
-打开根目录下的唯一推荐起点：**`starter.tex`**。
+起步文件默认只显示章节目录并关闭章节过渡页。在主题声明后，使用 `\hitoutlinesubs` 显示子章节，使用 `\hitsectionpages` 开启过渡页。目录标题用 `\OutlineSlide[title={汇报提纲}]` 设置。[完整层级示例与配置说明](docs/USAGE.md#标题层级)。
 
-### 3. 修改标题与正文
-在文档头部填写汇报信息，并在正文中填入自己的内容：
+## 选择版式
+
+打开 **[版式目录](example/README.md)**，查看两种主题的预览，再复制对应的完整页面到正文。
+
+包含单栏要点、左右图文、上图下文、双图对比、双栏与三栏、大图、公式、表格和代码。双栏比例用 `\hitcolumnratio{.6}` 调整，图片高度和对齐方式可单独设置。也可以沿用标准 Beamer 自定义布局。
+
+## 放入图片
+
 ```latex
-\documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
-\usetheme{hitacademic} % 主题选择：hitacademic 或 hit
-
-\title[短标题]{中文研究标题}
-\subtitle{标准副标题}
-\englishtitle{English Research Title}
-\titlecontext{学术汇报 · 快速起步}
-\author{汇报人：张三\qquad 学号：2026xxxxxx}
-\institute{哈尔滨工业大学}
-\date{\today}
+\fig{result.png} % 图片位于 slides/images/，支持 PDF、PNG、JPG、JPEG
+\captiontext{图：结果说明。来源：文献或自己的实验。}
 ```
 
-### 4. 自由切换主题
-若希望使用经典风格，只需将主题声明改为：
+图片默认等比缩放，并同时限制宽度和高度。调整高度可以写 `\fig[height=.45\textheight]{result.png}`。[路径、竖图、双图和显式裁剪说明](docs/USAGE.md#图片与图注)。
+
+## 切换主题
+
+在 `starter.tex` 中修改这一行，正文保持不变：
+
 ```latex
-\usetheme{hit}
-```
-正文中的 `\subhead`、`\insight`、`\notebox`、`\metric`、公式、表格与代码均无需改动，编译绝无语法错误或排版溢出。
-
-### 5. 编译并预览
-使用提供的跨平台构建脚本进行编译：
-```bash
-# 跨平台 Python 入口
-python build.py --document starter
-
-# 或 Windows PowerShell 入口
-.\build.ps1 -Document starter
-```
-编译完成后，直接在当前目录打开 `starter.pdf` 查看演示文稿预览。
-
----
-
-## 统一构建与测试入口
-
-模板提供标准化的构建工具，构建产物中间文件集中存放于 `.work/w/`，保持工作区干净：
-
-```bash
-# 构建完整 22 页学术示例（包含丰富图表、模型与代码）
-python build.py --document example
-
-# 一键构建全部发布成品 PDF
-python build.py --document all
-
-# 运行完整的 5 阶段自动化回归测试套件
-python test-suite.py
-```
-> 高级开发、测试与图表生成细节请参阅 [DEVELOPMENT.md](DEVELOPMENT.md)。
-
----
-
-## 公开配置与内容接口
-
-所有公开接口**均不含 `@` 符号**，支持在文档前导区或正文任意位置直接调用：
-
-### 1. 资产与路径配置
-| 配置命令 | 说明 | 默认值 |
-| :--- | :--- | :--- |
-| `\hitfigures{路径/}` | 矢量插图与图表所在目录 | `assets/figures/` |
-| `\hitvi{路径/}` | 经典主题视觉资产目录（校徽、校训等） | `vi/` |
-| `\hitlogo{路径}` | 封面与页眉使用的校名/机构标识 | `assets/hit-logo.png` |
-| `\hitfooter{文字}` | 页脚左侧自定义文字 | 自动继承机构名或短标题 |
-| `\hitoutlinetitle{标题}` | 目录页标题文字 | 默认“目录” |
-
-### 2. 整页命令
-- `\TitleSlide`：生成封面页（Academic 主题生成双语标识封面；Classic 主题生成白色主楼封面）；
-- `\BlueTitleSlide`：经典校园照片蓝色彩条封面（Academic 主题下自动平滑兼容）；
-- `\OutlineSlide` 或 `\OutlineSlide[title=Outline,subtitle=CONTENTS]`：自动收集正文各章节，生成自适应排版的目录页；
-- `\AgendaSlide[title=...,subtitle=...]{...}` 与 `\AgendaItem[目标]{标题}`：手动规划路线目录页；
-- `\FocusSlide[可选栏目]{核心结论句}`：全页主色强调页，用于突出关键论点；
-- `\EndSlide{结束语}`：学术汇报结束致谢页。
-
-### 3. 结构化内容组件
-- `\subhead{小标题}`：带主题强调色的小标题；
-- `\insight{结论}`：浅色背景重点结论展示区；
-- `\notebox{条件与边界}`：左侧带 2 pt 竖线的严谨注记框；
-- `\metric{宽度}{数值}{说明}`：大字号量化指标展示卡片；
-- `\captiontext{图注说明}`：图表下方的说明文字；
-- `\fig[参数]{文件名}`：直接从插图目录引入矢量图；
-- `\hitappendix` 或 `\appendix`：标准附录入口，自动管理页码与页眉。
-
----
-
-## 两种主题特性对比
-
-| 项目 | `hitacademic` (Academic 风格) | `hit` (Classic 经典主题) |
-| :--- | :--- | :--- |
-| **视觉基调** | 现代扁平，浅灰画布 (`#F7F9FB`) | 经典传统，纯白画布 |
-| **标题栏** | 深蓝底白色粗体标题栏 | 顶部圆点导航，标题加下划横线与校训 |
-| **页眉装饰** | 校名标识加章节胶囊导航 | 一行章节名配逐帧圆点导航 |
-| **目录版式** | 2–6 项自动采用左侧色块+双胶囊横条，其余自动列表 | 大号序号列表，多章节与子章节智能双栏分流 |
-| **排版约束** | 统一正文可用区域，同一字号层级 | 统一正文可用区域，同一字号层级 |
-| **正文切换** | **仅需更改 `\usetheme`，正文代码完全兼容，零修改** | **仅需更改 `\usetheme`，正文代码完全兼容，零修改** |
-
----
-
-## 目录结构说明
-
-```text
-hiTouyingBeamer/
-├── starter.tex                   # 【唯一推荐起点】起步简洁演示文稿
-├── starter.pdf                   # 起步文档对应的预览成品 (7 页)
-├── example.tex                   # 完整学术汇报示例（含图表、代码、公式与附录）
-├── example.pdf                   # 完整示例对应的预览成品 (22 页)
-├── agenda-gallery.tex/.pdf       # 目录排版全景图 (6 页)
-│
-├── beamerthemehitacademic.sty   # Academic 主题视觉样式
-├── beamerthemehit.sty           # Classic 经典主题视觉样式
-├── beamercmdhit.sty             # 统一公共命令层与模板槽位
-├── hit-content.sty              # 共享依赖、统一字号与内容组件核心层
-├── hit-outline.sty              # 目录数据收集、多页均分与渲染调度
-├── hit-fonts.sty                # 开源字体加载配置
-│
-├── assets/                      # 矢量图表、校名标识与绘图源码
-├── fonts/                       # 随模板分发的开源正版字体 (OFL)
-├── vi/                          # 经典主题原有视觉形象素材
-├── tests/                       # 单元与矩阵回归测试源码
-│
-├── build.py / build.ps1         # 统一跨平台构建脚本
-├── test-suite.py                # 5 阶段完整自动化回归测试套件
-├── check-template.py            # 成品规范与字体嵌入校验脚本
-├── check-agenda.py              # 目录系统专属测试脚本
-├── requirements-dev.txt         # 开发与 CI 依赖清单
-├── DEVELOPMENT.md               # 开发者与维护测试指南
-├── CHANGELOG.md                 # 变更记录
-└── LICENSE                      # LPPL-1.3c 开源许可证
+\usetheme{hitacademic} % Academic：蓝色标题栏、浅灰背景
+% 或 \usetheme{hit}    % Classic：白底蓝字、校训和经典封面
 ```
 
----
+两种主题保留各自的封面、标题栏和导航风格。更换主题或增加内容后查看 PDF，内容超出页面时调整布局或拆页。
 
-## 许可证与致谢
+## 编译与预览
 
-- 模板样式、组件与正文代码采用 **LaTeX Project Public License 1.3c** 或更新版本，详见 [LICENSE](LICENSE)。
-- 本项目派生自哈尔滨工业大学 Beamer 模板 `hithesis/hiTouyingBeamer`（提交 `a1b947e`），原作者与维护者为 **SchrodingerBlume**。感谢原作者的杰出贡献。
-- 随模板分发的中西文字体（思源黑体、Source Sans 3、JetBrains Mono）均在 **SIL Open Font License 1.1** 下分发，详见 `fonts/README.md`。
-- 哈尔滨工业大学校徽、校名标识等视觉资产版权归哈尔滨工业大学所有。
+以下命令均在**项目根目录**运行，只依赖 TeX 工具：
+
+```sh
+latexmk -xelatex -interaction=nonstopmode -halt-on-error "-outdir=.work/build" starter.tex
+```
+
+输出为 `.work/build/starter.pdf`。使用编辑器时，将 `starter.tex` 设为主文件、选择 XeLaTeX；新增章节后需要多次编译以更新目录。
+
+Windows 可以直接运行：
+
+```powershell
+.\build.ps1
+```
+
+此入口将成品放到 `slides/starter.pdf`，中间文件仍留在 `.work/`。它也支持 `-Document example`、`-Document layouts` 和 `-Document all`；示例成品放入 `example/preview/`。
+
+## 文件与成品
+
+| 位置 | 用途 |
+| --- | --- |
+| `starter.tex`、`slides/` | 封面设置、自己的正文与图片 |
+| [example/](example/README.md) | 页面版式、完整示例及两种主题的 PDF 预览 |
+| [docs/USAGE.md](docs/USAGE.md) | 标题、图片、布局和常用组件 |
+| `*.sty`、`fonts/`、`assets/`、`vi/` | 共享功能、主题、字体与素材 |
+| `scripts/`、`tests/`、[开发指南](docs/DEVELOPMENT.md) | 构建、验收与维护 |
+
+下载仓库 ZIP 后解压即可使用。维护者也可生成 `dist/hiTouyingBeamer-release.zip`，其中包含源码、指南、字体、图片和双主题预览。分享完整源文件时保留资源的相对目录结构。
+
+编译缓存、日常生成的 PDF、发布压缩包和本地 `CHANGELOG.md` 由 Git 忽略。正式示例预览在 `example/preview/` 随源码提供。
+
+## 许可与来源
+
+模板代码采用 [LPPL-1.3c 或更新版本](LICENSE)，派生自 `hithesis/hiTouyingBeamer`（提交 `a1b947e`），保留上游作者 SchrodingerBlume 的署名。修改历史见 Git 提交记录。
+
+随附字体使用 SIL Open Font License 1.1，详见 [字体说明](fonts/README.md)；图表与校园素材来源见 [资源说明](assets/README.md) 和 [示例图片说明](example/images/README.md)。校徽、校名和校园视觉素材的权利归相应权利人。

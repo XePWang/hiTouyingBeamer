@@ -23,9 +23,14 @@ Thumbs.db
 *.run.xml
 *.synctex.gz
 
-# 可直接浏览的示例及插图随源码分发：
-# example.pdf、starter.pdf、agenda-gallery.pdf、legacy-classic.pdf 与
-# theme-switch-*.pdf 由 build.ps1 生成在仓库根目录，作为已编译成品一起分发。
+# 本地记录、日常编译结果；成品预览集中放在 example/preview/。
+/CHANGELOG.md
+/*.pdf
+/slides/*.pdf
+/example/*.pdf
+/example/preview/starter.pdf
+/example/preview/example.pdf
+/example/preview/layouts.pdf
 # 打包产物与本地编辑器临时文件
 dist/
 *.zip
@@ -36,4 +41,3 @@ dist/
 *.synctex(busy)
 
 *.vrb
-!/assets/figures/*.pdf

@@ -7,10 +7,12 @@ from pathlib import Path
 
 from pypdf import PdfReader
 
-root = Path(__file__).resolve().parent
+root = Path(__file__).resolve().parents[1]
 work = root / '.work' / 'agenda-check'
 build = work / 'build'
 if build.exists():
+    if not build.resolve().is_relative_to((root / '.work').resolve()):
+        raise ValueError('测试清理路径超出 .work')
     shutil.rmtree(build)
 build.mkdir(parents=True)
 

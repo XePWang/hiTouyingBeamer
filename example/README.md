@@ -30,3 +30,11 @@
 ## 文件用途
 
 `layouts/` 保存可复制的页面，`layouts.tex` 用来编译整套版式预览。`images/` 保存随附函数图，`preview/` 保存两种主题的成品。作者自己的页面和图片放在 `slides/`。
+
+| 成品 | Academic | Classic | 源文件 |
+| --- | --- | --- | --- |
+| 起步文档 | [预览](preview/starter-hitacademic.pdf) | [预览](preview/starter-hit.pdf) | [starter.tex](../starter.tex) |
+| 完整学术示例 | [预览](preview/example-hitacademic.pdf) | [预览](preview/example-hit.pdf) | [main.tex](main.tex)、`report/` |
+| 常见页面版式 | [预览](preview/layouts-hitacademic.pdf) | [预览](preview/layouts-hit.pdf) | [layouts.tex](layouts.tex)、`layouts/` |
+
+[agenda.tex](agenda.tex) 展示不同目录排版，[legacy.tex](legacy.tex) 保留经典接口的使用示例。它们用于参考，日常写作继续从 `starter.tex` 开始。

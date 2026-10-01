@@ -4,7 +4,7 @@
 %% License: LaTeX Project Public License 1.3c
 %%
 %% 派生自 hithesis/hiTouyingBeamer 提交 a1b947ed63671135884f4417d2c91cb9e9555b59，
-%% 上游作者 SchrodingerBlume。修改记录与维护信息见 CHANGELOG.md、README.md。
+%% 上游作者 SchrodingerBlume。修改历史见 Git 提交记录，使用说明见 README.md。
 %%
 %% 职责划分：
 %%   hit-content.sty            正文共同依赖、内容组件与可配置项（唯一实现）
@@ -157,9 +157,9 @@
 
 \newcommand{\hit@OutlineSlide@themed}[1][]{%
   \begingroup
-  \hit@outlineoptions{#1}%
   \hit@collectsections
   \ifhit@outlinesubs\hit@collectsubsections\fi
+  \hit@outlineoptions{#1}%
   \hit@outlinerender
   \endgroup}
 
@@ -179,9 +179,13 @@
     {\hit@outlineplaceholder}%
     {\hit@ifoutlinererun
       {\hit@outlineplaceholder}%
-      {\ifdefstring{\hit@tocmode}{block}%
-        {\hit@outlinerenderblock}%
-        {\hit@outlinerenderlist}}}}
+      {\ifhit@outlinesubs
+         \hit@outlinerenderlist
+       \else
+         \ifdefstring{\hit@tocmode}{block}%
+           {\hit@outlinerenderblock}%
+           {\hit@outlinerenderlist}%
+       \fi}}}
 
 \newcommand{\hit@outlinerenderblock}{%
   \hit@ifoutlineblock
