@@ -28,7 +28,7 @@ jobs:
       - name: Install TeX Live and Poppler
         run: |
           sudo apt-get update
-          sudo apt-get install -y poppler-utils latexmk texlive-xetex texlive-lang-chinese texlive-science texlive-latex-extra
+          sudo apt-get install -y --no-install-recommends poppler-utils latexmk texlive-xetex texlive-lang-chinese texlive-science texlive-latex-extra texlive-fonts-recommended lmodern
 
       - name: Run complete test suite
         shell: bash
