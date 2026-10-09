@@ -110,26 +110,32 @@
 \AtBeginEnvironment{frame}{\bodytext}
 \AtBeginDocument{\renewcommand{\normalsize}{\fontsize{9.5}{13}\selectfont}\normalsize}
 % ---------------------------------------------------------------- headline ----
-% 页眉高度固定，横线位置逐页一致。导航条先按自然宽度量一次，
-% 超过可用宽度就把整条等比缩小，因此章节多、名字长时也不会伸出页面。
-% 页眉比版心宽，先把内容装进盒子再整箱放置，行宽不参与，逐页没有水平溢出告警。
+% 固定页眉高度；章节名称由正文自动生成，当前章节显示蓝色背景。
+% 导航盒子的测量与输出在同一分组内完成，保留局部赋值。
 \newdimen\hit@navavail
 \newsavebox\hit@navbox
 \newsavebox\hit@headbox
 \newcommand{\hit@navavailwd}{\dimexpr\paperwidth-3.0cm-1.4cm\relax}
+% 测量副本按自然宽度装箱，保留 Beamer 的章节筛选与跳转实现。
+\let\hit@navnatural\insertsectionnavigationhorizontal
+\patchcmd{\hit@navnatural}{\hbox to #1}{\hbox}{}{%
+  \PackageError{beamerthemehitacademic}{Cannot measure section navigation}%
+    {The Beamer section navigation implementation has changed.}}
 \newcommand{\hit@nav}{%
   \insertsectionnavigationhorizontal{\hit@navavailwd}{}{\hfill}}
 \newcommand{\hit@headnav}{%
   \begingroup
-  \hfuzz=\paperwidth
-  \hbadness=100000
-  \setbox\hit@navbox=\hbox{\fontsize{7.7}{10}\selectfont\hit@nav}%
-  \endgroup
+  \setbox\hit@navbox=\hbox{\fontsize{7.7}{10}\selectfont
+    \let\insertsectionnavigationhorizontal\hit@navnatural
+    \hit@nav}%
   \hit@navavail=\hit@navavailwd
   \ifdim\wd\hit@navbox>\hit@navavail
     \setbox\hit@navbox=\hbox{\resizebox{\hit@navavail}{!}{\box\hit@navbox}}%
+  \else
+    \setbox\hit@navbox=\hbox{\fontsize{7.7}{10}\selectfont\hit@nav}%
   \fi
-  \box\hit@navbox}
+  \hbox to\hit@navavail{\unhbox\hit@navbox\hfil}%
+  \endgroup}
 \setbeamertemplate{headline}{%
   \sbox\hit@headbox{\hbox{\hspace{.7cm}%
     \parbox[c][.67cm][c]{3.0cm}{\includegraphics[width=2.9cm]{\hit@logopath}}%

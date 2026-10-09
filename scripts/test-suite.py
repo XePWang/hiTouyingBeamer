@@ -20,7 +20,7 @@ def main():
         for theme in THEMES:
             pdf = build_document(name, theme)
             report['previews'][pdf.name] = hashlib.sha256(pdf.read_bytes()).hexdigest()
-    for script in ('check-template.py', 'check-agenda.py'):
+    for script in ('check-template.py', 'check-navigation.py', 'check-agenda.py'):
         subprocess.run([sys.executable, str(ROOT / 'scripts' / script)], cwd=ROOT, check=True)
 
     fields = {
