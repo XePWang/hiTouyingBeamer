@@ -105,6 +105,8 @@
       { CONTENTS }
       { \tl_use:N \l__hit_outline_subtitle_tl }
   }
+\cs_set_eq:NN \hit@outlineslidetitle \hit_outline_title:
+\cs_set_eq:NN \hit@outlineslidesubtitle \hit_outline_subtitle:
 \cs_set_eq:NN \hit@outlinecount \hit_outline_count:
 \cs_new:Npn \hit@outlinetitlen #1 { \hit_outline_title:n {#1} }
 \cs_new:Npn \hit@outlinetargetn #1 { \hit_outline_target:n {#1} }

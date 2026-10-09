@@ -23,11 +23,11 @@ def main():
     for script in ('check-template.py', 'check-navigation.py', 'check-agenda.py'):
         subprocess.run([sys.executable, str(ROOT / 'scripts' / script)], cwd=ROOT, check=True)
 
-    fields = {
-        'starter': ['我的汇报标题', '副标题', 'PresentationTitle', '学术汇报',
+    common_fields = {
+        'starter': ['我的汇报标题', '副标题',
                     '研究问题', '研究方法', '结果与讨论', '感谢聆听',
                     '填写本页最重要的判断', '填写有证据支持的比较结论'],
-        'example': ['并行计算研究', 'PresentingParallelComputingResearch', '学术汇报模板',
+        'example': ['并行计算研究',
                     '汇报人', '哈尔滨工业大学', '目录', '问题与模型', '实现与机制',
                     '图表与评价', '讨论与结论', 'IMPLEMENTATION', '把算法中的一次操作',
                     '落实为线程中的一次访问', 'vectoraddition', '三个阅读锚点',
@@ -38,11 +38,18 @@ def main():
                     '双栏内容', '三栏内容', '大图加图注', '公式与符号说明',
                     '表格与说明', '代码与说明', '本页需要听众记住的结论'],
     }
+    minimalist_fields = {
+        'starter': ['PresentationTitle', '学术汇报'],
+        'example': ['PresentingParallelComputingResearch', '学术汇报模板'],
+    }
     rendered = 0
-    for name, expected in fields.items():
+    for name in common_fields:
         for theme in THEMES:
             pdf = ROOT / f'example/preview/{name}-{theme}.pdf'
             text = compact('\n'.join(p.extract_text() for p in PdfReader(pdf).pages))
+            expected = list(common_fields[name])
+            if theme == 'minimalist':
+                expected.extend(minimalist_fields.get(name, []))
             missing = [item for item in expected if compact(item) not in text]
             if missing:
                 raise AssertionError(f'{pdf.name} 内容缺失：{missing}')
@@ -57,14 +64,17 @@ def main():
         ('example/agenda.tex', 'agenda', 6),
         ('example/legacy.tex', 'legacy', 28),
         ('tests/switch-hit.tex', 'switch-hit', 9),
-        ('tests/switch-hitacademic.tex', 'switch-hitacademic', 7),
+        ('tests/switch-hitminimalist.tex', 'switch-hitminimalist', 7),
+        ('tests/switch-classic.tex', 'switch-classic', 9),
         ('tests/switch-madrid.tex', 'switch-madrid', 7),
         ('tests/classic-43.tex', 'classic-43', 9),
         ('tests/overlay-pages.tex', 'overlay-pages', 6),
         ('tests/if-hit-before.tex', 'if-hit-before', 11),
         ('tests/if-hit-after.tex', 'if-hit-after', 11),
-        ('tests/if-hitacademic-before.tex', 'if-hitacademic-before', 9),
-        ('tests/if-hitacademic-after.tex', 'if-hitacademic-after', 9),
+        ('tests/if-hitminimalist-before.tex', 'if-hitminimalist-before', 9),
+        ('tests/if-hitminimalist-after.tex', 'if-hitminimalist-after', 9),
+        ('tests/if-classic-before.tex', 'if-classic-before', 11),
+        ('tests/if-classic-after.tex', 'if-classic-after', 11),
         ('tests/if-madrid-before.tex', 'if-madrid-before', 9),
         ('tests/if-madrid-after.tex', 'if-madrid-after', 9),
         ('tests/author-images.tex', 'author-images', 3),
@@ -85,7 +95,7 @@ def main():
     report.update(status='SUCCESS', rendered_preview_pages=rendered)
     (ROOT / '.work/test-summary.json').write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(f'通过：六份预览共 {rendered} 页，{len(cases)} 项兼容用例，目录边界与链接检查。')
+    print(f'通过：九份预览共 {rendered} 页，{len(cases)} 项兼容用例，目录边界与链接检查。')
 
 
 if __name__ == '__main__':

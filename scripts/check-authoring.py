@@ -95,11 +95,10 @@ def check_workflow(pdf):
         if not action or action.get('/S') != '/GoTo':
             continue
         name = action.get('/D')
-        if name not in reader.named_destinations:
-            raise AssertionError(f'{pdf.name} 无效目录跳转：{name}')
         targets.append(reader.get_destination_page_number(reader.named_destinations[name]) + 1)
-    if targets != [3, 3, 4, 4, 5, 5]:
-        raise AssertionError(f'{pdf.name} 章节和子章节跳转不符：{targets}')
+    expected_targets = [3, 3, 5, 5, 7, 7] if 'classic' in pdf.name else [3, 3, 4, 4, 5, 5]
+    if targets != expected_targets:
+        raise AssertionError(f'{pdf.name} 章节和子章节跳转不符：{targets}，期望 {expected_targets}')
     result = check_visibility(pdf)
     if result['visible_text_spans'] < 2 or result['proportional_images'] < 2:
         raise AssertionError(f'{pdf.name} 未实际覆盖结论文字与图片检查')

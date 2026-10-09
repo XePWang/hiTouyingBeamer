@@ -1,6 +1,6 @@
-%% Preview: theme=academic aspectratio=169 output=template-academic.pdf
-%% beamerthemehitacademic.sty
-%% 哈尔滨工业大学 Beamer 幻灯片主题 · Academic 风格
+%% Preview: theme=minimalist aspectratio=169 output=template-minimalist.pdf
+%% beamerthemehitminimalist.sty
+%% 哈尔滨工业大学 Beamer 幻灯片主题 · Minimalist 风格（原 Academic 主题）
 %%
 %% License: LaTeX Project Public License 1.3c
 %%
@@ -9,23 +9,24 @@
 %%
 %% 本文件只负责视觉：蓝色标题栏、浅灰画布、顶部章节导航、双语封面、目录版块版式。
 %% 公共命令、内容组件与目录数据由 beamercmdhit.sty、hit-content.sty、hit-outline.sty
-%% 提供，两种主题共用同一份实现。
+%% 提供，各主题共用同一份实现。
 %%
 %% 更新记录
-%%   v2.2026a 2026/10/09  适配 v2 共享架构与跨主题接口。
+%%   v2.2026a 2026/10/09  主题正式迁移为 Minimalist（原 Academic 风格）；
+%%                         适配 v2 共享架构与跨主题接口。
 %%   v2.3     2026/10/02  接入公共内容层；不再重定义内容组件，只配置颜色与字号；
 %%                         目录版块版式改由公共渲染器排布条目。
 %%   v2.2     2026/10/01  首次以独立主题形式提供 Academic 风格。
 %%
 %% Usage:
 %%   \documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
-%%   \usetheme{hitacademic}
+%%   \usetheme[minimalist]{hit}
 %%
 %% 字体与素材：字体来自 hit-fonts.sty 加载的 fonts/ 目录；
 %% 封面标识用 \hitlogo{文件路径}，插图目录用 \hitfigures{路径}。
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerthemehitacademic}[2026/10/09 v2.2026a hiTouyingBeamer Academic]
+\ProvidesPackage{beamerthemehitminimalist}[2026/10/09 v2.2026a hiTouyingBeamer Minimalist]
 
 \RequirePackage{iftex}
 \RequireXeTeX
@@ -34,8 +35,8 @@
 
 % 主题加载标记与公共命令层。
 \def\hit@theme@loaded{}
-\def\hit@theme@name{hitacademic}
-\def\hit@theme@academic{}
+\def\hit@theme@name{hitminimalist}
+\def\hit@theme@minimalist{}
 \RequirePackage{beamercmdhit}
 
 \RequirePackage{lmodern}
@@ -44,12 +45,12 @@
 \RequirePackage{totcount}
 \@ifundefined{c@hit@sectiontotal}{\newcounter{hit@sectiontotal}\regtotcounter{hit@sectiontotal}}{}
 
-% Academic 主题不插入章节过渡页，目录不显示子章节。
+% Minimalist 主题不插入章节过渡页，目录不显示子章节。
 \hitnosectionpages
 \hitnooutlinesubs
 \hittocmode{block}
 
-% 表格与代码排版设置（仅 academic/minimalist 主题生效）
+% 表格与代码排版设置（仅 minimalist 主题生效）
 \renewcommand{\arraystretch}{1.08}
 \renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
 \setlength{\tabcolsep}{4.5pt}
@@ -152,7 +153,7 @@
 % 测量副本按自然宽度装箱，保留 Beamer 的章节筛选与跳转实现。
 \let\hit@navnatural\insertsectionnavigationhorizontal
 \patchcmd{\hit@navnatural}{\hbox to #1}{\hbox}{}{%
-  \PackageError{beamerthemehitacademic}{Cannot measure section navigation}%
+  \PackageError{beamerthemehitminimalist}{Cannot measure section navigation}%
     {The Beamer section navigation implementation has changed.}}
 \newcommand{\hit@nav}{%
   \insertsectionnavigationhorizontal{\hit@navavailwd}{}{\hfill}}

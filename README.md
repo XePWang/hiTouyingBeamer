@@ -47,7 +47,7 @@
 ```latex
 \usetheme{hit}                 % 现代主题（默认，等同于 \usetheme[touying]{hit}）
 \usetheme[classic]{hit}        % 经典主题（移植自旧 HITBeamer 观感）
-\usetheme[academic]{hit}       % 极简学术主题（带顶部章节导航与浅色画布，亦可写 \usetheme[minimalist]{hit}）
+\usetheme[minimalist]{hit}     % 极简主题（带顶部章节导航与浅灰画布，原 Academic 风格）
 ```
 
 ### 通用选项
@@ -118,7 +118,7 @@ Windows 环境亦可直接运行提供的辅助脚本：
 | `beamercmdhit.sty` | 跨主题共享公开命令层 |
 | `beamerthemehitouying.sty` | 现代主题实现（默认） |
 | `beamerthemehitclassic.sty` | 经典主题实现 |
-| `beamerthemehitacademic.sty` | 极简学术主题实现 |
+| `beamerthemehitminimalist.sty` | 极简主题实现（原 Academic 风格） |
 | `vi/` | 哈工大视觉形象基础素材（矢量校徽、主楼等） |
 | `tests/` | 命令可用性测试与回归验证套件 |
 

@@ -12,7 +12,7 @@
 %% 本文件是主题入口：解析选项，然后把工作交给主题文件。
 %%   beamerthemehitouying.sty   现代主题（默认，写 touying 也一样）
 %%   beamerthemehitclassic.sty  经典主题（classic 选项，移植自旧 HITBeamer）
-%%   beamerthemehitacademic.sty 学术/极简主题（minimalist/academic 选项）
+%%   beamerthemehitminimalist.sty 极简主题（minimalist 选项，原 Academic 风格）
 %% \TitleSlide、\OutlineSlide 这些给文档用的命令在 beamercmdhit.sty 里，
 %% 本主题会自动加载它。
 %%
@@ -24,7 +24,8 @@
 %%       默认仍是现代主题；共用 beamercmdhit.sty 命令层。
 %%     - 现代主题拆到 beamerthemehitouying.sty，本文件只做选项与分派；
 %%       新增 touying 选项，显式选现代主题。
-%%     - 支持 minimalist / academic 选项分派。
+%%     - 新增 minimalist 选项：极简风格（带顶部章节导航与浅灰画布）；
+%%       保留 academic/hitacademic 作为薄转发别名兼容旧写法。
 %%     - 新增 minted 选项：代码用 minted 排版，各主题都可用。
 %%     - serif/sans/top/navsymbols/nosectionpage 选项各主题都生效；
 %%       字体不写时用各主题的默认：现代主题非衬线，经典主题衬线。
@@ -40,7 +41,7 @@
 %% Options:
 %%   classic       - 用经典主题（旧 HITBeamer 观感）；不写则用现代主题
 %%   touying       - 用现代主题（默认），写不写都一样
-%%   minimalist    - 用极简/学术主题（带顶部章节导航）
+%%   minimalist    - 用极简主题（带顶部章节导航）
 %%   minted        - 代码用 minted 排版（编译要加 -shell-escape）
 %%   serif         - 用衬线字体（经典主题的默认）
 %%   sans          - 用非衬线字体（现代主题的默认）
@@ -78,14 +79,15 @@
 % classic: 使用经典主题（旧 HITBeamer），实现位于 beamerthemehitclassic.sty；
 % 不写或用 touying 都是现代主题 beamerthemehitouying.sty。
 \newif\ifhit@classic \hit@classicfalse
-\DeclareOptionBeamer{classic}{\hit@classictrue\hit@academicfalse}
+\DeclareOptionBeamer{classic}{\hit@classictrue\hit@minimalistfalse}
 % touying: 显式选现代主题；和 classic 同时写时，后写的生效。
-\DeclareOptionBeamer{touying}{\hit@classicfalse\hit@academicfalse}
-% minimalist / academic: 学术极简主题
-\newif\ifhit@academic \hit@academicfalse
-\DeclareOptionBeamer{academic}{\hit@academictrue\hit@classicfalse}
-\DeclareOptionBeamer{hitacademic}{\hit@academictrue\hit@classicfalse}
-\DeclareOptionBeamer{minimalist}{\hit@academictrue\hit@classicfalse}
+\DeclareOptionBeamer{touying}{\hit@classicfalse\hit@minimalistfalse}
+% minimalist: 极简学术主题（带顶部章节导航）
+\newif\ifhit@minimalist \hit@minimalistfalse
+\DeclareOptionBeamer{minimalist}{\hit@minimalisttrue\hit@classicfalse}
+% 兼容别名（薄转发并提示已弃用）
+\DeclareOptionBeamer{academic}{\hit@minimalisttrue\hit@classicfalse\PackageWarning{beamerthemehit}{Option 'academic' is deprecated, please use 'minimalist' instead}}
+\DeclareOptionBeamer{hitacademic}{\hit@minimalisttrue\hit@classicfalse\PackageWarning{beamerthemehit}{Option 'hitacademic' is deprecated, please use 'minimalist' instead}}
 % minted: 代码用 minted 排版，各套主题都可用；需要 python 与 pygments。
 \newif\ifhit@minted \hit@mintedfalse
 \DeclareOptionBeamer{minted}{\hit@mintedtrue}
@@ -112,8 +114,8 @@
 \ifhit@classic
   \RequirePackage{beamerthemehitclassic}%
 \else
-  \ifhit@academic
-    \RequirePackage{beamerthemehitacademic}%
+  \ifhit@minimalist
+    \RequirePackage{beamerthemehitminimalist}%
   \else
     \RequirePackage{beamerthemehitouying}%
   \fi

@@ -74,13 +74,13 @@
 \providecommand{\hitlogo}[1]{\renewcommand{\hit@logopath}{#1}}
 \providecommand{\hitvipath}{\hit@vipath}
 
-% 章节过渡页与目录子章节由统一开关控制，两种主题都认这几个开关。
+% 章节过渡页与目录子章节由统一开关控制，各主题都认这几个开关。
 \@ifundefined{ifhit@sectionpages}{\newif\ifhit@sectionpages \hit@sectionpagestrue}{}
 \@ifundefined{ifhit@outlinesubs}{\newif\ifhit@outlinesubs  \hit@outlinesubsfalse}{}
-\providecommand{\hitsectionpages}{\hit@sectionpagestrue}
-\providecommand{\hitnosectionpages}{\hit@sectionpagesfalse}
-\providecommand{\hitoutlinesubs}{\hit@outlinesubstrue}
-\providecommand{\hitnooutlinesubs}{\hit@outlinesubsfalse}
+\def\hitsectionpages{\hit@sectionpagestrue\@ifundefined{hit@sectionpagetrue}{}{\hit@sectionpagetrue}}
+\def\hitnosectionpages{\hit@sectionpagesfalse\@ifundefined{hit@sectionpagefalse}{}{\hit@sectionpagefalse}}
+\def\hitoutlinesubs{\hit@outlinesubstrue}
+\def\hitnooutlinesubs{\hit@outlinesubsfalse}
 
 % 目录版式。block 用版块版式（左侧标题色块加右侧编号横条），
 % list 用普通章节列表。主题可以改这个默认值。

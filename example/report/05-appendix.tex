@@ -1,18 +1,18 @@
 \begin{frame}[fragile]{附录 A：中英混排、公式与代码字体}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{.49\textwidth}
+\begin{column}{.50\textwidth}
 \subhead{正文层次}
 \textbf{研究对象：GPU 上的批量并行计算}\par\vspace{3mm}
-Global memory、Warp shuffle、Register pressure 和 Occupancy 使用一致的术语。
+Global memory、Warp shuffle、\\Register pressure 和 Occupancy 使用一致术语。
 \par\vspace{4mm}{\itshape Source Sans 3 italic}\par
 {\bfseries Source Sans 3 bold / 思源黑体粗体}\par\vspace{4mm}
-\captiontext{图注用于解释符号、条件与单位，重要信息随图表阅读。}
+\captiontext{图注用于解释符号、条件与单位，\\重要信息随图表阅读。}
 \end{column}
 \begin{column}{.46\textwidth}
 \subhead{数学与等宽字符}
 \[\mathbf y=\mathbf A\mathbf x,\quad \hat a_k=\sum_{j=0}^{n-1}a_j\omega^{jk}\]
 \begin{lstlisting}
-size_t index = block * stride + lane;
+size_t i = block * stride + lane;
 // O0  Il1  {} [] ()  <= >= !=
 \end{lstlisting}
 \smalltext\texttt{JetBrains Mono: 0123456789}\par\vspace{3mm}
@@ -43,7 +43,7 @@ size_t index = block * stride + lane;
 
 \begin{frame}{附录 C：长标题能够自然换行，\protect\\并保持内容区域与页面边界清晰}
 \subhead{阅读顺序明确的三线表}
-\begin{tabularx}{\textwidth}{@{}p{2.5cm}XX@{}}
+\begin{tabularx}{\textwidth}{@{}p{2.5cm}X>{\raggedright\arraybackslash}X@{}}
 \toprule 内容类型 & 展示方式 & 常用命令 \\\midrule
 概念与条件 & 小标题、正文、注记 & \texttt{\string\subhead}, \texttt{\string\notebox} \\
 公式与符号 & 双栏与符号表 & \texttt{columns}, \texttt{tabularx} \\

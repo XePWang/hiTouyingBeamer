@@ -7,7 +7,12 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = {'starter': 'starter.tex', 'example': 'example/main.tex',
              'layouts': 'example/layouts.tex'}
-THEMES = ('hitacademic', 'hit')
+THEMES = ('minimalist', 'touying', 'classic')
+THEME_DECLARATIONS = {
+    'minimalist': r'\usetheme[minimalist]{hit}',
+    'touying': r'\usetheme{hit}',
+    'classic': r'\usetheme[classic]{hit}',
+}
 WARNING_MARKERS = ('Overfull', 'Underfull', 'Missing character', 'LaTeX Font Warning')
 
 
@@ -17,10 +22,11 @@ def compile_tex(root, source, job, out_dir, theme=None):
     if theme is not None:
         # 只生成隔离的测试入口；原始文档和正文保持不变。
         text = source.read_text(encoding='utf-8')
-        text, count = re.subn(r'\\usetheme\{(?:hitacademic|hit)\}',
-                             lambda _: '\\usetheme{' + theme + '}', text)
+        decl = THEME_DECLARATIONS.get(theme, f'\\usetheme[{theme}]{{hit}}')
+        text, count = re.subn(r'^[ \t]*\\usetheme(?:\[[^\]]*\])?\{hit(?:academic|minimalist)?\}',
+                              lambda _: decl, text, flags=re.MULTILINE)
         if count != 1:
-            raise ValueError(f'{source} 必须包含一处明确的主题声明')
+            raise ValueError(f'{source} 必须包含一处明确的主题声明，实际匹配到 {count} 处')
         variants = out_dir / 'sources'
         variants.mkdir(exist_ok=True)
         source = variants / f'{job}.tex'
@@ -58,10 +64,15 @@ def build_document(name, theme=None, root=ROOT):
 def main():
     parser = argparse.ArgumentParser(description='构建起步文档与示例')
     parser.add_argument('--document', '-d', choices=[*DOCUMENTS, 'all'], default='starter')
-    parser.add_argument('--theme', choices=[*THEMES, 'both'])
+    parser.add_argument('--theme', choices=[*THEMES, 'all', 'both'])
     args = parser.parse_args()
     names = list(DOCUMENTS) if args.document == 'all' else [args.document]
-    themes = THEMES if args.theme == 'both' else [args.theme]
+    if args.theme in ('all', 'both'):
+        themes = list(THEMES)
+    elif args.theme:
+        themes = [args.theme]
+    else:
+        themes = [None]
     for name in names:
         for theme in themes:
             print(build_document(name, theme))

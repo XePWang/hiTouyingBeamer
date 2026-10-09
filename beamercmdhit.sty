@@ -160,8 +160,8 @@
   \ifdefined\hit@theme@classic
     \let\hit@title@next\hit@TitleSlide@classic
   \else
-    \ifdefined\hit@theme@academic
-      \let\hit@title@next\hit@TitleSlide@academic
+    \ifdefined\hit@theme@minimalist
+      \let\hit@title@next\hit@TitleSlide@minimalist
     \else
       \let\hit@title@next\hit@TitleSlide@themed
     \fi
@@ -169,7 +169,7 @@
   \hit@title@next}
 \newcommand{\hit@TitleSlide@plain}{%
   \begin{frame}[plain,noframenumbering]\titlepage\end{frame}}
-\newcommand{\hit@TitleSlide@academic}{%
+\newcommand{\hit@TitleSlide@minimalist}{%
   \begingroup
   \stepcounter{hit@front}%
   \begin{frame}[t,plain,noframenumbering]
@@ -442,41 +442,46 @@
    \raisebox{.18ex}{\scriptsize$\circ$}\hspace{.5em}%
    \hit@linkto{#2}{#1}}\par\vspace{2mm}}
 
-\newcommand{\hit@OutlineSlide@academic}{%
+\newcommand{\hit@OutlineSlide@minimalist}[1]{%
   \begingroup
   \hit@collectsections
   \ifhit@outlinesubs\hit@collectsubsections\fi
+  \if\relax\detokenize{#1}\relax\else\hit@outlineoptions{#1}\fi
   \hit@outlinerender
   \endgroup}
 
-\newcommand{\OutlineSlide}{%
+\newcommand{\OutlineSlide}[1][]{%
   \ifdefined\hit@theme@loaded
-    \hit@OutlineSlide@pick
+    \hit@OutlineSlide@pick{#1}%
   \else
-    \hit@OutlineSlide@plain
+    \hit@OutlineSlide@plain{#1}%
   \fi}
-\newcommand{\hit@OutlineSlide@pick}{%
+\newcommand{\hit@OutlineSlide@pick}[1]{%
   \ifdefined\hit@theme@classic
-    \let\hit@ol@next\hit@OutlineSlide@classic
+    \def\hit@ol@next{\hit@OutlineSlide@classic{#1}}%
   \else
-    \ifdefined\hit@theme@academic
-      \let\hit@ol@next\hit@OutlineSlide@academic
+    \ifdefined\hit@theme@minimalist
+      \def\hit@ol@next{\hit@OutlineSlide@minimalist{#1}}%
     \else
-      \let\hit@ol@next\hit@OutlineSlide@themed
+      \def\hit@ol@next{\hit@OutlineSlide@themed{#1}}%
     \fi
   \fi
   \hit@ol@next}
-\newcommand{\hit@OutlineSlide@plain}{%
-  \begin{frame}{\hitoutlinetitle}\tableofcontents\end{frame}}
-\newcommand{\hit@OutlineSlide@themed}{%
+\newcommand{\hit@OutlineSlide@plain}[1]{%
   \begingroup
+  \if\relax\detokenize{#1}\relax\else\ifdefined\hit@outlineoptions\hit@outlineoptions{#1}\fi\fi
+  \begin{frame}{\ifdefined\hit@outlineslidetitle\hit@outlineslidetitle\else\hitoutlinetitle\fi}\tableofcontents\end{frame}%
+  \endgroup}
+\newcommand{\hit@OutlineSlide@themed}[1]{%
+  \begingroup
+  \if\relax\detokenize{#1}\relax\else\ifdefined\hit@outlineoptions\hit@outlineoptions{#1}\fi\fi
   \stepcounter{hit@front}\hit@frontmattertrue
   \setbeamertemplate{headline}{}%
   \hit@ol@settemplates
   \begin{frame}[t,noframenumbering]
     \vskip2mm
     \setbox\@tempboxa=\hbox{{\usebeamerfont{hit outline title}%
-      \usebeamercolor[fg]{frametitle}\hitoutlinetitle}}%
+      \usebeamercolor[fg]{frametitle}\ifdefined\hit@outlineslidetitle\hit@outlineslidetitle\else\hitoutlinetitle\fi}}%
     \hit@secavail=\dimexpr\textheight-\ht\@tempboxa-\dp\@tempboxa-2mm-1.6mm-6mm-8mm\relax
     \begin{minipage}[b]{\dimexpr\textwidth-.24\paperwidth\relax}%
       \box\@tempboxa
@@ -489,14 +494,21 @@
     {\color{hitprimary}\hrule height .8pt}%
     \vskip6mm
     \hit@outlinetoc
-  \end{frame}
+  \end{frame}%
   \endgroup}
 
 % 经典主题的目录页
-\newcommand{\hit@OutlineSlide@classic}{%
-  \begin{frame}[plain,noframenumbering]{\hitoutlinetitle}
-    \tableofcontents[sectionstyle=show,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]
-  \end{frame}}
+\newcommand{\hit@OutlineSlide@classic}[1]{%
+  \begingroup
+  \if\relax\detokenize{#1}\relax\else\ifdefined\hit@outlineoptions\hit@outlineoptions{#1}\fi\fi
+  \begin{frame}[plain,noframenumbering]{\ifdefined\hit@outlineslidetitle\hit@outlineslidetitle\else\hitoutlinetitle\fi}
+    \ifhit@outlinesubs
+      \tableofcontents[sectionstyle=show,subsectionstyle=show]
+    \else
+      \tableofcontents[sectionstyle=show,subsectionstyle=hide]
+    \fi
+  \end{frame}%
+  \endgroup}
 
 % ------------------------------------------------------------- focus slide ----
 \newcommand{\FocusSlide}[2][]{%
@@ -509,8 +521,8 @@
   \ifdefined\hit@theme@classic
     \let\hit@focus@next\hit@FocusSlide@classic
   \else
-    \ifdefined\hit@theme@academic
-      \let\hit@focus@next\hit@FocusSlide@academic
+    \ifdefined\hit@theme@minimalist
+      \let\hit@focus@next\hit@FocusSlide@minimalist
     \else
       \let\hit@focus@next\hit@FocusSlide@themed
     \fi
@@ -521,7 +533,7 @@
     \hit@iffocuslabel{#1}{{\Large #1\par\vskip3mm}}{}%
     {\Large #2\par}%
   \end{frame}}
-\newcommand{\hit@FocusSlide@academic}[2]{%
+\newcommand{\hit@FocusSlide@minimalist}[2]{%
   \begingroup\hit@focuspage{#1}{#2}\endgroup}
 \newcommand{\hit@FocusSlide@themed}[2]{%
   \begingroup
@@ -559,8 +571,8 @@
   \ifdefined\hit@theme@classic
     \let\hit@end@next\hit@EndSlide@classic
   \else
-    \ifdefined\hit@theme@academic
-      \let\hit@end@next\hit@EndSlide@academic
+    \ifdefined\hit@theme@minimalist
+      \let\hit@end@next\hit@EndSlide@minimalist
     \else
       \let\hit@end@next\hit@EndSlide@themed
     \fi
@@ -568,7 +580,7 @@
   \hit@end@next{#1}}
 \newcommand{\hit@EndSlide@plain}[1]{%
   \begin{frame}[c,plain,noframenumbering]\centering{\LARGE\bfseries #1\par}\end{frame}}
-\newcommand{\hit@EndSlide@academic}[1]{%
+\newcommand{\hit@EndSlide@minimalist}[1]{%
   \begingroup\hit@endpage{#1}\endgroup}
 \newcommand{\hit@EndSlide@themed}[1]{%
   \begingroup

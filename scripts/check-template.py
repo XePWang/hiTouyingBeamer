@@ -28,12 +28,15 @@ if font_count != 10:
 # 画幅用宽高比表示，169 为 16:9，43 为 4:3。
 # 页数不是判定兼容的依据，只用于发现结构被意外改动。
 DOCUMENTS = {
-    'example-hitacademic.pdf': (22, 16 / 9, True),
-    'example-hit.pdf': (26, 16 / 9, True),
-    'starter-hitacademic.pdf': (6, 16 / 9, True),
-    'starter-hit.pdf': (6, 16 / 9, True),
-    'layouts-hitacademic.pdf': (11, 16 / 9, True),
-    'layouts-hit.pdf': (11, 16 / 9, True),
+    'example-minimalist.pdf': (22, 16 / 9, True),
+    'example-touying.pdf': (26, 16 / 9, True),
+    'example-classic.pdf': (26, 16 / 9, True),
+    'starter-minimalist.pdf': (6, 16 / 9, True),
+    'starter-touying.pdf': (6, 16 / 9, True),
+    'starter-classic.pdf': (7, 16 / 9, True),
+    'layouts-minimalist.pdf': (11, 16 / 9, True),
+    'layouts-touying.pdf': (11, 16 / 9, True),
+    'layouts-classic.pdf': (11, 16 / 9, True),
 }
 # 出现这些字体说明文档落到了系统字体上；只对要求自带字体的文档检查。
 FORBIDDEN = ['Arial', 'YaHei', 'Consolas', 'Noto-Sans-SC', 'SimSun', 'SimHei']
@@ -45,7 +48,7 @@ report = {'documents': {}, 'font_files': font_count,
 for name, (expected_pages, expected_ratio, bundled_only) in DOCUMENTS.items():
     path = root / 'example/preview' / name
     if not path.exists():
-        raise ValueError(f'缺少预览：{name}，先运行 python scripts/build.py --document all --theme both')
+        raise ValueError(f'缺少预览：{name}，先运行 python scripts/build.py --document all --theme all')
     pdf = PdfReader(path)
     if len(pdf.pages) != expected_pages:
         raise ValueError(f'{name} 页数异常：{len(pdf.pages)}，期望 {expected_pages}')

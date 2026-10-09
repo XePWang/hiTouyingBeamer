@@ -1,11 +1,26 @@
 % 主题切换示例：同一份正文，只改 \usetheme 一行即可分别编译。
-% 三个变体：hit（经典主题）、hitacademic（Academic 主题）、Madrid（内建主题）。
-% 只使用两种主题共同支持的内容与版式，因此可以逐行对照。
-% 变体入口见 tests/switch-hit.tex、tests/switch-hitacademic.tex、tests/switch-madrid.tex；
+% 变体入口见 tests/switch-hitminimalist.tex、tests/switch-hit.tex、tests/switch-classic.tex、tests/switch-madrid.tex；
+% 说明：hit 为默认 touying 主题，classic 为经典主题，minimalist 为极简主题，Madrid 为内建主题。
 % 它们只定义 \hitdemo，正文部分完全一致。
 \documentclass[aspectratio=169]{ctexbeamer}
-\providecommand{\hitdemo}{hitacademic}
-\usetheme{\hitdemo}
+\providecommand{\hitdemo}{minimalist}
+\ifnum\pdfstrcmp{\hitdemo}{Madrid}=0
+  \usetheme{Madrid}
+\else\ifnum\pdfstrcmp{\hitdemo}{classic}=0
+  \usetheme[classic]{hit}
+\else\ifnum\pdfstrcmp{\hitdemo}{touying}=0
+  \usetheme{hit}
+\else\ifnum\pdfstrcmp{\hitdemo}{hit}=0
+  \usetheme{hit}
+\else\ifnum\pdfstrcmp{\hitdemo}{minimalist}=0
+  \usetheme[minimalist]{hit}
+\else\ifnum\pdfstrcmp{\hitdemo}{hitminimalist}=0
+  \usetheme[minimalist]{hit}
+\else\ifnum\pdfstrcmp{\hitdemo}{hitacademic}=0
+  \usetheme[minimalist]{hit}
+\else
+  \usetheme[\hitdemo]{hit}
+\fi\fi\fi\fi\fi\fi\fi
 \usepackage{beamercmdhit}
 
 \title[同一份正文]{同一份正文下的主题切换}
@@ -22,12 +37,12 @@
 
 \section{公共接口}
 
-\begin{frame}{两种主题都支持的内容}
+\begin{frame}{各主题都支持的内容}
   \subhead{正文与小标题}
   这份正文只使用 \texttt{\textbackslash usetheme} 切换主题，其余各行不变。
 
   \insight{\texttt{\textbackslash insight} 使用主题配色，不依赖某个主题的私有颜色。}
-  \notebox{\texttt{\textbackslash notebox} 在两种主题下都保留 2 pt 左侧竖线。}
+  \notebox{\texttt{\textbackslash notebox} 在各主题下都保留 2 pt 左侧竖线。}
   \captiontext{\texttt{\textbackslash captiontext} 使用主题的淡色文字。}
 \end{frame}
 
@@ -50,7 +65,7 @@
 
 \begin{frame}{整页命令的兼容调用}
   \begin{itemize}
-    \item \texttt{\textbackslash TitleSlide}：两种主题各自的封面。
+    \item \texttt{\textbackslash TitleSlide}：各主题各自的封面。
     \item \texttt{\textbackslash OutlineSlide}：自动读取本节之前的正文主章节。
     \item \texttt{\textbackslash FocusSlide\{内容\}}：单参数调用保持可用。
     \item \texttt{\textbackslash EndSlide\{内容\}}：结束页。

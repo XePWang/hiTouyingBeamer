@@ -16,7 +16,7 @@
 
 ```latex
 \documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
-\usetheme{hitacademic}
+\usetheme[minimalist]{hit}
 \hitnosectionpages
 \hitoutlinesubs
 \title[简短标题]{完整汇报标题}
