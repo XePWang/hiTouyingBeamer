@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 取出目标分支供回归对照
+        if: github.event_name == 'pull_request'
+        run: git worktree add .ci-base "${{ github.event.pull_request.base.sha }}"
+
+      - name: 跑检查（命令跨主题 + 回归）
+        uses: xu-cheng/texlive-action@v3
+        with:
+          scheme: full
+          run: |
+            apk add --no-cache poppler-utils
+            if [ -d .ci-base ]; then
+              ALLOW_OUTPUT_CHANGE="${{ contains(github.event.pull_request.labels.*.name, 'theme-output-change') && '1' || '' }}" \
+                sh tests/ci.sh --base .ci-base
+            else
+              sh tests/ci.sh
+            fi
+
+      - name: 上传回归差异产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-out
+          path: ci-out/
+          if-no-files-found: ignore

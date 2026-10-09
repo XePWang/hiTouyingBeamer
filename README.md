@@ -128,6 +128,9 @@ minted 是主题选项，每个主题均可使用：`\usetheme[classic,minted]{h
 `%% Preview:` 标记（主题选项、画幅、输出文件名），以后新增主题只要在皮肤文件里
 加上这行标记，不用改脚本。
 
+贡献与提交规则（命令必须两套主题通用、输出变化需人工审核等）见
+[CONTRIBUTING.md](CONTRIBUTING.md)；本地自测跑 `./tests/ci.sh`。
+
 ## License
 
 本项目采用 LaTeX Project Public License 1.3c（LPPL-1.3c）发布，详见 [LICENSE](LICENSE)。

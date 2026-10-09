@@ -1,0 +1,35 @@
+% CI 用：真实调用所有公开命令，逐个主题编译（见 CONTRIBUTING.md）。
+% 本地也可以手动跑：把下面的 \usetheme{hit} 换成 \usetheme[classic]{hit} 再编。
+\documentclass[aspectratio=169]{ctexbeamer}
+\usetheme{hit}
+
+\title{\themetitle}
+\author{\themeauthor}
+\institute{哈尔滨工业大学}
+\hitfooter{页脚文字}
+\renewcommand{\hitoutlinetitle}{目录}
+\setframeofframes{/}
+
+\begin{document}
+
+\TitleSlide
+
+\BlueTitleSlide
+
+\OutlineSlide
+
+\section{第一节}
+
+\subsection{一小节}
+
+\begin{frame}{命令示例}
+  行内命令： \cmd{section} 、 \env{frame} ；上标引用\upcite{example}。
+
+  素材目录是 \hitvipath，主色是 \texttt{hitprimary}。
+\end{frame}
+
+\FocusSlide{强调页}
+
+\EndSlide{感谢使用}
+
+\end{document}
