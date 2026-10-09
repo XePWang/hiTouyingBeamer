@@ -238,7 +238,7 @@
   \vskip4mm}
 
 % ------------------------------------------------------------- focus slide ----
-\def\hit@focuspage#1#2{%
+\long\def\hit@focuspage#1#2{%
   \setbeamercolor{background canvas}{bg=brand}%
   \begin{frame}[plain]
     \color{white}\vspace{6mm}
@@ -248,7 +248,7 @@
   \end{frame}}
 
 % -------------------------------------------------------------- end slides ----
-\def\hit@endpage#1{%
+\long\def\hit@endpage#1{%
   \begin{frame}[plain]
     \centering\includegraphics[width=4.4cm]{\hit@logopath}\par\vspace{.9cm}
     {\color{brand}\fontsize{26}{34}\selectfont\bfseries #1\par}

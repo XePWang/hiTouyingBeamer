@@ -1,6 +1,6 @@
 # hiTouyingBeamer
 
-**预览**：[现代主题（默认，16:9）](template.pdf)　·　[经典主题（`classic` 选项，4:3）](template-classic.pdf)
+**预览**：[现代主题（默认，16:9）](template.pdf)　·　[极简主题（`minimalist` 选项，16:9）](template-minimalist.pdf)　·　[经典主题（`classic` 选项，4:3）](template-classic.pdf)
 
 哈尔滨工业大学 Beamer 幻灯片模板。各主题共用正文和内容组件，仅通过一行主题声明即可切换外观风格。
 

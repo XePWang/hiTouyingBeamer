@@ -42,7 +42,7 @@ for f in beamerthemehit*.sty; do
   sed -e "s/\\\\usetheme{hit}/\\\\usetheme[$theme]{hit}/" \
       -e "s/aspectratio=169/aspectratio=$ar/" \
       template.tex > "$work/$job.tex"
-  if ! (cd "$work" && latexmk -xelatex "$job.tex" > "$job.build.log" 2>&1); then
+  if ! (cd "$work" && latexmk -xelatex -interaction=nonstopmode "$job.tex" > "$job.build.log" 2>&1); then
     echo "!! 主题 ${theme} 编译失败，日志尾部：" >&2
     tail -n 40 "$work/$job.build.log" >&2 || true
     exit 1
