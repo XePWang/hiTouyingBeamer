@@ -1,5 +1,5 @@
 %% beamercmdhit.sty
-%% 哈尔滨工业大学 Beamer 模板文档命令 (Document Commands for the HIT Beamer Theme)
+%% 哈尔滨工业大学 Beamer 模板公共命令层 (Shared Document Commands for HIT Beamer)
 %%
 %% License: LaTeX Project Public License 1.3c
 %%
@@ -11,7 +11,7 @@
 %%
 %% 本文件放给文档用的命令与配套包：\TitleSlide 等整页命令、\upcite、\cmd、\env
 %% 等辅助命令，以及 unicode-math、physics、listings 等配套包（原先在旧
-%% HITBeamer 的 hit-extra.sty 里，现在两套主题共用）。样式在主题文件里。
+%% HITBeamer 的 hit-extra.sty 里，现在所有主题共用）。样式在主题文件里。
 %% 配 \usetheme{hit} 使用时，主题会自动加载本文件，命令走完整的定制版式；
 %% 换成 Madrid 等内建主题时，同名命令改用标准 Beamer 写法，例如 \titlepage、
 %% \tableofcontents，文档不必改动即可编译。
@@ -21,8 +21,10 @@
 %%   v2.2026a  2026/10/09  加 classic 主题分支：\TitleSlide 等命令在经典主题下
 %%                         按旧 HITBeamer 观感实现；旧 hit-extra 的配套包与
 %%                         命令（unicode-math、physics、listings、\upcite、
-%%                         \cmd、\env 等）移入本文件，两套主题共用；
-%%                         图表标题编号（caption[numbered]）也在这里统一打开。
+%%                         \cmd、\env 等）移入本文件，所有主题共用；
+%%                         图表标题编号（caption[numbered]）也在这里统一打开；
+%%                         整合公共内容支持层（hit-content 与 hit-outline），
+%%                         提供全主题共享的版式与内容组件命令。
 %%   v1.2026b  2026/09/02  配合主题修正校训图定位，本文件无功能改动。
 %%   v1.2026a  2026/08/16  首次发布。
 %%
@@ -36,9 +38,6 @@
 \usetikzlibrary{calc}
 \RequirePackage{etoolbox}
 
-% \hit@theme@loaded 这个标记由 beamerthemehit.sty 设置。
-% 下面每条命令在调用时检查它是否存在，据此决定走完整版式还是标准 Beamer 写法。
-
 % -------------------------------------------------- 配套包（原 hit-extra） ----
 % 这一组包原先在旧 HITBeamer 的 hit-extra.sty 里，现在放在共用命令层，
 % 两套主题、乃至换成 Madrid 等内建主题时都能用。
@@ -49,8 +48,46 @@
 \RequirePackage{physics}
 \RequirePackage[bold-style=ISO]{unicode-math}
 
-% 图表标题带编号（表 1、图 1……），两套主题共用。
+% 图表标题带编号（表 1、图 1……），各主题共用。
 \setbeamertemplate{caption}[numbered]
+
+% 基础色彩预置，保证未加载具体主题时也可用
+\providecolor{hitprimary}{RGB}{22,97,131}
+\providecolor{hitneutraldarkest}{RGB}{38,59,77}
+\providecolor{hitneutrallightest}{RGB}{237,244,250}
+\providecolor{hitneutrallight}{RGB}{213,224,232}
+
+% 加载公共内容与目录模块
+\RequirePackage{hit-content}
+\RequirePackage{hit-outline}
+
+% ==================================================== 目录数据的取值包装 ====
+\ExplSyntaxOn
+\cs_new:Npn \hit@getcount { \hit_outline_count: }
+\cs_new:Npn \hit@gettitle #1 { \hit_outline_title:n {#1} }
+\cs_new:Npn \hit@gettarget #1 { \hit_outline_target:n {#1} }
+\cs_new:Npn \hit@getoutlinetitle { \hit_outline_title: }
+\cs_new:Npn \hit@getoutlinesubtitle { \hit_outline_subtitle: }
+\cs_new:Npn \hit@getsubcount { \hit_outline_subsec_count: }
+\cs_new:Npn \hit@getsubitem #1 { \hit_outline_subsec_title:n {#1} }
+\cs_new:Npn \hit@outlinelink #1 #2 { \hit_outline_link:nn {#1} {#2} }
+\ExplSyntaxOff
+
+% ============================================================ 内容字段 ====
+\newcommand{\hit@english}{}
+\newcommand{\englishtitle}[1]{\renewcommand{\hit@english}{#1}}
+\newcommand{\hit@source}{}
+\newcommand{\titlecontext}[1]{\renewcommand{\hit@source}{#1}}
+
+\newcommand{\hit@ifenglish}[2]{\ifdefempty{\hit@english}{#2}{#1}}
+\newcommand{\hit@ifsource}[2]{\ifdefempty{\hit@source}{#2}{#1}}
+\newcommand{\hit@ifsubtitle}[2]{\ifdefempty{\insertsubtitle}{#2}{#1}}
+\newcommand{\hit@iffocuslabel}[3]{%
+  \if\relax\detokenize{#1}\relax
+    #3%
+  \else
+    #2%
+  \fi}
 
 % -------------------------------------------------- 配套命令（原 hit-extra） ----
 % biblatex-gb7714-2015 也定义 \upcite，它用 \newcommand，所以这里放到文档开始时
@@ -80,23 +117,16 @@
 \newcommand{\setframeofframes}[1]{\renewcommand{\frameofframes}{#1}}
 
 % ------------------------------------------------------------ shared tools ----
-% vi/ 视觉形象资产目录。放在别处则用 \renewcommand 改掉此值。
-\newcommand{\hitvipath}{vi/}
-
 % 当前主题的标题与作者，模板里写 \title{\themetitle}、\author{\themeauthor}。
 % 各主题文件会覆盖成自己的；没加载 hit 主题时用下面这份缺省。
 \newcommand{\themetitle}{哈尔滨工业大学 Beamer 幻灯片主题——\textsc{hiTouyingBeamer}}
 \newcommand{\themeauthor}{SchrodingerBlume 和 syvshc}
 
-% 把盒子等比缩到指定高度，高与深一起计算。
-% 不用 \resizebox{!}{h}，它只管基线以上的部分，遇到基线居中的 minipage 会缩不到位。
-\newcommand{\hit@scaleboxto}[2]{%
-  \pgfmathsetmacro\hit@sc{(#2)/(\ht#1+\dp#1)}%
-  \setbox#1=\hbox{\scalebox{\hit@sc}{\box#1}}}
-
-% 封面、目录属于前置页，用小写罗马数字单独计数，不占用正文页码。
-\newcounter{hit@front}
-\newif\ifhit@frontmatter \hit@frontmatterfalse
+% 页脚文字统一设置
+\newcommand{\hit@footertext}{\insertshortinstitute}
+\newcommand{\hitfooter}[1]{%
+  \renewcommand{\hit@footertext}{#1}%
+  \ifdefined\hit@footerleft\renewcommand{\hit@footerleft}{#1}\fi}
 
 % 封面、结束页这些 plain 帧 Beamer 不画页脚，翻页按钮会跟着消失。
 % 这里把按钮画进背景，坐标与页脚里的一致，翻页时按钮不会跳。
@@ -118,32 +148,34 @@
   \hit@navinbg
   \endgroup}
 
-% 设置页脚左边的文字。现代主题用 \hit@footerleft；经典主题不读取它，
-% 未加载 hit 主题时两个都没定义，命令自动成为空操作。
-\newcommand{\hitfooter}[1]{%
-  \ifdefined\hit@footerleft\renewcommand{\hit@footerleft}{#1}\fi}
-
-% 命令分派：\hit@theme@loaded 由主题设置，\hit@theme@classic 由经典主题设置。
-% 现代主题走 themed 实现，经典主题走 classic 实现，没加载主题则退回标准写法。
-% 带参数的命令（\FocusSlide、\EndSlide）靠 \expandafter 让目标宏留在条件外面，
-% 用户写在命令后面的 {参数} 才能接上，别改成在分支里直接调用。
-
 % -------------------------------------------------------------- title page ----
 % 白色标题页：右上角校徽，底部校园线稿背景。文字如何排列见主题的 title page 模板。
 \newcommand{\TitleSlide}{%
   \ifdefined\hit@theme@loaded
-    \expandafter\hit@TitleSlide@pick
+    \hit@TitleSlide@pick
   \else
-    \expandafter\hit@TitleSlide@plain
+    \hit@TitleSlide@plain
   \fi}
 \newcommand{\hit@TitleSlide@pick}{%
   \ifdefined\hit@theme@classic
-    \expandafter\hit@TitleSlide@classic
+    \let\hit@title@next\hit@TitleSlide@classic
   \else
-    \expandafter\hit@TitleSlide@themed
-  \fi}
+    \ifdefined\hit@theme@academic
+      \let\hit@title@next\hit@TitleSlide@academic
+    \else
+      \let\hit@title@next\hit@TitleSlide@themed
+    \fi
+  \fi
+  \hit@title@next}
 \newcommand{\hit@TitleSlide@plain}{%
   \begin{frame}[plain,noframenumbering]\titlepage\end{frame}}
+\newcommand{\hit@TitleSlide@academic}{%
+  \begingroup
+  \stepcounter{hit@front}%
+  \begin{frame}[t,plain,noframenumbering]
+    \hit@titleslidepage
+  \end{frame}
+  \endgroup}
 \newcommand{\hit@TitleSlide@themed}{%
   \begingroup
   \setbeamertemplate{background}{%
@@ -164,7 +196,6 @@
   \endgroup}
 
 % 经典主题的标题页：classic 的 \titlepage（标题框是主色底白字），下方居中摆校徽。
-% 经典主题没有新版那张主楼底图，这里保持旧版的样子。
 \newcommand{\hit@TitleSlide@classic}{%
   \begin{frame}[plain,noframenumbering]
     \titlepage
@@ -176,8 +207,7 @@
 % 蓝色标题页：上半是校园照片，下半是主色色块。
 % 色块高度随文字变化，但有上限和下限，文字在色块内垂直居中。
 % 文字过多则先降字号，降到最小仍超出则整体缩小。
-% 两套主题下都长这样，所以这些字号也放在共用层。
-% 用 \Large 这类相对字号，文档基础字号在 8pt 到 20pt 之间改时会跟着变。
+% 各主题下都长这样，所以这些字号也放在共用层。
 \setbeamerfont{hit blue title}{size=\Large,series=\bfseries}
 \setbeamerfont{hit blue subtitle}{size=\normalsize,series=\bfseries}
 \setbeamerfont{hit blue text}{size=\normalsize,series=\bfseries}
@@ -216,9 +246,9 @@
 
 \newcommand{\BlueTitleSlide}{%
   \ifdefined\hit@theme@loaded
-    \expandafter\hit@BlueTitleSlide@themed
+    \hit@BlueTitleSlide@themed
   \else
-    \expandafter\hit@TitleSlide@plain
+    \hit@TitleSlide@plain
   \fi}
 \newcommand{\hit@BlueTitleSlide@themed}{%
   \begingroup
@@ -243,10 +273,6 @@
       .5\hit@bluehgt-.5\@tempdima+.5\@tempdimb/\hit@blueT*\@tempdima}%
     \begin{tikzpicture}
       \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
-      % 两种画幅露出的照片高度不同，因此取景位置不同：
-      %   16:9 可见带窄（约 0.25 倍页宽），照片往上放一点，裁掉多余天空，塔尖靠近页顶；
-      %   4:3  可见带高，照片顶边直接对齐页顶。
-      % 值为正表示把照片往上放。改图后重新对一下这两个数即可。
       \ifdim\paperheight<.6\paperwidth
         \hit@photoy=\dimexpr\paperheight+\hit@photoraisewide\relax
       \else
@@ -287,13 +313,12 @@
      \leftskip2.6em\color{hitneutraldarkest!70}%
      \raisebox{.18ex}{\scriptsize$\circ$}\hspace{.5em}\inserttocsubsection\par}\vskip.5ex}}
 
-% 目录正文：不到 3 章排单栏，否则对半分成两栏，两栏均顶部对齐。
-% 这里不用 multicols，它为了让两栏等高会把条目间距拉开。
-% 内容过高则先降字号，降完仍过高则整体缩小。
+
 \newbox\hit@outbox
 \newdimen\hit@secavail
+
 \newcommand{\hit@outlinetoc}{%
-  \@tempcnta=\totvalue{hit@sectiontotal}\relax
+  \@ifundefined{c@hit@sectiontotal@totc}{\@tempcnta=0\relax}{\@tempcnta=\totvalue{hit@sectiontotal}\relax}%
   \@tempcntb=\@tempcnta\advance\@tempcntb\@ne\divide\@tempcntb\tw@
   \edef\hit@ol@callA{\noexpand\tableofcontents[sections={1-\the\@tempcntb}]}%
   \edef\hit@ol@callB{\noexpand\tableofcontents[sections={\the\numexpr\@tempcntb+1\relax-\the\@tempcnta}]}%
@@ -319,18 +344,128 @@
   \fi
   \noindent\box\hit@outbox}
 
+% 取第 n 条的标题与目标，并按目标生成链接。
+\newcommand{\hit@outlinetitleof}[1]{\hit@gettitle{#1}}
+\newcommand{\hit@linkto}[2]{%
+  \begingroup
+  \edef\hit@tmp@tgt{#1}%
+  \ifx\hit@tmp@tgt\@empty
+    \endgroup #2%
+  \else
+    \expandafter\endgroup\expandafter\hyperlink\expandafter{\hit@tmp@tgt}{#2}%
+  \fi}
+
+% 首次编译或文档确实没有章节时的明确状态，不留空白页。
+\newcommand{\hit@outlineplaceholder}{%
+  \begin{frame}[t]{\hit@getoutlinetitle}
+    \vskip2mm
+    {\usebeamercolor[fg]{hit content muted}%
+     \hit@ifoutlinererun
+       {重新运行一次编译即可读取章节标题}%
+       {未检测到章节}\par}
+  \end{frame}}
+
+% 目录渲染：2–6 项且选用版块版式时绘制圆角条目，其余采用列表版式。
+\newcommand{\hit@outlinerender}{%
+  \hit@ifoutlineempty
+    {\hit@outlineplaceholder}%
+    {\hit@ifoutlinererun
+      {\hit@outlineplaceholder}%
+      {\ifhit@outlinesubs
+         \hit@outlinerenderlist
+       \else
+         \ifdefstring{\hit@tocmode}{block}%
+           {\hit@outlinerenderblock}%
+           {\hit@outlinerenderlist}%
+       \fi}}}
+
+\newcommand{\hit@outlinerenderblock}{%
+  \hit@ifoutlineblock
+    {\hit@outlineblock}%
+    {\hit@outlinerenderlist}}
+
+% 版块版式：全页 TikZ 绘制，左侧背景与标题色块由主题给出，右侧圆角横条由公共层排布。
+\newcommand{\hit@outlineblock}{%
+  \begin{frame}[plain]
+    \hit@outlinebuildblock
+    \begin{tikzpicture}[remember picture,overlay,x=\paperwidth,y=\paperheight]
+      \begin{scope}[shift={(current page.south west)}]
+        \hit@outlineblockpaint
+        \hit@outlinedrawblock
+      \end{scope}
+    \end{tikzpicture}
+  \end{frame}}
+
+% 绘制单个条目的双胶囊横条（序号格 + 标题格）
+\newcommand{\hit@drawcapsulerow}[2]{%
+  \usebeamercolor{hit block capsule}%
+  \fill[hit block capsule.bg,rounded corners=.0525\paperheight]
+    (.455\paperwidth,\dimexpr#2\paperheight-.0525\paperheight\relax) rectangle
+    (.530\paperwidth,\dimexpr#2\paperheight+.0525\paperheight\relax);
+  \fill[hit block capsule.bg,rounded corners=.0525\paperheight]
+    (.547\paperwidth,\dimexpr#2\paperheight-.0525\paperheight\relax) rectangle
+    (.945\paperwidth,\dimexpr#2\paperheight+.0525\paperheight\relax);
+  \node[text=hit block capsule.fg,font=\bfseries\fontsize{12}{14}\selectfont,inner sep=0pt]
+    at (.4925\paperwidth,#2\paperheight)
+    {\hit@outlinelink{#1}{\hit@twodigits{#1}}};
+  \node[inner sep=0pt,text=hit block capsule.fg,font=\bfseries\fontsize{11.5}{12}\selectfont]
+    at (.746\paperwidth,#2\paperheight)
+    {\parbox[c][.105\paperheight][c]{.345\paperwidth}{\centering\strut
+      \hit@outlinelink{#1}{\hit@outlinetitleof{#1}}\strut}};%
+}
+
+\newcommand{\hit@outlinelistframe}[3]{%
+  \begin{frame}[t]
+    \vskip1mm
+    \hit@drawlistheader{#1}%
+    \hit@outlinelistbody{#2}{#3}%
+  \end{frame}}
+
+\newcommand{\hit@outlinerow}[1]{%
+  \hit@tocrow{\hit@twodigits{#1}}%
+    {\hit@outlinelink{#1}{\hit@outlinetitleof{#1}}}%
+  \ifhit@outlinesubs
+    \hit@rendersubsections{#1}%
+  \fi}
+
+\providecommand{\hit@drawlistheader}[1]{%
+  {\usebeamerfont{hit outline title}\usebeamercolor[fg]{structure}%
+   \hit@getoutlinetitle\ifnum#1>1\relax\space\mdseries\small（续）\fi\par}%
+  \vskip2mm{\usebeamercolor[fg]{hit outline rule}\hrule height .8pt}%
+  \vskip4mm}
+
+\newcommand{\hit@rendersubsections}[1]{%
+  \hit@subsecsdo{#1}{\hit@tocsubrow}}
+\newcommand{\hit@tocsubrow}[2]{%
+  \par\nointerlineskip\noindent\hspace{6mm}%
+  {\usebeamercolor[fg]{hit content muted}\usebeamerfont{section in toc}%
+   \raisebox{.18ex}{\scriptsize$\circ$}\hspace{.5em}%
+   \hit@linkto{#2}{#1}}\par\vspace{2mm}}
+
+\newcommand{\hit@OutlineSlide@academic}{%
+  \begingroup
+  \hit@collectsections
+  \ifhit@outlinesubs\hit@collectsubsections\fi
+  \hit@outlinerender
+  \endgroup}
+
 \newcommand{\OutlineSlide}{%
   \ifdefined\hit@theme@loaded
-    \expandafter\hit@OutlineSlide@pick
+    \hit@OutlineSlide@pick
   \else
-    \expandafter\hit@OutlineSlide@plain
+    \hit@OutlineSlide@plain
   \fi}
 \newcommand{\hit@OutlineSlide@pick}{%
   \ifdefined\hit@theme@classic
-    \expandafter\hit@OutlineSlide@classic
+    \let\hit@ol@next\hit@OutlineSlide@classic
   \else
-    \expandafter\hit@OutlineSlide@themed
-  \fi}
+    \ifdefined\hit@theme@academic
+      \let\hit@ol@next\hit@OutlineSlide@academic
+    \else
+      \let\hit@ol@next\hit@OutlineSlide@themed
+    \fi
+  \fi
+  \hit@ol@next}
 \newcommand{\hit@OutlineSlide@plain}{%
   \begin{frame}{\hitoutlinetitle}\tableofcontents\end{frame}}
 \newcommand{\hit@OutlineSlide@themed}{%
@@ -357,29 +492,38 @@
   \end{frame}
   \endgroup}
 
-% 经典主题的目录页：带深蓝标题条的普通帧，条目样式由 circles 内主题决定
-% （编号圆球）。sectionstyle 用 show，和旧版目录帧一致（不淡化任何一节）。
+% 经典主题的目录页
 \newcommand{\hit@OutlineSlide@classic}{%
   \begin{frame}[plain,noframenumbering]{\hitoutlinetitle}
     \tableofcontents[sectionstyle=show,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]
   \end{frame}}
 
 % ------------------------------------------------------------- focus slide ----
-\newcommand{\FocusSlide}{%
+\newcommand{\FocusSlide}[2][]{%
   \ifdefined\hit@theme@loaded
-    \expandafter\hit@FocusSlide@pick
+    \hit@FocusSlide@pick{#1}{#2}%
   \else
-    \expandafter\hit@FocusSlide@plain
+    \hit@FocusSlide@plain{#1}{#2}%
   \fi}
-\newcommand{\hit@FocusSlide@pick}{%
+\newcommand{\hit@FocusSlide@pick}[2]{%
   \ifdefined\hit@theme@classic
-    \expandafter\hit@FocusSlide@classic
+    \let\hit@focus@next\hit@FocusSlide@classic
   \else
-    \expandafter\hit@FocusSlide@themed
-  \fi}
-\newcommand{\hit@FocusSlide@plain}[1]{%
-  \begin{frame}[c,plain,noframenumbering]\centering{\Large #1\par}\end{frame}}
-\newcommand{\hit@FocusSlide@themed}[1]{%
+    \ifdefined\hit@theme@academic
+      \let\hit@focus@next\hit@FocusSlide@academic
+    \else
+      \let\hit@focus@next\hit@FocusSlide@themed
+    \fi
+  \fi
+  \hit@focus@next{#1}{#2}}
+\newcommand{\hit@FocusSlide@plain}[2]{%
+  \begin{frame}[c,plain,noframenumbering]\centering
+    \hit@iffocuslabel{#1}{{\Large #1\par\vskip3mm}}{}%
+    {\Large #2\par}%
+  \end{frame}}
+\newcommand{\hit@FocusSlide@academic}[2]{%
+  \begingroup\hit@focuspage{#1}{#2}\endgroup}
+\newcommand{\hit@FocusSlide@themed}[2]{%
   \begingroup
   \setbeamercolor{background canvas}{bg=hitprimary}%
   \setbeamertemplate{background}{%
@@ -389,37 +533,43 @@
     \end{tikzpicture}}%
   \begin{frame}[c,plain,noframenumbering]
     \centering
-    {\color{hitneutrallightest}\Large #1\par}%
+    \hit@iffocuslabel{#1}{{\color{hitneutrallightest}\large #1\par\vskip2mm}}{}%
+    {\color{hitneutrallightest}\Large #2\par}%
   \end{frame}
   \endgroup}
 
-% 经典主题的强调页：整页主色底、白色大字。
-\newcommand{\hit@FocusSlide@classic}[1]{%
+\newcommand{\hit@FocusSlide@classic}[2]{%
   \begingroup
   \setbeamercolor{background canvas}{bg=hitprimary}%
   \begin{frame}[c,plain,noframenumbering]
     \centering
-    {\color{hitneutrallightest}\Large #1\par}%
+    \hit@iffocuslabel{#1}{{\color{hitneutrallightest}\large #1\par\vskip2mm}}{}%
+    {\color{hitneutrallightest}\Large #2\par}%
   \end{frame}
   \endgroup}
 
 % -------------------------------------------------------------- end slides ----
-\newcommand{\EndSlide}{%
+\newcommand{\EndSlide}[1]{%
   \ifdefined\hit@theme@loaded
-    \expandafter\hit@EndSlide@pick
+    \hit@EndSlide@pick{#1}%
   \else
-    \expandafter\hit@EndSlide@plain
+    \hit@EndSlide@plain{#1}%
   \fi}
-\newcommand{\hit@EndSlide@pick}{%
+\newcommand{\hit@EndSlide@pick}[1]{%
   \ifdefined\hit@theme@classic
-    \expandafter\hit@EndSlide@classic
+    \let\hit@end@next\hit@EndSlide@classic
   \else
-    \expandafter\hit@EndSlide@themed
-  \fi}
+    \ifdefined\hit@theme@academic
+      \let\hit@end@next\hit@EndSlide@academic
+    \else
+      \let\hit@end@next\hit@EndSlide@themed
+    \fi
+  \fi
+  \hit@end@next{#1}}
 \newcommand{\hit@EndSlide@plain}[1]{%
   \begin{frame}[c,plain,noframenumbering]\centering{\LARGE\bfseries #1\par}\end{frame}}
-% 结束页底图和封面是同一张，主楼在右下方，所以内容同样靠左上排，
-% 起排位置和左缘都跟封面一致。竖版校徽在上，致谢文字在下。
+\newcommand{\hit@EndSlide@academic}[1]{%
+  \begingroup\hit@endpage{#1}\endgroup}
 \newcommand{\hit@EndSlide@themed}[1]{%
   \begingroup
   \setbeamertemplate{background}{%
@@ -441,11 +591,34 @@
   \end{frame}
   \endgroup}
 
-% 经典主题的结束页：居中致谢文字，旧版最后一页的写法。
 \newcommand{\hit@EndSlide@classic}[1]{%
   \begin{frame}[c,plain,noframenumbering]
     \centering
     {\Huge #1\par}%
   \end{frame}}
 
+% ------------------------------------------------------------ 手动目录 ====
+\newcommand{\AgendaItem}{%
+  \PackageError{beamercmdhit}{\string\AgendaItem\space 只能用在 \string\AgendaSlide\space 内}%
+    {把条目放进 \string\AgendaSlide{...} 的参数里。}}
+\newcommand{\AgendaSlide}[2][]{%
+  \ifdefined\hit@theme@loaded
+    \hit@AgendaSlide@themed[#1]{#2}%
+  \else
+    \hit@AgendaSlide@plain[#1]{#2}%
+  \fi}
+\newcommand{\hit@AgendaSlide@plain}[2][]{%
+  \begin{frame}{\hitoutlinetitle}#2\end{frame}}
+\newcommand{\hit@AgendaSlide@themed}[2][]{%
+  \begingroup
+  \hit@outlineclear
+  \renewcommand{\AgendaItem}[2][]{%
+    \hit@outlinemanualadd{##1}{##2}}%
+  \hit@outlinemanualoptions{#1}%
+  #2%
+  \hit@validatemanual
+  \hit@outlineblock
+  \endgroup}
+
+\mode<all>
 \endinput

@@ -1,0 +1,15 @@
+% 左文右图：适合解释横图。修改比例、图片路径、正文和图注。
+\begin{frame}{左文右图}
+  \hitcolumnratio{.4}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{\hitleftwidth}
+      \subhead{图片说明}
+      示例函数随输入线性增长。
+      \notebox{示例范围为 $0\leq x\leq1$。}
+    \end{column}
+    \begin{column}{\hitrightwidth}
+      \fig[height=.48\textheight]{example/images/linear.png}
+      \captiontext{图：$y=x$。来源：模板解析函数图。}
+    \end{column}
+  \end{columns}
+\end{frame}

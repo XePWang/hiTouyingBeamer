@@ -1,0 +1,235 @@
+%% hit-content.sty
+%% 哈尔滨工业大学 Beamer 模板公共内容支持层 (Shared Content Support)
+%%
+%% License: LaTeX Project Public License 1.3c
+%%
+%% 本文件由两个主题共同加载，负责：
+%%   1. 正文共同依赖的宏包（表格、代码、公式、颜色）；
+%%   2. 内容组件的唯一实现：\subhead、\captiontext、\insight、\notebox、\metric、\fig；
+%%   3. 组件使用的颜色、字体、间距等可配置项，主题只需改这些值。
+%%
+%% 主题不重新定义内容组件，只配置它们，因此同一份正文在两种主题下的语义完全一致。
+%%
+%% 公开配置命令（都不含 @，可由文档或主题调用）：
+%%   \hitvi{路径}        经典主题视觉形象资产目录，默认 vi/
+%%   \hitfigures{路径}   插图目录，默认 assets/figures/
+%%   \hitlogo{路径}      封面与页眉使用的标识图片
+%%   \hitfooter{文字}    页脚左侧文字
+%%   \hitsectionpages    插入章节过渡页；\hitnosectionpages 关闭
+%%   \hitoutlinesubs     目录显示子章节；\hitnooutlinesubs 关闭
+%%   \hittocmode{...}    目录版式：block（版块）或 list（列表）
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{hit-content}[2026/10/09 v2.2026a shared content support for the HIT beamer themes]
+
+% ================================================== 正文共同依赖的宏包 ====
+% 两种主题必须加载同一组依赖：只改 \usetheme 时正文里的表格、代码与公式
+% 都要照常编译，因此这里不做按主题区分的条件加载。
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage{etoolbox}
+\RequirePackage{graphicx}
+\RequirePackage{array}
+\RequirePackage{booktabs}
+\RequirePackage{tabularx}
+\RequirePackage{colortbl}
+\RequirePackage{listings}
+\RequirePackage{amsmath}
+\RequirePackage{bm}
+\RequirePackage{expl3}
+\RequirePackage{xparse}
+\RequirePackage{totcount}
+\RequirePackage{anyfontsize}
+\RequirePackage{iftex}
+
+% 若文档类指定 fontset=none 且使用 XeTeX，自动加载模板配套的开源字体
+\ifXeTeX
+  \@ifpackageloaded{ctex}{%
+    \ifdefstring{\ctex@fontset}{none}{%
+      \RequirePackage{hit-fonts}%
+    }{}%
+  }{%
+    \RequirePackage{hit-fonts}%
+  }
+\fi
+
+% 规范化 PDF 书签与元数据中的宏命令
+\pdfstringdefDisableCommands{%
+  \def\qquad{\space\space}%
+  \def\quad{\space}%
+  \def\\{ }%
+}
+
+% 两位数格式化辅助命令
+\newcommand{\hit@twodigits}[1]{\ifnum#1<10 0\fi\number#1}
+
+% ============================================================ 配置入口 ====
+% 这些命令都不含 @，文档可以直接调用，README 也只介绍这一组。
+\providecommand{\hit@vipath}{vi/}
+\providecommand{\hit@figpath}{assets/figures/}
+\providecommand{\hit@logopath}{\hit@vipath hit-vi-logo-horizontal}
+
+\providecommand{\hitvi}[1]{\renewcommand{\hit@vipath}{#1}}
+\providecommand{\hitfigures}[1]{\renewcommand{\hit@figpath}{#1}}
+\providecommand{\hitlogo}[1]{\renewcommand{\hit@logopath}{#1}}
+\providecommand{\hitvipath}{\hit@vipath}
+
+% 章节过渡页与目录子章节由统一开关控制，两种主题都认这几个开关。
+\@ifundefined{ifhit@sectionpages}{\newif\ifhit@sectionpages \hit@sectionpagestrue}{}
+\@ifundefined{ifhit@outlinesubs}{\newif\ifhit@outlinesubs  \hit@outlinesubsfalse}{}
+\providecommand{\hitsectionpages}{\hit@sectionpagestrue}
+\providecommand{\hitnosectionpages}{\hit@sectionpagesfalse}
+\providecommand{\hitoutlinesubs}{\hit@outlinesubstrue}
+\providecommand{\hitnooutlinesubs}{\hit@outlinesubsfalse}
+
+% 目录版式。block 用版块版式（左侧标题色块加右侧编号横条），
+% list 用普通章节列表。主题可以改这个默认值。
+\providecommand{\hit@tocmode}{block}
+\providecommand{\hittocmode}[1]{\renewcommand{\hit@tocmode}{#1}}
+
+% ======================================================== 共享工具命令 ====
+% 把盒子等比缩到指定高度，高与深一起计算。
+% 不用 \resizebox{!}{h}，它只管基线以上的部分，遇到基线居中的 minipage 会缩不到位。
+\providecommand{\hit@scaleboxto}[2]{%
+  \pgfmathsetmacro\hit@sc{(#2)/(\ht#1+\dp#1)}%
+  \setbox#1=\hbox{\scalebox{\hit@sc}{\box#1}}}
+
+% 封面与目录属于前置页，用小写罗马数字单独计数。
+\@ifundefined{c@hit@front}{\newcounter{hit@front}}{}
+\@ifundefined{ifhit@frontmatter}{\newif\ifhit@frontmatter \hit@frontmatterfalse}{}
+
+% 附录状态。与 beamer 自带的 \ifbeamer@inappendix 同步。
+\@ifundefined{ifhit@appendix}{\newif\ifhit@appendix\hit@appendixfalse}{}
+\newcommand{\hit@appendixhook}{\global\hit@appendixtrue}
+\pretocmd{\appendix}{\hit@appendixhook}{}{%
+  \PackageWarning{hit-content}{无法在 \string\appendix 上挂接附录状态，%
+    附录页的页码与导航按 beamer 默认行为处理}}
+\newcommand{\hitappendix}{\appendix}
+
+% ======================================================== 内容组件配色 ====
+% 默认值只依赖 beamer 的标准颜色，因此 Madrid 等内建主题也能直接用。
+\setbeamercolor{hit content muted}{fg=normal text.fg!70}
+\setbeamercolor{hit insight}{fg=normal text.fg,bg=structure.fg!8}
+\setbeamercolor{hit note rule}{fg=structure.fg}
+\setbeamercolor{hit metric value}{fg=structure.fg}
+\setbeamercolor{hit outline entry}{fg=normal text.fg}
+\setbeamercolor{hit agenda list number}{fg=structure.fg}
+\setbeamercolor{hit outline rule}{fg=structure.fg!30}
+\setbeamercolor{hit block capsule}{fg=white,bg=structure.fg}
+
+% size 里只写 \fontsize，不写 \selectfont：beamer 取用 size 时会当场求值，
+% 带上 \selectfont 会把当前行的基线间距也改掉，正文行高随之变大。
+\setbeamerfont{hit content subhead}{size=\fontsize{9.5}{13},series=\bfseries}
+\setbeamerfont{hit content caption}{size=\fontsize{7.7}{10},series=\mdseries}
+\setbeamerfont{hit content insight}{size=\fontsize{9}{12},series=\mdseries}
+\setbeamerfont{hit content note}{size=\fontsize{8}{11},series=\mdseries}
+\setbeamerfont{hit content metric}{size=\fontsize{24}{28},series=\bfseries}
+\setbeamerfont{hit content metric note}{size=\fontsize{8.3}{11},series=\mdseries}
+\setbeamerfont{hit outline title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{hit outline entry}{size=\normalsize,series=\mdseries}
+\setbeamerfont{hit agenda list number}{size=\fontsize{13}{16},series=\bfseries}
+
+\AtBeginEnvironment{frame}{\hitcolumnratio{.5}}
+
+% 两栏总宽为正文的 96%，余下空间由 columns 分配为栏间距。
+\newlength{\hitleftwidth}
+\newlength{\hitrightwidth}
+\newcommand{\hitcolumnratio}[1]{%
+  \pgfmathtruncatemacro{\hit@validratio}{(#1>0) && (#1<1)}%
+  \ifnum\hit@validratio=1
+    \pgfmathsetlength{\hitleftwidth}{.96*(#1)*\textwidth}%
+    \pgfmathsetlength{\hitrightwidth}{.96*(1-#1)*\textwidth}%
+  \else
+    \PackageError{hit-content}{Column ratio must be between 0 and 1}%
+      {Use a left-column share such as 0.5 or 0.6.}%
+  \fi}
+
+% 组件上下留白，主题可按自己的版式调整。
+\newdimen\hit@subheadskip     \hit@subheadskip=1.4mm
+\newdimen\hit@captionskip     \hit@captionskip=0mm
+\newdimen\hit@insightskip     \hit@insightskip=2mm
+\newdimen\hit@insightpad      \hit@insightpad=.8mm
+\newdimen\hit@noteskip        \hit@noteskip=1.5mm
+\newdimen\hit@noterulewidth   \hit@noterulewidth=2pt
+\newdimen\hit@notegap         \hit@notegap=1.5mm
+\newdimen\hit@metricsep       \hit@metricsep=1.5mm
+
+% ============================================================ 内容组件 ====
+% 每种组件只定义一次，两种主题通过上面的颜色、字体与留白配置得到各自的视觉。
+
+% 封面与正文下方的字号辅助命令。
+\newcommand{\smalltext}{\fontsize{8.5}{11.5}\selectfont}
+\newcommand{\bodytext}{\fontsize{9.5}{13}\selectfont
+  \setlength{\abovedisplayskip}{5pt}\setlength{\belowdisplayskip}{5pt}\setlength{\jot}{3pt}}
+\newcommand{\minitext}{\fontsize{7.5}{10}\selectfont}
+\newenvironment{denseitems}
+  {\begin{itemize}\setlength\itemsep{2.6mm}\setlength\parskip{0pt}}
+  {\end{itemize}}
+
+% 内容小标题。
+\newcommand{\subhead}[1]{\par{\usebeamercolor[fg]{structure}%
+  \usebeamerfont{hit content subhead}#1}\par\vspace{\hit@subheadskip}}
+
+% 图注、条件与单位。
+\newcommand{\captiontext}[1]{{\usebeamercolor[fg]{hit content muted}%
+  \usebeamerfont{hit content caption}#1\par}\vspace{\hit@captionskip}}
+
+% 结论区。段落宽度等于行宽减去两侧留白，行数不会因为换主题而增加。
+\newcommand{\insight}[1]{\par\vspace{\hit@insightskip}\noindent
+  {\usebeamercolor[bg]{hit insight}%
+   \colorbox{hit insight.bg}{%
+     \parbox{\dimexpr\linewidth-2\fboxsep}{\vspace{\hit@insightpad}%
+       \usebeamercolor[fg]{hit insight}\usebeamerfont{hit content insight}#1%
+       \vspace{\hit@insightpad}}}}\par}
+
+% 注记：左侧竖线与整段文字上下边界对齐。
+% 宽度先减掉竖线、间距与段落缩进，整行恰好等于行宽，不会横向溢出。
+\newsavebox{\hit@notebox}
+\newcommand{\hit@notewidth}%
+  {\dimexpr\linewidth-\hit@noterulewidth-2\hit@notegap-\parindent\relax}
+\newcommand{\notebox}[1]{%
+  \par\vspace{\hit@noteskip}\noindent
+  \sbox{\hit@notebox}{\begin{minipage}[t]{\hit@notewidth}%
+    \usebeamerfont{hit content note}#1\end{minipage}}%
+  {\usebeamercolor[fg]{hit note rule}%
+   \rule[-\dp\hit@notebox]{\hit@noterulewidth}%
+     {\dimexpr\ht\hit@notebox+\dp\hit@notebox\relax}}%
+  \hspace{\hit@notegap}\usebox{\hit@notebox}\par}
+
+% 接受完整相对路径，或插图目录下的文件名；省略扩展名时优先 PDF。
+% 宽度与高度同时限制，默认等比缩放；trim 与 clip 由作者显式指定。
+\newcommand{\fig}[2][]{\par\begingroup\centering
+  \graphicspath{{\hit@figpath}}%
+  \DeclareGraphicsExtensions{.pdf,.png,.jpg,.jpeg,.PDF,.PNG,.JPG,.JPEG}%
+  \includegraphics[width=\linewidth,height=.58\textheight,keepaspectratio,#1]{#2}%
+  \par\endgroup}
+
+% 指标：大数字与小字说明。两段之间把段落间距置零，
+% 高度只由字号与 \hit@metricsep 决定，两块指标同页也不会互相挤。
+\newcommand{\metric}[3]{\begin{minipage}[t]{#1}%
+  \parskip\z@\parindent\z@
+  {\usebeamercolor[fg]{hit metric value}%
+   \usebeamerfont{hit content metric}#2\par}\vspace{\hit@metricsep}%
+  {\usebeamercolor[fg]{hit content muted}%
+   \usebeamerfont{hit content metric note}#3}\end{minipage}}
+
+% ================================================= 目录条目的渲染原语 ====
+% 条目数据由 hit-outline.sty 提供，这里只负责把一行画出来。
+% 两种主题共用这两个原语，差别只在配色与字号。
+
+% 列表行：#1 序号文本，#2 已完成链接的标题。
+\newcommand{\hit@tocrow}[2]{%
+  \par\nointerlineskip\noindent
+  {\usebeamercolor[fg]{hit agenda list number}%
+   \usebeamerfont{hit agenda list number}#1}\hspace{4mm}%
+  {\usebeamercolor[fg]{hit outline entry}%
+   \usebeamerfont{hit outline entry}\bfseries #2}\par
+  \vspace{3.2mm}}
+
+% 一页最多放几行。按字号与行距估算，宁可少放一行，不把内容压到页外。
+\newcounter{hit@tocrows}
+\newcommand{\hit@tocrowsperpage}{%
+  \setcounter{hit@tocrows}{\numexpr\hit@tocfirstrows\relax}}
+
+\mode<all>
+\endinput

@@ -1,0 +1,377 @@
+%% hit-outline.sty
+%% 哈尔滨工业大学 Beamer 模板目录模块 (Shared Outline Module)
+%%
+%% License: LaTeX Project Public License 1.3c
+%%
+%% 本文件只负责目录的数据与校验，不负责绘制：
+%%   1. 从 \jobname.nav 收集章节与子章节，保存为独立数据：
+%%      显示标题、序号、真实跳转目标；
+%%   2. 手动目录的输入校验：2–6 项、条目标题最多两行；
+%%   3. 给渲染层提供只读访问：条目数、第 n 条的标题与目标；
+%%   4. 预计算版块版式所需的条目几何坐标，生成 TikZ 原语供渲染器直接放置。
+%%
+%% 绘制在 beamercmdhit.sty（公共渲染）与两个主题（配色、背景色块）里完成。
+%%
+%% 目标一律使用 hyperref 为每一页建立的 page.N 命名目标：它在任何一次编译里
+%% 都存在，因此不会出现指向不存在目标的链接。章节链接落在该章所在的那一页；
+%% 打开章节过渡页时，beamer 的 \section 与过渡页同页，链接自然落在过渡页上。
+%%
+%% 章节数据来自上一次编译写出的 .nav 文件，首次编译或确实无章节均有明确状态提示。
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{hit-outline}[2026/10/09 v2.2026a shared outline module]
+
+\RequirePackage{hit-content}
+
+\ExplSyntaxOn
+
+\seq_new:N  \l__hit_outline_titles_seq
+\seq_new:N  \l__hit_outline_targets_seq
+\tl_new:N   \l__hit_outline_title_tl
+\tl_new:N   \l__hit_outline_subtitle_tl
+\int_new:N  \l__hit_outline_count_int
+\bool_new:N \l__hit_outline_strict_bool
+\box_new:N  \l__hit_outline_row_box
+\bool_new:N \l__hit_outline_rerun_bool
+\bool_new:N \l__hit_outline_empty_bool
+\bool_new:N \l__hit_outline_in_appendix_bool
+
+\tl_new:N   \l__hit_outline_block_tl
+\fp_new:N   \l__hit_outline_pitch_fp
+\fp_new:N   \l__hit_outline_y_fp
+
+\msg_new:nnn { hit-outline } { item-count }
+  { Agenda~requires~2--6~items;~received~#1. }
+\msg_new:nnn { hit-outline } { label-too-long }
+  { Agenda~item~#1~exceeds~two~lines.~Use~a~shorter~title. }
+\msg_new:nnn { hit-outline } { outside-agenda }
+  { Use~AgendaItem~inside~AgendaSlide. }
+\msg_new:nnn { hit-outline } { no-section }
+  { No~section~found;~the~outline~shows~a~placeholder~page. }
+
+\keys_define:nn { hit / outline }
+  {
+    title .tl_set:N = \l__hit_outline_title_tl,
+    subtitle .tl_set:N = \l__hit_outline_subtitle_tl
+  }
+
+% ------------------------------------------------------------ 数据操作 ====
+\cs_new_protected:Npn \hit_outline_clear:
+  {
+    \seq_clear:N \l__hit_outline_titles_seq
+    \seq_clear:N \l__hit_outline_targets_seq
+    \tl_clear:N \l__hit_outline_title_tl
+    \tl_clear:N \l__hit_outline_subtitle_tl
+    \int_zero:N \l__hit_outline_count_int
+    \tl_clear:N \l__hit_outline_block_tl
+  }
+\cs_set_eq:NN \hit@outlineclear \hit_outline_clear:
+
+\cs_new_protected:Npn \hit_outline_add:nn #1#2
+  {
+    \seq_put_right:Nn \l__hit_outline_titles_seq {#1}
+    \seq_put_right:Nn \l__hit_outline_targets_seq {#2}
+    \int_incr:N \l__hit_outline_count_int
+  }
+\cs_set_eq:NN \hit@outlineadd \hit_outline_add:nn
+
+\cs_new_protected:Npn \hit_outline_add_manual:nn #1#2
+  {
+    \tl_if_blank:nTF {#1}
+      { \hit_outline_add:nn {#2} { } }
+      {
+        \regex_match:nnTF { ^\d+$ } {#1}
+          { \hit_outline_add:nn {#2} { page.#1 } }
+          { \hit_outline_add:nn {#2} {#1} }
+      }
+  }
+\cs_set_eq:NN \hit@outlinemanualadd \hit_outline_add_manual:nn
+
+% 供渲染层读取。序号从 1 开始。
+\cs_new:Npn \hit_outline_count: { \int_use:N \l__hit_outline_count_int }
+\cs_new:Npn \hit_outline_title:n #1
+  { \seq_item:Nn \l__hit_outline_titles_seq {#1} }
+\cs_new:Npn \hit_outline_target:n #1
+  { \seq_item:Nn \l__hit_outline_targets_seq {#1} }
+\cs_new:Npn \hit_outline_title:
+  {
+    \tl_if_blank:VTF \l__hit_outline_title_tl
+      { \hitoutlinetitle }
+      { \tl_use:N \l__hit_outline_title_tl }
+  }
+\cs_new:Npn \hit_outline_subtitle:
+  {
+    \tl_if_blank:VTF \l__hit_outline_subtitle_tl
+      { CONTENTS }
+      { \tl_use:N \l__hit_outline_subtitle_tl }
+  }
+\cs_set_eq:NN \hit@outlinecount \hit_outline_count:
+\cs_new:Npn \hit@outlinetitlen #1 { \hit_outline_title:n {#1} }
+\cs_new:Npn \hit@outlinetargetn #1 { \hit_outline_target:n {#1} }
+\cs_new:Npn \hit_outline_link:nn #1 #2
+  {
+    \tl_set:Nx \l_tmpa_tl { \hit_outline_target:n {#1} }
+    \tl_if_blank:VTF \l_tmpa_tl
+      { #2 }
+      { \exp_args:NV \hyperlink \l_tmpa_tl {#2} }
+  }
+\cs_new:Npn \hit@outlinelinkn #1 #2 { \hit_outline_link:nn {#1} {#2} }
+
+% 判定条目数量是否适合版块版式（2–6项）
+\cs_new_protected:Npn \hit_outline_if_block:nn #1#2
+  {
+    \int_compare:nNnTF { \l__hit_outline_count_int } > { 1 }
+      {
+        \int_compare:nNnTF { \l__hit_outline_count_int } < { 7 }
+          { #1 } { #2 }
+      }
+      { #2 }
+  }
+\cs_set_eq:NN \hit@ifoutlineblock \hit_outline_if_block:nn
+
+% ------------------------------------------------------------ 选项解析 ====
+\cs_new_protected:Npn \hit_outline_set_options:n #1
+  {
+    \tl_clear:N \l__hit_outline_title_tl
+    \tl_clear:N \l__hit_outline_subtitle_tl
+    \keys_set:nn { hit / outline } { #1 }
+  }
+\cs_set_eq:NN \hit@outlineoptions \hit_outline_set_options:n
+
+\cs_new_protected:Npn \hit_outline_set_manual_options:n #1
+  {
+    \tl_set:Nn \l__hit_outline_title_tl { \hitoutlinetitle }
+    \tl_set:Nn \l__hit_outline_subtitle_tl { CONTENTS }
+    \keys_set:nn { hit / outline } { #1 }
+  }
+\cs_set_eq:NN \hit@outlinemanualoptions \hit_outline_set_manual_options:n
+
+% ------------------------------------------------------------ 章节收集 ====
+% .nav 文件里的每条记录都包在 \headcommand{...} 里，读取时让它直接执行。
+% \sectionentry 的参数依次是章节号、标题、起始页码、短标题、部分号。
+\cs_new_protected:Npn \hit_outline_readnav:
+  {
+    \cs_set_protected:Npn \headcommand ##1 { ##1 }
+    \file_if_exist:nTF { \jobname.nav }
+      {
+        \bool_set_false:N \l__hit_outline_rerun_bool
+        \char_set_catcode_letter:n { 64 }
+        \file_input:n { \jobname.nav }
+      }
+      {
+        \bool_set_true:N \l__hit_outline_rerun_bool
+        \PackageWarning{hit-outline}{Rerun~LaTeX~to~load~section~titles}
+      }
+  }
+
+\cs_new_protected:Npn \hit_outline_collect_sections:
+  {
+    \hit_outline_clear:
+    \prop_gclear:N \g__hit_outline_subsecs_prop
+    \bool_set_false:N \l__hit_outline_in_appendix_bool
+    \cs_set_protected:cpn {slideentry} ##1##2##3##4##5##6 { }
+    \cs_set_protected:cpn {beamer@framepages} ##1##2 { }
+    \cs_set_protected:cpn {beamer@sectionpages} ##1##2 { }
+    \cs_set_protected:cpn {beamer@subsectionpages} ##1##2 { }
+    \cs_set_protected:cpn {beamer@partpages} ##1##2 { }
+    \cs_set_protected:cpn {beamer@documentpages} ##1 { }
+    \cs_set_protected:cpn {beamer@appendixpages} ##1
+      { \bool_set_true:N \l__hit_outline_in_appendix_bool }
+    \cs_set_protected:cpn {partentry} ##1##2
+      { \bool_set_true:N \l__hit_outline_in_appendix_bool }
+    \cs_set_protected:cpn {sectionentry} ##1##2##3##4##5
+      {
+        \bool_if:NF \l__hit_outline_in_appendix_bool
+          {
+            \int_compare:nNnT {##5} = { 0 }
+              { \hit_outline_add:nn {##2} { page.##3 } }
+          }
+      }
+    \cs_set_protected:cpn {beamer@subsectionentry} ##1##2##3##4##5
+      {
+        \bool_if:NF \l__hit_outline_in_appendix_bool
+          {
+            \int_compare:nNnT {##1} = { 0 }
+              {
+                \prop_if_in:NnTF \g__hit_outline_subsecs_prop {##2}
+                  {
+                    \prop_gput:Nnx \g__hit_outline_subsecs_prop {##2}
+                      {
+                        \prop_item:Nn \g__hit_outline_subsecs_prop {##2}
+                        , { {##5} { page.##4 } }
+                      }
+                  }
+                  {
+                    \prop_gput:Nnx \g__hit_outline_subsecs_prop {##2}
+                      {
+                        { {##5} { page.##4 } }
+                      }
+                  }
+              }
+          }
+      }
+    \hit_outline_readnav:
+    \cs_set_protected:cpn {sectionentry} ##1##2##3##4##5 { }
+    \cs_set_protected:cpn {beamer@subsectionentry} ##1##2##3##4##5 { }
+    \hit_outline_classify:
+  }
+\cs_set_eq:NN \hit@collectsections \hit_outline_collect_sections:
+
+% 子章节已在单遍扫描中同时收集完毕，此命令保留为安全空操作
+\cs_new_protected:Npn \hit_outline_collect_subsections: { }
+\cs_set_eq:NN \hit@collectsubsections \hit_outline_collect_subsections:
+
+% 与第 #1 个章节同名的小节，交给 #2 逐条渲染；#2 接收标题与目标两个参数。
+\cs_new_protected:Npn \hit_outline_subsecs_do:nn #1#2
+  {
+    \prop_if_in:NnTF \g__hit_outline_subsecs_prop {#1}
+      {
+        \clist_set:Nx \l_tmpa_clist { \prop_item:Nn \g__hit_outline_subsecs_prop {#1} }
+        \clist_map_inline:Nn \l_tmpa_clist
+          { #2 ##1 }
+      }
+      { }
+  }
+\cs_set_eq:NN \hit@subsecsdo \hit_outline_subsecs_do:nn
+
+% 循环执行 #3，参数为数字 #1 到 #2
+\cs_new_protected:Npn \hit_outline_step_items:nnn #1#2#3
+  {
+    \int_step_inline:nnn {#1} {#2} { #3 {##1} }
+  }
+\cs_set_eq:NN \hit@stepitems \hit_outline_step_items:nnn
+
+\int_new:N \l__hit_outline_from_int
+\int_new:N \l__hit_outline_to_int
+
+% 列表版式多页均分调度（每页最多 6 项），完全避免 TeX \loop 嵌套冲突与计数器消耗
+\cs_new_protected:Npn \hit_outline_render_list:
+  {
+    \int_compare:nNnTF { \l__hit_outline_count_int } < { 1 }
+      { }
+      {
+        \int_set:Nn \l_tmpa_int
+          { \int_div_truncate:nn { \l__hit_outline_count_int + 5 } { 6 } }
+        \int_set:Nn \l_tmpb_int
+          { \int_div_truncate:nn { \l__hit_outline_count_int + \l_tmpa_int - 1 } { \l_tmpa_int } }
+        \int_step_inline:nnn { 1 } { \l_tmpa_int }
+          {
+            \int_set:Nn \l__hit_outline_from_int { (##1 - 1) * \l_tmpb_int + 1 }
+            \int_set:Nn \l__hit_outline_to_int { ##1 * \l_tmpb_int }
+            \int_compare:nNnT { \l__hit_outline_to_int } > { \l__hit_outline_count_int }
+              { \int_set_eq:NN \l__hit_outline_to_int \l__hit_outline_count_int }
+            \hit@outlinelistframe{##1}{\int_use:N \l__hit_outline_from_int}{\int_use:N \l__hit_outline_to_int}
+          }
+      }
+  }
+\cs_set_eq:NN \hit@outlinerenderlist \hit_outline_render_list:
+
+% 单页列表正文排布：有小节且跨 3 章以上时分两栏，单栏排不下时防止溢出
+\cs_new_protected:Npn \hit_outline_render_list_body:nn #1#2
+  {
+    \ifhit@outlinesubs
+      \int_compare:nNnTF { #2 - #1 + 1 } > { 2 }
+        {
+          \int_set:Nn \l_tmpa_int { \int_div_truncate:nn { #1 + #2 } { 2 } }
+          \int_set:Nn \l_tmpb_int { \l_tmpa_int + 1 }
+          \noindent
+          \begin{minipage}[t]{.48\textwidth}
+            \int_step_inline:nnn { #1 } { \l_tmpa_int } { \hit@outlinerow {##1} }
+          \end{minipage}\hfill
+          \begin{minipage}[t]{.48\textwidth}
+            \int_step_inline:nnn { \l_tmpb_int } { #2 } { \hit@outlinerow {##1} }
+          \end{minipage}\par
+        }
+        {
+          \int_step_inline:nnn { #1 } { #2 } { \hit@outlinerow {##1} }
+        }
+    \else
+      \int_step_inline:nnn { #1 } { #2 } { \hit@outlinerow {##1} }
+    \fi
+  }
+\cs_set_eq:NN \hit@outlinelistbody \hit_outline_render_list_body:nn
+
+% ------------------------------------------------------------ 输入校验 ====
+% 手动目录：条目数须为 2–6，标题最多两行。
+\cs_new_protected:Npn \hit_outline_validate_manual:
+  {
+    \int_compare:nNnTF { \l__hit_outline_count_int } < { 2 }
+      { \msg_error:nnx { hit-outline } { item-count } { \hit_outline_count: } }
+      {
+        \int_compare:nNnT { \l__hit_outline_count_int } > { 6 }
+          { \msg_error:nnx { hit-outline } { item-count } { \hit_outline_count: } }
+      }
+    \bool_set_true:N \l__hit_outline_strict_bool
+    \int_step_inline:nnn { 1 } { \l__hit_outline_count_int }
+      {
+        \vbox_set:Nn \l__hit_outline_row_box
+          { \hsize=.345\paperwidth \centering \strut
+            \hit_outline_title:n {##1} \strut\par }
+        \dim_compare:nNnT
+          { \box_ht:N \l__hit_outline_row_box + \box_dp:N \l__hit_outline_row_box }
+          > { 31pt }
+          { \msg_error:nnx { hit-outline } { label-too-long } {##1} }
+      }
+    \bool_set_false:N \l__hit_outline_strict_bool
+  }
+\cs_set_eq:NN \hit@validatemanual \hit_outline_validate_manual:
+
+% 状态判定：首次编译（缺少 .nav）与确实无章节进行区分
+\cs_new_protected:Npn \hit_outline_classify:
+  {
+    \bool_if:NTF \l__hit_outline_rerun_bool
+      {
+        \bool_set_false:N \l__hit_outline_empty_bool
+      }
+      {
+        \int_compare:nNnTF { \l__hit_outline_count_int } < { 1 }
+          {
+            \bool_set_true:N \l__hit_outline_empty_bool
+            \msg_warning:nn { hit-outline } { no-section }
+          }
+          { \bool_set_false:N \l__hit_outline_empty_bool }
+      }
+  }
+\cs_set_eq:NN \hit@classifyoutline \hit_outline_classify:
+
+\cs_new_protected:Npn \hit_outline_if_rerun:nn #1#2
+  { \bool_if:NTF \l__hit_outline_rerun_bool {#1} {#2} }
+\cs_new_protected:Npn \hit_outline_if_empty:nn #1#2
+  { \bool_if:NTF \l__hit_outline_empty_bool {#1} {#2} }
+\cs_set_eq:NN \hit@ifoutlinererun \hit_outline_if_rerun:nn
+\cs_set_eq:NN \hit@ifoutlineempty \hit_outline_if_empty:nn
+
+% -------------------------------------------------------- 版块版式预构建 ====
+% 预先在 expl3 中计算好各行纵坐标并拼装成 TikZ 原语，避免在 tikzpicture 内部执行循环
+\cs_new_protected:Npn \hit_outline_build_block:
+  {
+    \tl_clear:N \l__hit_outline_block_tl
+    \int_case:nnF { \l__hit_outline_count_int }
+      {
+        { 2 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.22 } }
+        { 3 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.19 } }
+        { 4 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.16 } }
+        { 5 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.13 } }
+        { 6 } { \fp_set:Nn \l__hit_outline_pitch_fp { 0.11 } }
+      }
+      { \fp_set:Nn \l__hit_outline_pitch_fp { 0.15 } }
+    \int_step_inline:nnn { 1 } { \l__hit_outline_count_int }
+      {
+        \fp_set:Nn \l__hit_outline_y_fp
+          {
+            0.5 + (( \l__hit_outline_count_int + 1 ) / 2 - ##1 ) * \l__hit_outline_pitch_fp
+          }
+        \tl_put_right:Nx \l__hit_outline_block_tl
+          {
+            \exp_not:N \hit@drawcapsulerow { ##1 } { \fp_use:N \l__hit_outline_y_fp }
+          }
+      }
+  }
+\cs_set_eq:NN \hit@outlinebuildblock \hit_outline_build_block:
+\cs_new:Npn \hit_outline_draw_block: { \tl_use:N \l__hit_outline_block_tl }
+\cs_set_eq:NN \hit@outlinedrawblock \hit_outline_draw_block:
+
+\ExplSyntaxOff
+
+\mode<all>
+\endinput

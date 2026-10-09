@@ -1,0 +1,46 @@
+\section{讨论与结论}
+\begin{frame}{讨论：收益需要覆盖新增成本}
+\subhead{在 Amdahl 模型中加入额外时间}
+\[T_p^{\mathrm{actual}}=T_1\left((1-f)+\frac{f}{p}\right)+T_{\mathrm{overhead}}(p)\]
+\vspace{3mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.31\textwidth}\subhead{调度成本}
+提交、任务划分和依赖管理，可能随资源或任务数量变化。
+\end{column}
+\begin{column}{.31\textwidth}\subhead{通信成本}
+数据移动、缓存行为和共享资源竞争，需要结合路径分析。
+\end{column}
+\begin{column}{.31\textwidth}\subhead{同步成本}
+负载不均与完成时间分布会影响整体结束时刻。
+\end{column}
+\end{columns}
+\vspace{4mm}\insight{优化成立的条件：节约的有效计算时间足以覆盖新增的执行成本。}
+\end{frame}
+
+\begin{frame}{适用范围：把结论和外推条件对应起来}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.1cm}XX@{}}
+\toprule 当前模型给出的结论 & 成立条件 & 进一步研究需要补充 \\\midrule
+串行比例限制 Speedup & 固定问题规模，$f$ 已知 & 工作量增长时的扩展模型 \\
+资源增加降低理想时间 & 完美负载分配，额外成本为零 & 通信、调度与同步测量 \\
+Roofline 给出性能上界 & $B$、$I$、$P_{\max}$ 定义一致 & 指令、访存与并发限制 \\
+\bottomrule
+\end{tabularx}
+\vspace{6mm}\notebox{讨论页同时写清结论的支撑依据与适用范围，让后续问题可以落到具体变量和实验上。}
+\end{frame}
+
+\begin{frame}{结论：问题、机制与证据形成完整链条}
+\vspace{5mm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.30\textwidth}\metric{\linewidth}{01}{定义问题}
+\vspace{5mm}\par 说明输入、计算语义与评价边界，给出清晰的研究问题。
+\end{column}
+\begin{column}{.30\textwidth}\metric{\linewidth}{02}{解释机制}
+\vspace{5mm}\par 用公式、代码和数据依赖说明映射方式及成本来源。
+\end{column}
+\begin{column}{.30\textwidth}\metric{\linewidth}{03}{建立证据}
+\vspace{5mm}\par 让图表、实验条件与适用范围共同支撑最终判断。
+\end{column}
+\end{columns}
+\vspace{7mm}\insight{每一页承担一个明确任务；每个关键判断都有可检查的依据。}
+\end{frame}
+\EndSlide{感谢聆听\quad 欢迎讨论}

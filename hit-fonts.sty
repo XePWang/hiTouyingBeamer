@@ -1,0 +1,23 @@
+%% Font files and their licenses are listed in fonts/README.md.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{hit-fonts}[2026/10/09 v2.2026a bundled OFL fonts]
+\RequirePackage{fontspec}
+\IfFileExists{fonts/source-sans/SourceSans3-Regular.ttf}{%
+  \setmainfont{SourceSans3}[Path=fonts/source-sans/,Extension=.ttf,
+    UprightFont=*-Regular,BoldFont=*-Bold,ItalicFont=*-It,BoldItalicFont=*-BoldIt]
+  \setsansfont{SourceSans3}[Path=fonts/source-sans/,Extension=.ttf,
+    UprightFont=*-Regular,BoldFont=*-Bold,ItalicFont=*-It,BoldItalicFont=*-BoldIt]
+}{}
+\IfFileExists{fonts/jetbrains-mono/JetBrainsMono-Regular.ttf}{%
+  \setmonofont{JetBrainsMono}[Path=fonts/jetbrains-mono/,Extension=.ttf,
+    UprightFont=*-Regular,BoldFont=*-Bold,ItalicFont=*-Italic,BoldItalicFont=*-BoldItalic,
+    Ligatures=NoCommon]
+}{}
+\IfFileExists{fonts/source-han-sans/SourceHanSansCN-Regular.otf}{%
+  \setCJKmainfont{SourceHanSansCN}[Path=fonts/source-han-sans/,Extension=.otf,
+    UprightFont=*-Regular,BoldFont=*-Bold,ItalicFont=*-Regular,BoldItalicFont=*-Bold]
+  \setCJKsansfont{SourceHanSansCN}[Path=fonts/source-han-sans/,Extension=.otf,
+    UprightFont=*-Regular,BoldFont=*-Bold,ItalicFont=*-Regular,BoldItalicFont=*-Bold]
+  \setCJKmonofont{SourceHanSansCN}[Path=fonts/source-han-sans/,Extension=.otf,
+    UprightFont=*-Regular,BoldFont=*-Bold]
+}{}

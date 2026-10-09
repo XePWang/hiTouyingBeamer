@@ -1,0 +1,14 @@
+\documentclass[aspectratio=169,fontset=none]{ctexbeamer}
+\usetheme{hitacademic}
+\providecommand{\AuthorCase}{0}
+\begin{document}
+\begin{frame}{无效输入检查}
+  \ifcase\AuthorCase
+    \hitcolumnratio{0}
+  \or
+    \hitcolumnratio{1}
+  \or
+    \fig{missing-author-image.png}
+  \fi
+\end{frame}
+\end{document}

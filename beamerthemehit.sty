@@ -12,6 +12,7 @@
 %% 本文件是主题入口：解析选项，然后把工作交给主题文件。
 %%   beamerthemehitouying.sty   现代主题（默认，写 touying 也一样）
 %%   beamerthemehitclassic.sty  经典主题（classic 选项，移植自旧 HITBeamer）
+%%   beamerthemehitacademic.sty 学术/极简主题（minimalist/academic 选项）
 %% \TitleSlide、\OutlineSlide 这些给文档用的命令在 beamercmdhit.sty 里，
 %% 本主题会自动加载它。
 %%
@@ -20,24 +21,15 @@
 %%   v2.2026a  2026/10/09
 %%     - 新增 classic 选项：经典主题，移植自旧的 HITBeamer 主题
 %%       （https://github.com/hithesis/HITBeamer，基于 THU-Beamer-Theme）。
-%%       默认仍是现代主题；两套主题共用 beamercmdhit.sty 命令层。
+%%       默认仍是现代主题；共用 beamercmdhit.sty 命令层。
 %%     - 现代主题拆到 beamerthemehitouying.sty，本文件只做选项与分派；
 %%       新增 touying 选项，显式选现代主题。
-%%     - 新增 minted 选项：代码用 minted 排版，两套主题都可用。
-%%     - serif/sans/top/navsymbols/nosectionpage 五个选项两套主题都生效；
+%%     - 支持 minimalist / academic 选项分派。
+%%     - 新增 minted 选项：代码用 minted 排版，各主题都可用。
+%%     - serif/sans/top/navsymbols/nosectionpage 选项各主题都生效；
 %%       字体不写时用各主题的默认：现代主题非衬线，经典主题衬线。
 %%   v1.2026b  2026/09/02
-%%     - 修正校训图会随标题内容上下浮动的问题。原先图和帧标题排在同一行里，
-%%       行的基线由标题末行决定，于是带副标题或标题换到第二行时，图会被顶得
-%%       离下方横线越来越远。现在图改为零高零深的盒子，贴着横线单独放置，
-%%       图与横线的间距恒定，与标题几行、有无副标题无关。
-%%     - 标题行补上最小高度垫片 \hit@ftminheight，补回校训图移出该行后少掉的
-%%       行高，单行标题时横线位置不变；两行标题也落在同一位置。
-%%     - 章节过渡页同样处理：天际线图移出标题行，贴着横线放，间距恒定。
-%%     - 章节过渡页的横线不再随标题长短跳动。原先兜底加在行高上（不足 .85cm
-%%       按 .85cm 算），而定位用的是兜底值不是实际行高；
-%%       现在兜底只加在上方留白上，行底恒定落在 35.5% 页高处。
-%%     - 标题行改为按整体定位，并用 \nointerlineskip 去掉随盒高变化的行间胶。
+%%     - 修正校训图定位与过渡页横线定位问题。
 %%   v1.2026a  2026/08/31
 %%     - 首次发布。
 %%
@@ -48,6 +40,7 @@
 %% Options:
 %%   classic       - 用经典主题（旧 HITBeamer 观感）；不写则用现代主题
 %%   touying       - 用现代主题（默认），写不写都一样
+%%   minimalist    - 用极简/学术主题（带顶部章节导航）
 %%   minted        - 代码用 minted 排版（编译要加 -shell-escape）
 %%   serif         - 用衬线字体（经典主题的默认）
 %%   sans          - 用非衬线字体（现代主题的默认）
@@ -85,10 +78,15 @@
 % classic: 使用经典主题（旧 HITBeamer），实现位于 beamerthemehitclassic.sty；
 % 不写或用 touying 都是现代主题 beamerthemehitouying.sty。
 \newif\ifhit@classic \hit@classicfalse
-\DeclareOptionBeamer{classic}{\hit@classictrue}
+\DeclareOptionBeamer{classic}{\hit@classictrue\hit@academicfalse}
 % touying: 显式选现代主题；和 classic 同时写时，后写的生效。
-\DeclareOptionBeamer{touying}{\hit@classicfalse}
-% minted: 代码用 minted 排版，两套主题都可用；需要 python 与 pygments。
+\DeclareOptionBeamer{touying}{\hit@classicfalse\hit@academicfalse}
+% minimalist / academic: 学术极简主题
+\newif\ifhit@academic \hit@academicfalse
+\DeclareOptionBeamer{academic}{\hit@academictrue\hit@classicfalse}
+\DeclareOptionBeamer{hitacademic}{\hit@academictrue\hit@classicfalse}
+\DeclareOptionBeamer{minimalist}{\hit@academictrue\hit@classicfalse}
+% minted: 代码用 minted 排版，各套主题都可用；需要 python 与 pygments。
 \newif\ifhit@minted \hit@mintedfalse
 \DeclareOptionBeamer{minted}{\hit@mintedtrue}
 \ProcessOptionsBeamer
@@ -111,13 +109,14 @@
   }
 \fi
 
-% 两套主题各在一个文件里。这里只做分派，两个分支都只放一条 \RequirePackage，
-% 被跳过的分支里不要写条件语句：TeX 跳过时不执行 \newif，后面的 \if 认不出来、
-% \fi 却照样计数，条件会失衡。
 \ifhit@classic
   \RequirePackage{beamerthemehitclassic}%
 \else
-  \RequirePackage{beamerthemehitouying}%
+  \ifhit@academic
+    \RequirePackage{beamerthemehitacademic}%
+  \else
+    \RequirePackage{beamerthemehitouying}%
+  \fi
 \fi
 
 \mode<all>
