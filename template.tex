@@ -2,9 +2,15 @@
 % 编译：latexmk -xelatex template.tex （参考文献需要 biber，latexmk 会自动调用）
 % 画幅写 169 或 43；还可以加基础字号，从 8pt 到 20pt 都支持，
 % 版式里的间距和字号都是相对值，会跟着一起缩放。
+% 本文件同时是现代与经典两套主题的示例：把 \usetheme 那行写成 [classic] 就是
+% 经典主题观感，正文不用动。
 \documentclass[aspectratio=169]{ctexbeamer} % 或 43
 % 主题选项写在方括号里，可以叠加，例如 \usetheme[serif,top,navsymbols]{hit}：
-%   serif         用衬线字体；不写则用非衬线。
+%   minted        用 minted 排版代码；不写则不用（编译要加 -shell-escape）。
+%   classic       换用经典主题（旧 HITBeamer 观感）。
+%   touying       用现代主题（默认），写不写都一样。
+%   serif         用衬线字体；经典主题不写就是衬线。
+%   sans          用非衬线字体；现代主题不写就是非衬线。
 %   top           正文顶部对齐；不写则垂直居中。
 %   navsymbols    显示右下角翻页按钮；不写则隐藏。
 %   nosectionpage 不在每个 \section 处自动插入章节过渡页。
@@ -24,6 +30,8 @@
 %   \hitfooter{文字}                        页脚左侧文字，默认继承 \institute
 %   \renewcommand{\hitoutlinetitle}{目录}   目录页的标题
 %   \renewcommand{\hitvipath}{vi/}          视觉形象资产目录，想把 vi/ 挪走时改这里
+%   \renewcommand{\themetitle}{...}         标题；各主题预置了自己的
+%   \renewcommand{\themeauthor}{...}        作者；各主题预置了自己的
 %   \definecolor{hitprimary}{HTML}{166183}主色，默认取自校徽
 %   \setbeamerfont{frametitle}{size=\Large} 单独调某个元素的字号
 
@@ -36,9 +44,9 @@
 \usepackage[backend=biber,style=gb7714-2015]{biblatex}
 \addbibresource{ref.bib}
 
-\title{更现代的哈尔滨工业大学 Beamer 幻灯片主题—\textsc{hiTouyingBeamer}}
-\subtitle{V1.2026b}
-\author{Schrödinger Blume}
+\title{\themetitle}
+\subtitle{V2.2026a}
+\author{\themeauthor}
 \date{\today}
 \institute{哈尔滨工业大学}
 % \hitfooter{哈工大}  % 页脚左侧文字，默认继承 \institute
@@ -113,6 +121,16 @@
   从多个备选项中选择一个。
 \end{frame}
 
+\subsection{列表动画}
+
+\begin{frame}{列表动画}
+  \begin{itemize}[<+->]
+    \item 用 \texttt{[<+->]} 让列表条目逐条出现
+    \item 当前帧的每个条目都可以带自己的覆盖指令
+    \item 也可以用 \texttt{\textbackslash item<2->} 单独指定
+  \end{itemize}
+\end{frame}
+
 \subsection{数学公式动画}
 
 \begin{frame}{数学公式动画}
@@ -160,6 +178,138 @@
   Beamer 与绝大多数 LaTeX 宏包兼容，
   详见 \href{https://ctan.org/topic/presentation}{CTAN presentation 主题分类}。
 \end{frame}
+
+\subsection{块与公式}
+
+\begin{frame}{块与公式}
+  \begin{exampleblock}{无编号公式}
+    \begin{equation*}
+      J(\theta) = \mathbb{E}_{\pi_\theta}[G_t] = \sum_{s\in\mathcal{S}} d^\pi(s)V^\pi(s)
+    \end{equation*}
+  \end{exampleblock}
+  \begin{block}{块环境}
+    普通块与示例块各有一套配色；可用的定理环境有
+    \texttt{theorem}、\texttt{corollary}、\texttt{definition}、\texttt{example} 等。
+  \end{block}
+\end{frame}
+
+\subsection{多行公式}
+
+\begin{frame}{多行对齐}
+  \begin{exampleblock}{多行对齐}
+    \begin{align}
+      Q_\mathrm{target} &= r+\gamma Q^\pi(s^\prime, \pi_\theta(s^\prime)+\epsilon)\\
+      \epsilon &\sim\mathrm{clip}(\mathcal{N}(0, \sigma), -c, c)\nonumber
+    \end{align}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{编号多行公式}
+  \begin{exampleblock}{编号多行公式}
+    \small
+    \begin{multline}
+      A=\lim_{n\rightarrow\infty}\Delta x\left(a^{2}+\left(a^{2}+2a\Delta x+\left(\Delta x\right)^{2}\right)\right.\\
+      +\left(a^{2}+2\cdot2a\Delta x+2^{2}\left(\Delta x\right)^{2}\right)
+      +\left(a^{2}+2\cdot3a\Delta x+3^{2}\left(\Delta x\right)^{2}\right)\\
+      \left.+\left(a^{2}+2\cdot(n-1)a\Delta x+(n-1)^{2}\left(\Delta x\right)^{2}\right)\right)
+      =\frac{1}{3}\left(b^{3}-a^{3}\right)
+    \end{multline}
+  \end{exampleblock}
+\end{frame}
+
+\subsection{表格}
+
+\begin{frame}{表格与引用}
+  \begin{table}[h]
+    \centering
+    \caption{编号与含义}
+    \begin{tabular}{cl}
+      \toprule
+      编号 & 含义 \\
+      \midrule
+      1 & 4.0 \\
+      2 & 3.7 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+  参考文献用 biblatex 的 \texttt{gb7714-2015} 样式排
+  \parencite{beamer2026}；也可以用 \texttt{\textbackslash upcite}
+  做上标引用\upcite{beamer2026}。
+\end{frame}
+
+\subsection{命令与环境}
+
+\begin{frame}{命令与环境}
+  \begin{exampleblock}{命令}
+    \centering\small
+    \begin{tabular}{llll}
+      \cmd{section} & \cmd{subsection} & \cmd{emph} & \cmd{footnote} \\
+      节 & 小节 & 强调 & 脚注 \\\hline
+      \cmd{item} & \cmd{caption} & \cmd{label} & \cmd{cite} \\
+      列表条目 & 标题 & 标号 & 引用 \\
+    \end{tabular}
+  \end{exampleblock}
+  \begin{exampleblock}{环境}
+    \centering\small
+    \begin{tabular}{lll}
+      \env{table} & \env{figure} & \env{equation} \\
+      表格 & 图片 & 公式 \\\hline
+      \env{itemize} & \env{enumerate} & \env{description} \\
+      无编号列表 & 编号列表 & 描述 \\
+    \end{tabular}
+  \end{exampleblock}
+\end{frame}
+
+\subsection{定理与物理宏}
+
+\begin{frame}{定理与物理宏}
+  \begin{definition}[数列极限]
+    对任意 $\varepsilon>0$，存在 $N\in\symbb{N}$，使得当 $n>N$ 时，有
+    \[
+      \abs{a_{n}-a}<\varepsilon.
+    \]
+    那么我们称数列 $\qty{a_{n}}$ \emph{收敛}，记为 $\lim_{n\to\infty}a_{n}=a$。
+  \end{definition}
+  \begin{block}{注}
+    可用的定理环境有 \env{theorem}、\env{corollary}、\env{definition}、
+    \env{example} 等；\texttt{physics} 与 \texttt{unicode-math} 的
+    \cmd{qty}、\cmd{abs}、\cmd{symbb} 等命令两套主题都可用。
+  \end{block}
+\end{frame}
+
+\subsection{代码清单}
+
+\begin{frame}[fragile]{代码清单}
+  \begin{columns}
+    \begin{column}{.5\textwidth}
+\begin{lstlisting}[language=TeX]
+$V = \frac{4}{3}\pi r^3$
+
+\[
+  V = \frac{4}{3}\pi r^3
+\]
+\end{lstlisting}
+    \end{column}
+    \begin{column}{.45\textwidth}
+      \begin{tikzpicture}
+        \draw[-latex] (0, 0) -- (2.2, 0) node[below] {$x$};
+        \draw[-latex] (0, 0) -- (0, 2.2) node[left] {$y$};
+        \draw[fill=gray!50] (0, 1) -- (1, 2) -- (2, 1) -- (1, 0) -- cycle;
+      \end{tikzpicture}
+      $V = \frac{4}{3}\pi r^3$
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% minted 代码清单示例：把 \usetheme 那行改成 \usetheme[minted]{hit}，
+% 编译时加 -shell-escape；打开注释即可试用。
+% \begin{frame}[fragile]{minted 代码}
+%   \begin{minted}{python}
+%     import numpy as np
+%     print("Hello World")
+%     np.array([x for x in range(5) if x % 2 == 1])
+%   \end{minted}
+% \end{frame}
 
 \section{其他功能}
 
@@ -237,9 +387,13 @@
     \item 您可以使用：\texttt{git clone
       https://github.com/hithesis/hiTouyingBeamer}
       获取本模板，并以 \texttt{template.tex} 为骨架创建演示文稿。
-    \item 本模板的灵感及理念来自于 Touying 主题
-      \href{https://github.com/sjtug/touying-sjtu}%
-      {touying-simpl-sjtu} 移植而来，在此致谢。
+    \item \textbf{现代主题}（默认）移植自上海交通大学 Touying 主题
+      \href{https://github.com/sjtug/touying-sjtu}{touying-simpl-sjtu}，
+      并借鉴了其 dewdrop 主题，作者 SchrodingerBlume。
+    \item \textbf{经典主题}（\texttt{classic} 选项）移植自
+      \href{https://github.com/hithesis/HITBeamer}{HITBeamer}
+      （作者 syvshc），它基于
+      \href{https://github.com/Trinkle23897/THU-Beamer-Theme}{THU-Beamer-Theme}。
   \end{itemize}
 \end{frame}
 

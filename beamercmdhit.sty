@@ -9,13 +9,20 @@
 %% This work has the LPPL maintenance status `maintained'.
 %% The Current Maintainer of this work is SchrodingerBlume.
 %%
-%% 本文件只放给文档用的命令，样式在 beamerthemehit.sty 里。
+%% 本文件放给文档用的命令与配套包：\TitleSlide 等整页命令、\upcite、\cmd、\env
+%% 等辅助命令，以及 unicode-math、physics、listings 等配套包（原先在旧
+%% HITBeamer 的 hit-extra.sty 里，现在两套主题共用）。样式在主题文件里。
 %% 配 \usetheme{hit} 使用时，主题会自动加载本文件，命令走完整的定制版式；
 %% 换成 Madrid 等内建主题时，同名命令改用标准 Beamer 写法，例如 \titlepage、
 %% \tableofcontents，文档不必改动即可编译。
 %%
 %%
 %% 更新记录
+%%   v2.2026a  2026/10/09  加 classic 主题分支：\TitleSlide 等命令在经典主题下
+%%                         按旧 HITBeamer 观感实现；旧 hit-extra 的配套包与
+%%                         命令（unicode-math、physics、listings、\upcite、
+%%                         \cmd、\env 等）移入本文件，两套主题共用；
+%%                         图表标题编号（caption[numbered]）也在这里统一打开。
 %%   v1.2026b  2026/09/02  配合主题修正校训图定位，本文件无功能改动。
 %%   v1.2026a  2026/08/16  首次发布。
 %%
@@ -23,7 +30,7 @@
 %%   \usepackage{beamercmdhit}    % 写在 \usetheme 前后皆可
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamercmdhit}[2026/09/02 v1.2026b document commands for the HIT beamer theme]
+\ProvidesPackage{beamercmdhit}[2026/10/09 v2.2026a document commands for the HIT beamer theme]
 
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
@@ -32,9 +39,54 @@
 % \hit@theme@loaded 这个标记由 beamerthemehit.sty 设置。
 % 下面每条命令在调用时检查它是否存在，据此决定走完整版式还是标准 Beamer 写法。
 
+% -------------------------------------------------- 配套包（原 hit-extra） ----
+% 这一组包原先在旧 HITBeamer 的 hit-extra.sty 里，现在放在共用命令层，
+% 两套主题、乃至换成 Madrid 等内建主题时都能用。
+\RequirePackage{ctex}
+\RequirePackage{xeCJKfntef}
+\RequirePackage{latexsym,amsmath,xcolor,multicol,booktabs,calligra}
+\RequirePackage{graphicx,listings,stackengine}
+\RequirePackage{physics}
+\RequirePackage[bold-style=ISO]{unicode-math}
+
+% 图表标题带编号（表 1、图 1……），两套主题共用。
+\setbeamertemplate{caption}[numbered]
+
+% -------------------------------------------------- 配套命令（原 hit-extra） ----
+% biblatex-gb7714-2015 也定义 \upcite，它用 \newcommand，所以这里放到文档开始时
+% 用 \providecommand 补一个缺省定义，谁先定义就听谁的。
+\AtBeginDocument{\providecommand{\upcite}[1]{\textsuperscript{\cite{#1}}}}
+
+\def\cmd#1{\texttt{\color{red}\fontsize{8}{9.6}\selectfont $\backslash$#1}}
+\def\env#1{\texttt{\color{blue}\fontsize{8}{9.6}\selectfont #1}}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+\definecolor{halfgray}{gray}{0.55}
+
+\lstset{
+    basicstyle=\ttfamily\fontsize{8}{9.6}\selectfont,
+    keywordstyle=\bfseries\color{deepblue},
+    emphstyle=\ttfamily\color{deepred},
+    stringstyle=\color{deepgreen},
+    numbers=left,
+    numberstyle=\fontsize{7}{8.4}\selectfont\color{halfgray},
+    rulesepcolor=\color{red!20!green!20!blue!20},
+    frame=shadowbox,
+}
+
+% 页脚页码的分隔符；经典主题的页脚用它。
+\newcommand{\frameofframes}{/}
+\newcommand{\setframeofframes}[1]{\renewcommand{\frameofframes}{#1}}
+
 % ------------------------------------------------------------ shared tools ----
 % vi/ 视觉形象资产目录。放在别处则用 \renewcommand 改掉此值。
 \newcommand{\hitvipath}{vi/}
+
+% 当前主题的标题与作者，模板里写 \title{\themetitle}、\author{\themeauthor}。
+% 各主题文件会覆盖成自己的；没加载 hit 主题时用下面这份缺省。
+\newcommand{\themetitle}{哈尔滨工业大学 Beamer 幻灯片主题——\textsc{hiTouyingBeamer}}
+\newcommand{\themeauthor}{SchrodingerBlume 和 syvshc}
 
 % 把盒子等比缩到指定高度，高与深一起计算。
 % 不用 \resizebox{!}{h}，它只管基线以上的部分，遇到基线居中的 minipage 会缩不到位。
@@ -52,8 +104,12 @@
 \@ifundefined{ifhit@navsymbols}{\newif\ifhit@navsymbols}{}
 \newcommand{\hit@navinbg}{%
   \ifhit@navsymbols
-    \node[anchor=base east,inner sep=0]
-      at (\the\dimexpr\paperwidth-.7cm\relax,\the\hit@footbase) {\hit@footright{}};
+    % 背景按钮依赖现代主题页脚里的 \hit@footright/\hit@footbase；
+    % 经典主题没有这两个（它的按钮是 beamer 自带的），跳过即可。
+    \ifdefined\hit@footright
+      \node[anchor=base east,inner sep=0]
+        at (\the\dimexpr\paperwidth-.7cm\relax,\the\hit@footbase) {\hit@footright{}};
+    \fi
   \fi}
 % 深色底的页面上按钮要提亮，否则看不见。
 \newcommand{\hit@navinbglight}{%
@@ -62,15 +118,30 @@
   \hit@navinbg
   \endgroup}
 
-% 设置页脚左边的文字。未加载 hit 主题时此命令不做任何事。
+% 设置页脚左边的文字。现代主题用 \hit@footerleft；经典主题不读取它，
+% 未加载 hit 主题时两个都没定义，命令自动成为空操作。
 \newcommand{\hitfooter}[1]{%
-  \ifdefined\hit@theme@loaded\renewcommand{\hit@footerleft}{#1}\fi}
+  \ifdefined\hit@footerleft\renewcommand{\hit@footerleft}{#1}\fi}
+
+% 命令分派：\hit@theme@loaded 由主题设置，\hit@theme@classic 由经典主题设置。
+% 现代主题走 themed 实现，经典主题走 classic 实现，没加载主题则退回标准写法。
+% 带参数的命令（\FocusSlide、\EndSlide）靠 \expandafter 让目标宏留在条件外面，
+% 用户写在命令后面的 {参数} 才能接上，别改成在分支里直接调用。
 
 % -------------------------------------------------------------- title page ----
 % 白色标题页：右上角校徽，底部校园线稿背景。文字如何排列见主题的 title page 模板。
 \newcommand{\TitleSlide}{%
-  \ifdefined\hit@theme@loaded\expandafter\hit@TitleSlide@themed
-  \else\expandafter\hit@TitleSlide@plain\fi}
+  \ifdefined\hit@theme@loaded
+    \expandafter\hit@TitleSlide@pick
+  \else
+    \expandafter\hit@TitleSlide@plain
+  \fi}
+\newcommand{\hit@TitleSlide@pick}{%
+  \ifdefined\hit@theme@classic
+    \expandafter\hit@TitleSlide@classic
+  \else
+    \expandafter\hit@TitleSlide@themed
+  \fi}
 \newcommand{\hit@TitleSlide@plain}{%
   \begin{frame}[plain,noframenumbering]\titlepage\end{frame}}
 \newcommand{\hit@TitleSlide@themed}{%
@@ -92,9 +163,25 @@
   \end{frame}
   \endgroup}
 
+% 经典主题的标题页：classic 的 \titlepage（标题框是主色底白字），下方居中摆校徽。
+% 经典主题没有新版那张主楼底图，这里保持旧版的样子。
+\newcommand{\hit@TitleSlide@classic}{%
+  \begin{frame}[plain,noframenumbering]
+    \titlepage
+    \begin{center}
+      \includegraphics[width=.2\linewidth]{\hitvipath hit-vi-logo-horizontal}%
+    \end{center}
+  \end{frame}}
+
 % 蓝色标题页：上半是校园照片，下半是主色色块。
 % 色块高度随文字变化，但有上限和下限，文字在色块内垂直居中。
 % 文字过多则先降字号，降到最小仍超出则整体缩小。
+% 两套主题下都长这样，所以这些字号也放在共用层。
+% 用 \Large 这类相对字号，文档基础字号在 8pt 到 20pt 之间改时会跟着变。
+\setbeamerfont{hit blue title}{size=\Large,series=\bfseries}
+\setbeamerfont{hit blue subtitle}{size=\normalsize,series=\bfseries}
+\setbeamerfont{hit blue text}{size=\normalsize,series=\bfseries}
+\setbeamerfont{hit blue institute}{size=\small,series=\bfseries}
 \newbox\hit@bluebox
 \newbox\hit@blueauthbox
 \newdimen\hit@bluehgt
@@ -128,8 +215,11 @@
     \end{minipage}}}
 
 \newcommand{\BlueTitleSlide}{%
-  \ifdefined\hit@theme@loaded\expandafter\hit@BlueTitleSlide@themed
-  \else\expandafter\hit@TitleSlide@plain\fi}
+  \ifdefined\hit@theme@loaded
+    \expandafter\hit@BlueTitleSlide@themed
+  \else
+    \expandafter\hit@TitleSlide@plain
+  \fi}
 \newcommand{\hit@BlueTitleSlide@themed}{%
   \begingroup
   \setbeamertemplate{background}{%
@@ -230,8 +320,17 @@
   \noindent\box\hit@outbox}
 
 \newcommand{\OutlineSlide}{%
-  \ifdefined\hit@theme@loaded\expandafter\hit@OutlineSlide@themed
-  \else\expandafter\hit@OutlineSlide@plain\fi}
+  \ifdefined\hit@theme@loaded
+    \expandafter\hit@OutlineSlide@pick
+  \else
+    \expandafter\hit@OutlineSlide@plain
+  \fi}
+\newcommand{\hit@OutlineSlide@pick}{%
+  \ifdefined\hit@theme@classic
+    \expandafter\hit@OutlineSlide@classic
+  \else
+    \expandafter\hit@OutlineSlide@themed
+  \fi}
 \newcommand{\hit@OutlineSlide@plain}{%
   \begin{frame}{\hitoutlinetitle}\tableofcontents\end{frame}}
 \newcommand{\hit@OutlineSlide@themed}{%
@@ -258,10 +357,26 @@
   \end{frame}
   \endgroup}
 
+% 经典主题的目录页：带深蓝标题条的普通帧，条目样式由 circles 内主题决定
+% （编号圆球）。sectionstyle 用 show，和旧版目录帧一致（不淡化任何一节）。
+\newcommand{\hit@OutlineSlide@classic}{%
+  \begin{frame}[plain,noframenumbering]{\hitoutlinetitle}
+    \tableofcontents[sectionstyle=show,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]
+  \end{frame}}
+
 % ------------------------------------------------------------- focus slide ----
 \newcommand{\FocusSlide}{%
-  \ifdefined\hit@theme@loaded\expandafter\hit@FocusSlide@themed
-  \else\expandafter\hit@FocusSlide@plain\fi}
+  \ifdefined\hit@theme@loaded
+    \expandafter\hit@FocusSlide@pick
+  \else
+    \expandafter\hit@FocusSlide@plain
+  \fi}
+\newcommand{\hit@FocusSlide@pick}{%
+  \ifdefined\hit@theme@classic
+    \expandafter\hit@FocusSlide@classic
+  \else
+    \expandafter\hit@FocusSlide@themed
+  \fi}
 \newcommand{\hit@FocusSlide@plain}[1]{%
   \begin{frame}[c,plain,noframenumbering]\centering{\Large #1\par}\end{frame}}
 \newcommand{\hit@FocusSlide@themed}[1]{%
@@ -278,10 +393,29 @@
   \end{frame}
   \endgroup}
 
+% 经典主题的强调页：整页主色底、白色大字。
+\newcommand{\hit@FocusSlide@classic}[1]{%
+  \begingroup
+  \setbeamercolor{background canvas}{bg=hitprimary}%
+  \begin{frame}[c,plain,noframenumbering]
+    \centering
+    {\color{hitneutrallightest}\Large #1\par}%
+  \end{frame}
+  \endgroup}
+
 % -------------------------------------------------------------- end slides ----
 \newcommand{\EndSlide}{%
-  \ifdefined\hit@theme@loaded\expandafter\hit@EndSlide@themed
-  \else\expandafter\hit@EndSlide@plain\fi}
+  \ifdefined\hit@theme@loaded
+    \expandafter\hit@EndSlide@pick
+  \else
+    \expandafter\hit@EndSlide@plain
+  \fi}
+\newcommand{\hit@EndSlide@pick}{%
+  \ifdefined\hit@theme@classic
+    \expandafter\hit@EndSlide@classic
+  \else
+    \expandafter\hit@EndSlide@themed
+  \fi}
 \newcommand{\hit@EndSlide@plain}[1]{%
   \begin{frame}[c,plain,noframenumbering]\centering{\LARGE\bfseries #1\par}\end{frame}}
 % 结束页底图和封面是同一张，主楼在右下方，所以内容同样靠左上排，
@@ -306,5 +440,12 @@
     \end{minipage}%
   \end{frame}
   \endgroup}
+
+% 经典主题的结束页：居中致谢文字，旧版最后一页的写法。
+\newcommand{\hit@EndSlide@classic}[1]{%
+  \begin{frame}[c,plain,noframenumbering]
+    \centering
+    {\Huge #1\par}%
+  \end{frame}}
 
 \endinput

@@ -5,6 +5,7 @@
 *.log
 *.nav
 *.snm
+*.vrb
 *.toc
 *.out
 *.fls
@@ -17,6 +18,7 @@
 *.run.xml
 *.synctex.gz
 
-# 除 template.pdf 外的 PDF 都不入库
+# 除预览 PDF（template.pdf 现代、template-classic.pdf 经典）外的 PDF 都不入库
 *.pdf
 !template.pdf
+!template-classic.pdf

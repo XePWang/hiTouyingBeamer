@@ -1,0 +1,155 @@
+%% beamerthemehitclassic.sty
+%% 哈尔滨工业大学 Beamer 经典主题 (Classic Theme for the HIT Beamer Theme)
+%%
+%% License: LaTeX Project Public License 1.3c
+%%
+%% This work may be distributed and/or modified under the conditions of the
+%% LaTeX Project Public License, either version 1.3c of this license or (at
+%% your option) any later version: https://www.latex-project.org/lppl.txt
+%% This work has the LPPL maintenance status `maintained'.
+%% The Current Maintainer of this work is SchrodingerBlume.
+%% The Original Author of this theme is syvshc, Ported by SchrodingerBlume.
+%%
+%% 移植自 HITBeamer：https://github.com/hithesis/HITBeamer
+%% 它基于 THU-Beamer-Theme：https://github.com/Trinkle23897/THU-Beamer-Theme
+%% 原主色为 rgb(0,.40,.56)（#00668E），本移植统一改用 #166183。
+%% 原 hit-extra.sty 的配套包与命令（unicode-math、physics、listings、\upcite、
+%% \cmd、\env 等）现置于共用命令层 beamercmdhit.sty 中；
+%% 本文件只保留经典主题自己的外观：serif 字体主题、链接颜色与版式。
+%% 旧版的 fira、siyuan 字体选项不再提供，minted 改成主题选项，
+%% 写法是 \usetheme[classic,minted]{hit}。
+%%
+%% 本文件由 beamerthemehit.sty 在 classic 选项下加载，一般不用直接调用。
+%%
+%% 下面这行给 build-previews.sh 自动发现主题、预览画幅与输出文件名；
+%% 经典主题按旧 HITBeamer 的习惯用 4:3 画幅：
+%% Preview: theme=classic aspectratio=43 output=template-classic.pdf
+%%
+%% 更新记录
+%%   v2.2026a  2026/10/09  首次移植；主色统一为 #166183；fira、siyuan 选项
+%%                         不再保留，minted 改为共用主题选项。
+%%
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemehitclassic}[2026/10/09 v2.2026a classic theme for the HIT beamer theme]
+
+% 单独加载本文件时（不经主题入口），选项开关还没定义，这里补一套默认值：
+% 非 sans、非 top、不显示导航按钮、自动插章节目录帧。
+\@ifundefined{ifhit@sans}{\newif\ifhit@sans}{}
+\@ifundefined{ifhit@top}{\newif\ifhit@top}{}
+\@ifundefined{ifhit@navsymbols}{\newif\ifhit@navsymbols}{}
+\@ifundefined{ifhit@sectionpage}{\newif\ifhit@sectionpage\hit@sectionpagetrue}{}
+
+% 经典主题自己的外观设置。配套包与命令在共用命令层 beamercmdhit.sty 里。
+% 字体默认衬线；写了 sans 选项才保持非衬线。
+\ifhit@sans\else\usefonttheme[stillsansserifmath]{serif}\fi
+\hypersetup{colorlinks,linkcolor=,urlcolor=magenta}
+
+% 和 beamerthemehit.sty 一样设置标记并加载命令层，单独加载本文件也成立；
+% 从主题入口进来时这两句重复执行，重复无害。
+\def\hit@theme@loaded{}
+\RequirePackage{beamercmdhit}
+
+% 本主题的标题与作者；模板里用 \title{\themetitle}、\author{\themeauthor}。
+\renewcommand{\themetitle}{经典的哈尔滨工业大学 Beamer 幻灯片主题——HITBeamer}
+\renewcommand{\themeauthor}{syvshc}
+
+\mode<presentation>
+
+% 正文垂直对齐：默认跟 beamer 居中，top 选项改为顶部对齐。
+\ifhit@top\beamer@centeredfalse\fi
+
+% ---------------------------------------------------------------- colors ----
+% 主色与现代主题同值；中性色命令层也会用到，一并定义。
+\definecolor{hitprimary}{HTML}{166183}
+\definecolor{hitneutraldarkest}{HTML}{000000}
+\definecolor{hitneutraldark}{HTML}{202020}
+\definecolor{hitneutrallight}{HTML}{F3F3F3}
+\definecolor{hitneutrallightest}{HTML}{FFFFFF}
+% 旧文档和旧代码里的颜色名 HIT，保留为别名。
+\colorlet{HIT}{hitprimary}
+
+% 命令层靠这个标记判断该走 classic 分支。
+\def\hit@theme@classic{}
+
+% ----------------------------------------------------------------- outer ----
+% 顶部深蓝渐变条，含章节名与每小节一枚 mini frame 方块。
+\useoutertheme[footline=authorinstitutetitle]{smoothbars}
+\useinnertheme{circles}
+
+% 两行页脚，上排作者 / 机构，下排短标题 / 页码。
+\setbeamertemplate{footline}{%
+  \begin{beamercolorbox}[colsep=1.5pt]{upper separation line foot}
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[ht=2.25ex,dp=.8ex,%
+    leftskip=.3cm,rightskip=.3cm plus1fil]{author in head/foot}%
+    \leavevmode{\usebeamerfont{author in head/foot}\insertshortauthor}%
+    \hfill%
+    {\usebeamerfont{institute in head/foot}\usebeamercolor[fg]{institute in head/foot}\insertshortinstitute}%
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[ht=2.25ex,dp=.8ex,%
+    leftskip=.3cm,rightskip=.3cm plus1fil]{title in head/foot}%
+    {\usebeamerfont{title in head/foot}\insertshorttitle}%
+    \hfill%
+    {\usebeamerfont{frame number}\usebeamercolor[fg]{frame number}\insertframenumber~\frameofframes~\inserttotalframenumber}%
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[colsep=1.5pt]{lower separation line foot}
+  \end{beamercolorbox}%
+}
+
+% 深蓝标题条、palette 由主色派生（smoothbars 顶栏、title page）。
+\setbeamercolor{footline}{bg=hitprimary}
+\setbeamercolor{frametitle}{bg=hitprimary,fg=white}
+\setbeamercolor{title}{bg=hitprimary}
+\setbeamerfont{frametitle}{size=\large}
+% navsymbols 选项显示 beamer 右下角那组翻页按钮；默认隐藏。
+\ifhit@navsymbols\else\setbeamertemplate{navigation symbols}{}\fi
+\setbeamertemplate{bibliography item}[text]
+
+\setbeamercolor{palette primary}{use=structure,fg=white,bg=structure.fg}
+\setbeamercolor{palette secondary}{use=structure,fg=white,bg=structure.fg!75!black}
+\setbeamercolor{palette tertiary}{use=structure,fg=white,bg=structure.fg!50!black}
+\setbeamercolor{palette quaternary}{fg=white,bg=structure.fg!50!black}
+\setbeamercolor{titlelike}{parent=palette primary}
+
+\setbeamercolor{block title}{bg=hitprimary,fg=white}
+\setbeamercolor*{block title example}{use={normal text,example text},bg=white,fg=hitprimary}
+\setbeamercolor{fine separation line}{}
+\setbeamercolor{item projected}{fg=white}
+\setbeamercolor{palette sidebar primary}{use=normal text,fg=normal text.fg}
+\setbeamercolor{palette sidebar quaternary}{use=structure,fg=structure.fg}
+\setbeamercolor{palette sidebar secondary}{use=structure,fg=structure.fg}
+\setbeamercolor{palette sidebar tertiary}{use=normal text,fg=normal text.fg}
+\setbeamercolor{section in sidebar}{fg=brown}
+\setbeamercolor{section in sidebar shaded}{fg=grey}
+\setbeamercolor{separation line}{}
+\setbeamercolor{sidebar}{bg=hitprimary}
+\setbeamercolor{sidebar}{parent=palette primary}
+\setbeamercolor{structure}{fg=hitprimary}
+\setbeamercolor{subsection in sidebar}{fg=brown}
+\setbeamercolor{subsection in sidebar shaded}{fg=grey}
+
+% 每个 \section 和 \subsection 后都插一页目录，当前项高亮、其余淡化。
+% 目录条目过多时整体缩小，避免溢出页面。
+% nosectionpage 选项跳过 \section 后的目录帧（\subsection 的照旧）。
+\newcommand{\hit@classic@tocframe}{%
+  \begin{frame}
+    \setbox\@tempboxa=\vbox{\hsize=\textwidth
+      \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]}%
+    \@tempdima=\dimexpr\textheight-2pt\relax
+    \ifdim\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax>\@tempdima
+      \hit@scaleboxto\@tempboxa{\@tempdima}%
+    \fi
+    \noindent\box\@tempboxa
+  \end{frame}}
+\AtBeginSection[]{
+  \ifhit@sectionpage
+    \hit@classic@tocframe
+  \fi
+}
+\AtBeginSubsection[]{
+  \hit@classic@tocframe
+}
+
+\mode<all>
+\endinput
