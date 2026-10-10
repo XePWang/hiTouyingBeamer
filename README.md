@@ -71,7 +71,7 @@ latexmk -xelatex template.tex
 | `\renewcommand{\hitvipath}{...}` | `vi/` 视觉形象资产目录路径（默认 `vi/`） |
 
 封面与目录属于前置页，用小写罗马数字计数（`i`、`ii`、`iii`），正文页码从 1 重新起算
-（现代与极简主题；经典主题按 beamer 原样连续编号）。`\hitfooter` 在现代与极简主题生效，
+（现代主题；极简主题显示当前正文帧号；经典主题按 beamer 原样连续编号）。`\hitfooter` 在现代与极简主题生效，
 经典主题的页脚固定为旧 HITBeamer 的两行样式。
 
 ## 主题选项
@@ -85,14 +85,16 @@ latexmk -xelatex template.tex
 \usetheme[sans]{hit}           % 用非衬线字体（现代与极简主题的默认）
 \usetheme[top]{hit}            % 正文顶端对齐（默认垂直居中）
 \usetheme[navsymbols]{hit}     % 显示右下角翻页按钮（默认隐藏）
-\usetheme[nosectionpage]{hit}  % 不自动生成章节过渡页（经典主题下跳过 \section 后的目录帧）
+\usetheme[nosectionpage]{hit}  % 不自动生成章节过渡页（经典与现代主题跳过 \section 后的目录帧）
+\usetheme[sectionpage]{hit}    % 显式生成章节过渡页（极简主题默认不插过渡页，加此项开启）
 ```
 
 ## 极简主题（minimalist 选项）
 
 `\usetheme[minimalist]{hit}` 切换到极简学术主题（原 Academic 风格）：
-- **顶部章节导航**：页眉左侧展示校徽，右侧展示完整章节导航并高亮当前节，附录页自动切换为 APPENDIX 标识。
-- **浅灰背景画布**：正文使用高雅浅灰背景（`#F7F9FB`）与蓝色标题栏（`#0070BE`），适合学术答辩与技术报告。
+- **顶部章节导航**：页眉左侧展示校徽，右侧等宽连续铺满 2–6 章节导航，当前章以整格蓝色（`#0070C0`）高亮，附录页自动切换为 APPENDIX 标识。
+- **浅灰背景画布**：正文使用高雅浅灰背景（`#F7F9FB`）与蓝色标题栏（`#0070C0`），适合学术答辩与技术报告。
+- **三段式致谢页**：`\EndSlide{...}` 统一提供顶部校徽、中部通栏蓝底白色致谢、底部作者/单位信息的典雅版式。
 - **共用正文**：与现代主题、经典主题共用完全一致的 LaTeX 正文与命令，无需按主题分支编写内容。
 - **选项兼容**：支持 `top`（顶端对齐）、`navsymbols`（导航按钮）、`serif`（衬线字体）、`sectionpage`（显式开启章节过渡页）等通用选项。
 

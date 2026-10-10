@@ -112,26 +112,18 @@
   }
 \fi
 
-% 主题实现集中在 styles/ 目录下，以标准包上下文加载
+% 主题实现集中在 styles/ 目录下。
+% 将 styles/ 加入输入路径搜索列表，以标准 \RequirePackage 加载对应主题包。
+\providecommand*{\input@path}{}
+\g@addto@macro\input@path{{styles/}}
+
 \ifhit@classic
-  \@pushfilename
-  \xdef\@currname{beamerthemehitclassic}%
-  \xdef\@currext{sty}%
-  \input{styles/beamerthemehitclassic.sty}%
-  \@popfilename
+  \RequirePackage{beamerthemehitclassic}%
 \else
   \ifhit@minimalist
-    \@pushfilename
-    \xdef\@currname{beamerthemehitminimalist}%
-    \xdef\@currext{sty}%
-    \input{styles/beamerthemehitminimalist.sty}%
-    \@popfilename
+    \RequirePackage{beamerthemehitminimalist}%
   \else
-    \@pushfilename
-    \xdef\@currname{beamerthemehitouying}%
-    \xdef\@currext{sty}%
-    \input{styles/beamerthemehitouying.sty}%
-    \@popfilename
+    \RequirePackage{beamerthemehitouying}%
   \fi
 \fi
 

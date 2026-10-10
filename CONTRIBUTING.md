@@ -14,7 +14,7 @@ CI 会扫描所有 `.sty` 里的公开命令（`\newcommand`、`\providecommand`
 
 - 加进 `tests/commands.tex`（真实调用一遍）；
 - 在 README 的命令表里记一笔；
-- 确认它在 `[\usetheme{hit}]` 和 `[\usetheme[classic]{hit}]` 下行为一致，除非有意为之。
+- 确认它在 `\usetheme{hit}`、`\usetheme[classic]{hit}` 和 `\usetheme[minimalist]{hit}` 下行为一致，除非有意为之。
 
 ### 2. 主题输出变化必须人工审核
 

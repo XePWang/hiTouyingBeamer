@@ -292,10 +292,29 @@
   \end{frame}}
 
 % -------------------------------------------------------------- end slides ----
+% 致谢页采用三段结构：上方居中校徽，中部通栏蓝带与白色致谢文字，下方通用作者/单位信息。
 \long\def\hit@endpage#1{%
-  \begin{frame}[plain]
-    \centering\includegraphics[width=4.4cm]{\hit@logopath}\par\vspace{.9cm}
-    {\color{brand}\fontsize{26}{34}\selectfont\bfseries #1\par}
+  \begin{frame}[plain,noframenumbering]
+    \begin{tikzpicture}[remember picture,overlay]
+      % 顶部校徽
+      \node[inner sep=0pt] at ([yshift=-0.16\paperheight]current page.north)
+        {\includegraphics[width=4.8cm,height=0.18\paperheight,keepaspectratio]{\hit@logopath}};
+      % 中部通栏主色带
+      \fill[brand] (current page.south west) ++(0, 0.26\paperheight) rectangle ++(\paperwidth, 0.42\paperheight);
+      % 色带内居中白色致谢文字
+      \node[inner sep=0pt,text=white] at ([yshift=0.47\paperheight]current page.south) {%
+        \parbox[c][0.42\paperheight][c]{0.88\paperwidth}{\centering\fontsize{28}{36}\selectfont\bfseries #1}%
+      };
+      % 底部通用信息（作者与单位均非空时并排显示；为空时静默省略）
+      \node[inner sep=0pt,text=brand,align=center] at ([yshift=0.13\paperheight]current page.south) {%
+        \fontsize{9.5}{13}\selectfont
+        \ifx\insertauthor\@empty\else\insertauthor\fi
+        \ifx\insertinstitute\@empty\else
+          \ifx\insertauthor\@empty\else\quad\fi
+          \insertinstitute
+        \fi
+      };
+    \end{tikzpicture}%
   \end{frame}}
 
 \mode<all>
