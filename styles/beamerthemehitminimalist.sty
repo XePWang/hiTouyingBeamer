@@ -178,6 +178,159 @@
 \newif\ifhit@inappendix \hit@inappendixfalse
 \apptocmd{\appendix}{\hit@inappendixtrue}{}{}
 
+% --------------------------------------------------- navigation auto-fit & outline ----
+\newcount\hit@meas@linecount
+\newdimen\hit@meas@maxlinewidth
+\newdimen\hit@meas@totalh
+\newbox\hit@meas@testbox
+\newbox\hit@meas@linebox
+\newbox\hit@meas@natbox
+\newif\ifhit@meas@more
+\newif\ifhit@meas@fitok
+
+\def\hit@meas@measure#1#2#3#4{%
+  \setbox\hit@meas@testbox=\vbox{%
+    \hsize=#2\relax
+    \centering
+    \fontsize{#3}{#4}\selectfont\bfseries
+    \def\newline{\unskip\break\ignorespaces}%
+    \let\\\newline
+    #1\par
+  }%
+  \hit@meas@totalh=\dimexpr\ht\hit@meas@testbox+\dp\hit@meas@testbox\relax
+  \hit@meas@linecount=0\relax
+  \hit@meas@maxlinewidth=0pt\relax
+  \setbox\hit@meas@testbox=\vbox{%
+    \unvcopy\hit@meas@testbox
+    \hit@meas@pop@lines
+  }%
+}
+
+\def\hit@meas@pop@lines{%
+  \loop
+    \unskip\unkern\unpenalty
+    \setbox\hit@meas@linebox=\lastbox
+    \ifvoid\hit@meas@linebox
+      \hit@meas@morefalse
+    \else
+      \hit@meas@moretrue
+      \global\advance\hit@meas@linecount by 1\relax
+      \setbox\hit@meas@natbox=\hbox{\unhcopy\hit@meas@linebox\unskip\unkern}%
+      \ifdim\wd\hit@meas@natbox>\hit@meas@maxlinewidth
+        \global\hit@meas@maxlinewidth=\wd\hit@meas@natbox
+      \fi
+    \fi
+  \ifhit@meas@more\repeat
+}
+
+\def\hit@check@fit#1#2#3#4#5{%
+  \hit@meas@measure{#1}{#2}{#4}{#5}%
+  \hit@meas@fitoktrue
+  \ifnum\hit@meas@linecount>2\relax \hit@meas@fitokfalse \fi
+  \ifdim\hit@meas@maxlinewidth>#2\relax \hit@meas@fitokfalse \fi
+  \ifdim\hit@meas@totalh>#3\relax \hit@meas@fitokfalse \fi
+}
+
+\def\hit@nav@fsize{7.5}
+\def\hit@nav@fskip{9.5}
+
+\def\hit@autofit@nav#1#2#3{%
+  % #1=title, #2=target_w, #3=target_h
+  \hit@check@fit{#1}{#2}{#3}{7.5}{9.5}%
+  \ifhit@meas@fitok
+    \def\hit@nav@fsize{7.5}\def\hit@nav@fskip{9.5}%
+  \else
+    \hit@check@fit{#1}{#2}{#3}{7.0}{8.8}%
+    \ifhit@meas@fitok
+      \def\hit@nav@fsize{7.0}\def\hit@nav@fskip{8.8}%
+    \else
+      \hit@check@fit{#1}{#2}{#3}{6.5}{8.2}%
+      \ifhit@meas@fitok
+        \def\hit@nav@fsize{6.5}\def\hit@nav@fskip{8.2}%
+      \else
+        \hit@check@fit{#1}{#2}{#3}{6.0}{7.6}%
+        \ifhit@meas@fitok
+          \def\hit@nav@fsize{6.0}\def\hit@nav@fskip{7.6}%
+        \else
+          \hit@check@fit{#1}{#2}{#3}{5.5}{7.0}%
+          \ifhit@meas@fitok
+            \def\hit@nav@fsize{5.5}\def\hit@nav@fskip{7.0}%
+          \else
+            \hit@check@fit{#1}{#2}{#3}{5.0}{6.4}%
+            \ifhit@meas@fitok
+              \def\hit@nav@fsize{5.0}\def\hit@nav@fskip{6.4}%
+            \else
+              \def\hit@nav@fsize{5.0}\def\hit@nav@fskip{6.4}%
+              \expandafter\@ifundefined{hit@navwarn@\detokenize{#1}}{%
+                \expandafter\gdef\csname hit@navwarn@\detokenize{#1}\endcsname{}%
+                \PackageWarning{beamerthemehitminimalist}{%
+                  Section title "#1" in navigation exceeds 2 lines even at minimum font size (5pt).\MessageBreak
+                  Please consider using \protect\section[short title]{full title} to provide a shorter title%
+                }%
+              }{}%
+            \fi
+          \fi
+        \fi
+      \fi
+    \fi
+  \fi
+}
+
+\def\hit@ol@curfsize{12}
+\def\hit@ol@curskip{14}
+
+\def\hit@autofit@outline#1#2#3#4#5{%
+  \hit@check@fit{#1}{#2}{#3}{#4}{#5}%
+  \ifhit@meas@fitok
+    \def\hit@ol@curfsize{#4}\def\hit@ol@curskip{#5}%
+  \else
+    \hit@autofit@outline@ladder{#1}{#2}{#3}%
+  \fi
+}
+
+\def\hit@autofit@outline@ladder#1#2#3{%
+  \hit@check@fit{#1}{#2}{#3}{11.0}{13.0}%
+  \ifhit@meas@fitok \def\hit@ol@curfsize{11.0}\def\hit@ol@curskip{13.0}%
+  \else
+    \hit@check@fit{#1}{#2}{#3}{10.0}{12.0}%
+    \ifhit@meas@fitok \def\hit@ol@curfsize{10.0}\def\hit@ol@curskip{12.0}%
+    \else
+      \hit@check@fit{#1}{#2}{#3}{9.0}{11.0}%
+      \ifhit@meas@fitok \def\hit@ol@curfsize{9.0}\def\hit@ol@curskip{11.0}%
+      \else
+        \hit@check@fit{#1}{#2}{#3}{8.0}{10.0}%
+        \ifhit@meas@fitok \def\hit@ol@curfsize{8.0}\def\hit@ol@curskip{10.0}%
+        \else
+          \hit@check@fit{#1}{#2}{#3}{7.5}{9.5}%
+          \ifhit@meas@fitok \def\hit@ol@curfsize{7.5}\def\hit@ol@curskip{9.5}%
+          \else
+            \hit@check@fit{#1}{#2}{#3}{7.0}{8.8}%
+            \ifhit@meas@fitok \def\hit@ol@curfsize{7.0}\def\hit@ol@curskip{8.8}%
+            \else
+              \hit@check@fit{#1}{#2}{#3}{6.5}{8.2}%
+              \ifhit@meas@fitok \def\hit@ol@curfsize{6.5}\def\hit@ol@curskip{8.2}%
+              \else
+                \hit@check@fit{#1}{#2}{#3}{6.0}{7.6}%
+                \ifhit@meas@fitok \def\hit@ol@curfsize{6.0}\def\hit@ol@curskip{7.6}%
+                \else
+                  \def\hit@ol@curfsize{6.0}\def\hit@ol@curskip{7.6}%
+                  \expandafter\@ifundefined{hit@olwarn@\detokenize{#1}}{%
+                    \expandafter\gdef\csname hit@olwarn@\detokenize{#1}\endcsname{}%
+                    \PackageWarning{beamerthemehitminimalist}{%
+                      Section title "#1" in Outline exceeds capsule boundaries even at 6pt.\MessageBreak
+                      Please consider using \protect\section[short title]{full title} to provide a shorter title%
+                    }%
+                  }{}%
+                \fi
+              \fi
+            \fi
+          \fi
+        \fi
+      \fi
+    \fi
+  \fi
+}
+
 \newcommand{\hit@minimalist@nav}{%
   \ifhit@inappendix
     \begin{tikzpicture}[x=1pt,y=1pt,baseline=0pt]
@@ -218,6 +371,7 @@
               \count@=1\relax
             \fi
           \fi
+          \hit@autofit@nav{##2}{\dimexpr\dimen@-4pt\relax}{\dimexpr\hit@headheight-4pt\relax}%
           \hyperlink{Navigation##3}{%
             \begin{tikzpicture}[x=1pt,y=1pt,baseline=0pt]
               \useasboundingbox (0,0) rectangle (\the\dimen@,\the\hit@headheight);
@@ -228,7 +382,7 @@
                   at (0.5*\the\dimen@, 0.5*\the\hit@headheight) {%
                   \def\newline{\unskip\break\ignorespaces}%
                   \let\\\newline
-                  \fontsize{7.5}{9.5}\selectfont\bfseries ##2%
+                  \fontsize{\hit@nav@fsize}{\hit@nav@fskip}\selectfont\bfseries ##2%
                 };
               \else
                 \fill[canvas] (0,0) rectangle (\the\dimen@,\the\hit@headheight);
@@ -241,7 +395,7 @@
                   at (0.5*\the\dimen@, 0.5*\the\hit@headheight) {%
                   \def\newline{\unskip\break\ignorespaces}%
                   \let\\\newline
-                  \fontsize{7.5}{9.5}\selectfont ##2%
+                  \fontsize{\hit@nav@fsize}{\hit@nav@fskip}\selectfont ##2%
                 };
               \fi
             \end{tikzpicture}%
@@ -323,6 +477,14 @@
   \fi
 }
 
+\def\hit@ol@prep@section#1#2#3#4#5{%
+  \ifnum#5=\c@part\relax
+    \hit@autofit@outline{#2}{\dimexpr\hit@ol@wtitle-16pt\relax}{\dimexpr\hit@ol@caph-4pt\relax}{\hit@ol@fsize}{\hit@ol@skip}%
+    \expandafter\xdef\csname hit@ol@sz@#1\endcsname{\hit@ol@curfsize}%
+    \expandafter\xdef\csname hit@ol@sk@#1\endcsname{\hit@ol@curskip}%
+  \fi
+}
+
 \def\hit@ol@render@section#1#2#3#4#5{%
   \ifnum#5=\c@part\relax
     \advance\hit@nav@cur by 1\relax
@@ -341,18 +503,62 @@
     % 标题胶囊（带跳转链接与换行居中支持）
     \fill[brand,rounded corners=0.5*\the\hit@ol@caph]
       ([xshift=\hit@ol@xtitle]rowB) rectangle ++(\the\hit@ol@wtitle, \the\hit@ol@caph);
+    \@ifundefined{hit@ol@sz@#1}{%
+      \def\hit@ol@curfsize{\hit@ol@fsize}%
+      \def\hit@ol@curskip{\hit@ol@skip}%
+    }{%
+      \edef\hit@ol@curfsize{\csname hit@ol@sz@#1\endcsname}%
+      \edef\hit@ol@curskip{\csname hit@ol@sk@#1\endcsname}%
+    }%
     \node[inner sep=0pt,text width=\the\dimexpr\hit@ol@wtitle-16pt\relax,align=center,text=white]
       at ([xshift=\the\dimexpr\hit@ol@xtitle+0.5\hit@ol@wtitle\relax,yshift=0.5*\the\hit@ol@caph]rowB) {%
       \hyperlink{Navigation#3}{%
         \def\newline{\unskip\break\ignorespaces}%
         \let\\\newline
-        \fontsize{\hit@ol@fsize}{\hit@ol@skip}\selectfont\bfseries #2%
+        \fontsize{\hit@ol@curfsize}{\hit@ol@curskip}\selectfont\bfseries #2%
       }%
     };
   \fi
 }
 
 \def\hit@outline@draw{%
+  % 统计当前主章节数 N
+  \hit@nav@count=0\relax
+  \let\slideentry\hit@ol@slideentry
+  \let\sectionentry\hit@ol@count@section
+  \dohead
+
+  % 根据章节数 N 动态调整胶囊高度、行距与字号
+  \ifcase\hit@nav@count
+    \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
+  \or
+    \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
+  \or
+    \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
+  \or
+    \hit@ol@caph=25pt\hit@ol@pitch=46pt\def\hit@ol@fsize{11.5}\def\hit@ol@skip{13.5}%
+  \or
+    \hit@ol@caph=23pt\hit@ol@pitch=38pt\def\hit@ol@fsize{11}\def\hit@ol@skip{13}%
+  \or
+    \hit@ol@caph=21pt\hit@ol@pitch=32pt\def\hit@ol@fsize{10}\def\hit@ol@skip{12}%
+  \else
+    \hit@ol@caph=19pt\hit@ol@pitch=27pt\def\hit@ol@fsize{9}\def\hit@ol@skip{11}%
+  \fi
+
+  % 右侧章节胶囊几何参数
+  \hit@ol@xnum=0.44\paperwidth
+  \hit@ol@wnum=34pt
+  \hit@ol@gap=8pt
+  \hit@ol@xtitle=\dimexpr\hit@ol@xnum+\hit@ol@wnum+\hit@ol@gap\relax
+  \hit@ol@xend=0.94\paperwidth
+  \hit@ol@wtitle=\dimexpr\hit@ol@xend-\hit@ol@xtitle\relax
+
+  % 预先在 TikZ 画布外部测量并自适应各章节标题字号与行距
+  \let\slideentry\hit@ol@slideentry
+  \let\sectionentry\hit@ol@prep@section
+  \dohead
+
+  % 开始纯粹的图形与节点绘制
   \begin{tikzpicture}[remember picture,overlay]
     % 浅灰画布背景
     \fill[canvas] (current page.south west) rectangle (current page.north east);
@@ -381,37 +587,6 @@
     \node[text=white,inner sep=0pt] at ([xshift=0.5\hit@ol@TotalW]W) {%
       \fontsize{24}{28}\selectfont\bfseries \hitoutlinetitle%
     };
-
-    % 统计当前主章节数 N
-    \hit@nav@count=0\relax
-    \let\slideentry\hit@ol@slideentry
-    \let\sectionentry\hit@ol@count@section
-    \dohead
-
-    % 根据章节数 N 动态调整胶囊高度、行距与字号
-    \ifcase\hit@nav@count
-      \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
-    \or
-      \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
-    \or
-      \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
-    \or
-      \hit@ol@caph=25pt\hit@ol@pitch=46pt\def\hit@ol@fsize{11.5}\def\hit@ol@skip{13.5}%
-    \or
-      \hit@ol@caph=23pt\hit@ol@pitch=38pt\def\hit@ol@fsize{11}\def\hit@ol@skip{13}%
-    \or
-      \hit@ol@caph=21pt\hit@ol@pitch=32pt\def\hit@ol@fsize{10}\def\hit@ol@skip{12}%
-    \else
-      \hit@ol@caph=19pt\hit@ol@pitch=27pt\def\hit@ol@fsize{9}\def\hit@ol@skip{11}%
-    \fi
-
-    % 右侧章节胶囊几何参数
-    \hit@ol@xnum=0.44\paperwidth
-    \hit@ol@wnum=34pt
-    \hit@ol@gap=8pt
-    \hit@ol@xtitle=\dimexpr\hit@ol@xnum+\hit@ol@wnum+\hit@ol@gap\relax
-    \hit@ol@xend=0.94\paperwidth
-    \hit@ol@wtitle=\dimexpr\hit@ol@xend-\hit@ol@xtitle\relax
 
     % 逐章排版编号胶囊与标题胶囊，垂直居中排布
     \hit@nav@cur=0\relax
