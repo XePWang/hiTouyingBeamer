@@ -26,6 +26,8 @@
 
 \RequirePackage{iftex}
 \RequireXeTeX
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
 
 \mode<presentation>
 
@@ -89,7 +91,7 @@
 }
 
 % ----------------------------------------------------------------- colors ----
-\definecolor{brand}{HTML}{0070BE}
+\definecolor{brand}{HTML}{0070C0}
 \definecolor{cyan}{HTML}{00A3D9}
 \definecolor{ink}{HTML}{263B4D}
 \definecolor{muted}{HTML}{526779}
@@ -152,39 +154,96 @@
   \fi}
 
 % ---------------------------------------------------------------- headline ----
-% 固定页眉高度；章节名称由正文自动生成，当前章节显示蓝色背景。
-% 导航盒子的测量与输出在同一分组内完成，保留局部赋值。
+% 页眉统一高度（约为页面高度的 11.55%）；左侧为校徽，右侧为连续导航区。
+% 导航区按正文实际章节数 N (2–6) 自动等分，连续铺满可用宽度；最后一格吸收尺寸余量。
+% 当前章以 brand (#0070C0) 底色充满整格宽高，其余章节以浅灰底与灰色文字显示。
 \def\hit@logopath{\hitvipath hit-vi-logo-horizontal}
-\newdimen\hit@navavail
-\newsavebox\hit@navbox
-\newsavebox\hit@headbox
-\newcommand{\hit@navavailwd}{\dimexpr\paperwidth-3.0cm-1.4cm\relax}
-% 测量副本按自然宽度装箱，保留 Beamer 的章节筛选与跳转实现。
-\let\hit@navnatural\insertsectionnavigationhorizontal
-\patchcmd{\hit@navnatural}{\hbox to #1}{\hbox}{}{%
-  \PackageError{beamerthemehitminimalist}{Cannot measure section navigation}%
-    {The Beamer section navigation implementation has changed.}}
-\newcommand{\hit@nav}{%
-  \insertsectionnavigationhorizontal{\hit@navavailwd}{}{\hfill}}
-\newcommand{\hit@headnav}{%
-  \begingroup
-  \setbox\hit@navbox=\hbox{\fontsize{7.7}{10}\selectfont
-    \let\insertsectionnavigationhorizontal\hit@navnatural
-    \hit@nav}%
-  \hit@navavail=\hit@navavailwd
-  \ifdim\wd\hit@navbox>\hit@navavail
-    \setbox\hit@navbox=\hbox{\resizebox{\hit@navavail}{!}{\box\hit@navbox}}%
+\newdimen\hit@headheight
+\setlength{\hit@headheight}{0.1155\paperheight}
+\newdimen\hit@headlogowd
+\setlength{\hit@headlogowd}{0.25\paperwidth}
+\newdimen\hit@navavailwd
+\setlength{\hit@navavailwd}{\dimexpr\paperwidth - \hit@headlogowd\relax}
+
+\newcount\hit@nav@count
+\newcount\hit@nav@cur
+\newdimen\hit@nav@cellwd
+\newdimen\hit@nav@lastcellwd
+\newcount\hit@nav@prevactive
+\newif\ifhit@inappendix \hit@inappendixfalse
+\apptocmd{\appendix}{\hit@inappendixtrue}{}{}
+
+\newcommand{\hit@minimalist@nav}{%
+  \ifhit@inappendix
+    \hbox to \hit@navavailwd{\hfill\color{muted}\fontsize{8.5}{11}\selectfont\bfseries APPENDIX\hspace*{0.04\paperwidth}}%
   \else
-    \setbox\hit@navbox=\hbox{\fontsize{7.7}{10}\selectfont\hit@nav}%
+    \hit@nav@count=0\relax
+    \def\slideentry##1##2##3##4##5##6{}%
+    \def\sectionentry##1##2##3##4##5{%
+      \ifnum##5=\c@part\relax
+        \advance\hit@nav@count by 1\relax
+      \fi
+    }%
+    \dohead
+    \ifnum\hit@nav@count<1\relax
+      \hbox to \hit@navavailwd{\hfill}%
+    \else
+      \hit@nav@cellwd=\dimexpr\hit@navavailwd / \hit@nav@count\relax
+      \hit@nav@lastcellwd=\dimexpr\hit@navavailwd - \hit@nav@cellwd * (\hit@nav@count - 1)\relax
+      \hit@nav@cur=0\relax
+      \hit@nav@prevactive=0\relax
+      \def\sectionentry##1##2##3##4##5{%
+        \ifnum##5=\c@part\relax
+          \advance\hit@nav@cur by 1\relax
+          \ifnum\hit@nav@cur=\hit@nav@count
+            \dimen@=\hit@nav@lastcellwd
+          \else
+            \dimen@=\hit@nav@cellwd
+          \fi
+          \count@=0\relax
+          \ifnum\c@section=##1\relax
+            \ifnum\c@section>0\relax
+              \count@=1\relax
+            \fi
+          \fi
+          \hyperlink{Navigation##3}{%
+            \begin{tikzpicture}[x=1pt,y=1pt]
+              \clip (0,0) rectangle (\the\dimen@,\the\hit@headheight);
+              \ifnum\count@=1\relax
+                \fill[brand] (0,0) rectangle (\the\dimen@,\the\hit@headheight);
+                \node[inner sep=0pt,text width=\the\dimexpr\dimen@-4pt\relax,align=center,text=white]
+                  at (0.5*\the\dimen@, 0.5*\the\hit@headheight)
+                  {\fontsize{7.5}{9.5}\selectfont\bfseries ##2};
+              \else
+                \fill[canvas] (0,0) rectangle (\the\dimen@,\the\hit@headheight);
+                \ifnum\hit@nav@cur>1\relax
+                  \ifnum\hit@nav@prevactive=0\relax
+                    \draw[linegray,line width=0.5pt] (0, 0.2*\the\hit@headheight) -- (0, 0.8*\the\hit@headheight);
+                  \fi
+                \fi
+                \node[inner sep=0pt,text width=\the\dimexpr\dimen@-4pt\relax,align=center,text=muted]
+                  at (0.5*\the\dimen@, 0.5*\the\hit@headheight)
+                  {\fontsize{7.5}{9.5}\selectfont ##2};
+              \fi
+            \end{tikzpicture}%
+          }%
+          \hit@nav@prevactive=\count@
+        \fi
+      }%
+      \hbox to \hit@navavailwd{\dohead\hss}%
+    \fi
   \fi
-  \hbox to\hit@navavail{\unhbox\hit@navbox\hfil}%
-  \endgroup}
+}
+
 \setbeamertemplate{headline}{%
-  \sbox\hit@headbox{\hbox{\hspace{.7cm}%
-    \parbox[c][.67cm][c]{3.0cm}{\includegraphics[width=2.9cm]{\hit@logopath}}%
-    \parbox[c][.67cm][c]{\hit@navavailwd}{\hit@headnav}}}%
-  \hbox to \paperwidth{\hss\box\hit@headbox\hss}%
-  \nointerlineskip{\color{linegray}\rule{\paperwidth}{.45pt}}}
+  \hbox to \paperwidth{%
+    \parbox[c][\hit@headheight][c]{\hit@headlogowd}{%
+      \hspace*{0.03\paperwidth}\includegraphics[height=0.065\paperheight,width=\dimexpr\hit@headlogowd-0.05\paperwidth\relax,keepaspectratio]{\hit@logopath}\hfill
+    }%
+    \hit@minimalist@nav
+  }%
+  \nointerlineskip{\color{linegray}\rule{\paperwidth}{0.45pt}}%
+}
 
 % -------------------------------------------------------------- frametitle ----
 \setbeamercolor{framesubtitle}{fg=white}
@@ -238,10 +297,6 @@
     \centering\includegraphics[width=4.4cm]{\hit@logopath}\par\vspace{.9cm}
     {\color{brand}\fontsize{26}{34}\selectfont\bfseries #1\par}
   \end{frame}}
-
-% ---------------------------------------------------------------- appendix ----
-% 附录里把顶部章节导航换成 APPENDIX 标记。
-\apptocmd{\appendix}{\renewcommand{\hit@nav}{\hfill\color{muted}APPENDIX\hspace{.4cm}}}{}{}
 
 \mode<all>
 \endinput
