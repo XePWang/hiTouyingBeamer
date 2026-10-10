@@ -1,4 +1,0 @@
-# 第三方许可证按上游原始字节保存，避免检出时转换换行导致 SHA-256 不一致。
-fonts/source-han-sans/LICENSE.txt -text
-fonts/source-sans/LICENSE.md -text
-fonts/jetbrains-mono/OFL.txt -text

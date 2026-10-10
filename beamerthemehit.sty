@@ -92,9 +92,6 @@
 % minted: 代码用 minted 排版，各套主题都可用；需要 python 与 pygments。
 \newif\ifhit@minted \hit@mintedfalse
 \DeclareOptionBeamer{minted}{\hit@mintedtrue}
-% nofonts: 不自动加载模板随附字体，供用户自行配置字体
-\newif\ifhit@nofonts \hit@nofontsfalse
-\DeclareOptionBeamer{nofonts}{\hit@nofontstrue}
 \ProcessOptionsBeamer
 
 % 设置一个标记，beamercmdhit.sty 里的命令靠它判断是否为本主题，然后加载命令层。
@@ -115,26 +112,26 @@
   }
 \fi
 
-% 主题实现位于 styles/ 目录下；若存在则以标准包上下文加载，否则回退到根目录 \RequirePackage
-\def\hit@load@theme#1{%
-  \IfFileExists{styles/#1.sty}{%
-    \@pushfilename
-    \xdef\@currname{#1}%
-    \xdef\@currext{sty}%
-    \input{styles/#1.sty}%
-    \@popfilename
-  }{%
-    \RequirePackage{#1}%
-  }%
-}
-
+% 主题实现集中在 styles/ 目录下，以标准包上下文加载
 \ifhit@classic
-  \hit@load@theme{beamerthemehitclassic}%
+  \@pushfilename
+  \xdef\@currname{beamerthemehitclassic}%
+  \xdef\@currext{sty}%
+  \input{styles/beamerthemehitclassic.sty}%
+  \@popfilename
 \else
   \ifhit@minimalist
-    \hit@load@theme{beamerthemehitminimalist}%
+    \@pushfilename
+    \xdef\@currname{beamerthemehitminimalist}%
+    \xdef\@currext{sty}%
+    \input{styles/beamerthemehitminimalist.sty}%
+    \@popfilename
   \else
-    \hit@load@theme{beamerthemehitouying}%
+    \@pushfilename
+    \xdef\@currname{beamerthemehitouying}%
+    \xdef\@currext{sty}%
+    \input{styles/beamerthemehitouying.sty}%
+    \@popfilename
   \fi
 \fi
 

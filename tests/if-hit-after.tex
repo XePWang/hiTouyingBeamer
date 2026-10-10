@@ -1,9 +1,0 @@
-% 接口矩阵测试入口：主题与加载顺序由本文件给出，正文见 interface-matrix.tex。
-\providecommand{\hitdemo}{hit}
-\providecommand{\hitorder}{after}
-\ifnum\pdfstrcmp{\hitdemo}{Madrid}=0
-  \documentclass[aspectratio=169]{ctexbeamer}
-\else
-  \documentclass[aspectratio=169,fontset=none]{ctexbeamer}
-\fi
-\input{tests/interface-matrix}

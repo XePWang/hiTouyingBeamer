@@ -5,28 +5,24 @@
 %% License: LaTeX Project Public License 1.3c
 %%
 %% 派生自 hithesis/hiTouyingBeamer 提交 a1b947ed63671135884f4417d2c91cb9e9555b59，
-%% 上游作者 SchrodingerBlume（LPPL 维护者）。修改历史见 Git 提交记录。
+%% 原 Academic 主题贡献者 XeP / XePWang，上游作者 SchrodingerBlume（LPPL 维护者）。
+%% 修改历史详见 Git 提交记录。
 %%
-%% 本文件只负责视觉：蓝色标题栏、浅灰画布、顶部章节导航、双语封面、目录版块版式。
-%% 公共命令、内容组件与目录数据由 beamercmdhit.sty、hit-content.sty、hit-outline.sty
-%% 提供，各主题共用同一份实现。
+%% 本文件只负责视觉外观：蓝色标题栏、浅灰画布、顶部章节导航、白色封面等。
+%% 公共命令与通用版式由 beamercmdhit.sty 提供，各主题共用。
 %%
 %% 更新记录
 %%   v2.2026a 2026/10/09  主题正式迁移为 Minimalist（原 Academic 风格）；
 %%                         适配 v2 共享架构与跨主题接口。
-%%   v2.3     2026/10/02  接入公共内容层；不再重定义内容组件，只配置颜色与字号；
-%%                         目录版块版式改由公共渲染器排布条目。
+%%   v2.3     2026/10/02  接入公共内容层；不再重定义内容组件，只配置颜色与字号。
 %%   v2.2     2026/10/01  首次以独立主题形式提供 Academic 风格。
 %%
 %% Usage:
-%%   \documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
+%%   \documentclass[aspectratio=169]{ctexbeamer}
 %%   \usetheme[minimalist]{hit}
-%%
-%% 字体与素材：字体来自 hit-fonts.sty 加载的 fonts/ 目录；
-%% 封面标识用 \hitlogo{文件路径}，插图目录用 \hitfigures{路径}。
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerthemehitminimalist}[2026/10/09 v2.2026a hiTouyingBeamer Minimalist]
+\ProvidesPackage{beamerthemehitminimalist}[2026/10/09 v2.2026a HIT beamer minimalist theme]
 
 \RequirePackage{iftex}
 \RequireXeTeX
@@ -44,38 +40,35 @@
 \@ifundefined{ifhit@sans}{\newif\ifhit@sans}{}
 \@ifundefined{ifhit@top}{\newif\ifhit@top}{}
 \@ifundefined{ifhit@navsymbols}{\newif\ifhit@navsymbols}{}
-\@ifundefined{ifhit@sectionpage}{\newif\ifhit@sectionpage\hit@sectionpagefalse}{}
+\@ifundefined{ifhit@sectionpage}{\newif\ifhit@sectionpage}{}
 \@ifundefined{ifhit@opt@sectionpage}{\newif\ifhit@opt@sectionpage}{}
-\@ifundefined{ifhit@nofonts}{\newif\ifhit@nofonts}{}
 
-\RequirePackage{lmodern}
-\ifhit@nofonts\else
-  \RequirePackage{hit-fonts}
-\fi
+% 字体支持：沿用标准 ctex/TeX Live 配置，serif 选项启用衬线字体
 \ifhit@serif
   \usefonttheme[stillsansserifmath]{serif}
-\else
-  \usefonttheme{professionalfonts}
 \fi
+
 \RequirePackage{totcount}
 \@ifundefined{c@hit@sectiontotal}{\newcounter{hit@sectiontotal}\regtotcounter{hit@sectiontotal}}{}
 
 % 正文垂直对齐：默认居中，top 选项改为顶部对齐
 \ifhit@top\beamer@centeredfalse\fi
 
-% Minimalist 主题默认不插入章节过渡页（除非显式指定 sectionpage），目录默认不显示子章节。
+% Minimalist 主题默认不插入章节过渡页（除非显式指定 sectionpage 选项）
 \ifhit@opt@sectionpage
-  \hitsectionpages
+  \hit@sectionpagetrue
 \else
-  \hitnosectionpages
+  \hit@sectionpagefalse
 \fi
-\hitnooutlinesubs
-\hittocmode{block}
 
 % 表格与代码排版设置（仅 minimalist 主题生效）
 \renewcommand{\arraystretch}{1.08}
-\renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
 \setlength{\tabcolsep}{4.5pt}
+\AtBeginDocument{%
+  \@ifpackageloaded{tabularx}{%
+    \renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{##1}}%
+  }{}%
+}
 \lstset{
   language=C++,
   basicstyle=\ttfamily\fontsize{7.3}{10}\selectfont,
@@ -120,32 +113,15 @@
 \setbeamercolor{palette primary}{fg=white,bg=brand}
 \setbeamercolor{block title}{fg=brand,bg=pale}
 \setbeamercolor{block body}{fg=ink,bg=pale}
-% 公共内容组件在本主题下的配色。
-\setbeamercolor{hit content muted}{fg=muted}
-\setbeamercolor{hit insight}{fg=ink,bg=pale}
-\setbeamercolor{hit note rule}{fg=risk}
-\setbeamercolor{hit metric value}{fg=brand}
-\setbeamercolor{hit outline entry}{fg=brand}
-\setbeamercolor{hit agenda list number}{fg=brand}
-\setbeamercolor{hit outline rule}{fg=linegray}
-\setbeamercolor{hit block capsule}{fg=white,bg=brand}
 
 % ------------------------------------------------------------------ fonts ----
-% 字体尺寸与系列配置
+% 字体尺寸与系列配置（通过 Beamer 字体接口设置）
 \setbeamerfont{normal text}{size=\fontsize{9.5}{13}}
 \setbeamerfont{frametitle}{size=\fontsize{15}{19},series=\bfseries}
 \setbeamerfont{framesubtitle}{size=\fontsize{9.5}{13},series=\mdseries}
 \setbeamerfont{hit outline title}{size=\fontsize{20}{24},series=\bfseries}
-\setbeamerfont{hit outline entry}{size=\fontsize{11.5}{14},series=\bfseries}
-\setbeamerfont{hit agenda list number}{size=\fontsize{13}{16},series=\bfseries}
-\setbeamerfont{hit content subhead}{size=\fontsize{9.5}{13},series=\bfseries}
-\setbeamerfont{hit content caption}{size=\fontsize{7.7}{10},series=\mdseries}
-\setbeamerfont{hit content insight}{size=\fontsize{9}{12},series=\mdseries}
-\setbeamerfont{hit content note}{size=\fontsize{8}{11},series=\mdseries}
-\setbeamerfont{hit content metric}{size=\fontsize{24}{28},series=\bfseries}
-\setbeamerfont{hit content metric note}{size=\fontsize{8.3}{11},series=\mdseries}
 
-% 正文区域与经典主题对齐：同一份内容在各主题下都有同样的可用宽度。
+% 正文边距与通用模板
 \setbeamersize{text margin left=.7cm,text margin right=.7cm}
 \ifhit@navsymbols\else\setbeamertemplate{navigation symbols}{}\fi
 \setbeamertemplate{background}{}
@@ -158,7 +134,7 @@
 \setbeamertemplate{section in toc shaded}{%
   \color{muted!50}\inserttocsectionnumber\quad\inserttocsection\par\vspace{3mm}}
 
-% 章节过渡页实现与节计数器挂钩
+% 章节过渡页实现（仅在开启 sectionpage 选项时触发）
 \newcommand{\hit@minimalist@sectionframe}{%
   \begin{frame}
     \setbox\@tempboxa=\vbox{\hsize=\textwidth
@@ -174,9 +150,11 @@
   \ifhit@sectionpage
     \hit@minimalist@sectionframe
   \fi}
+
 % ---------------------------------------------------------------- headline ----
 % 固定页眉高度；章节名称由正文自动生成，当前章节显示蓝色背景。
 % 导航盒子的测量与输出在同一分组内完成，保留局部赋值。
+\def\hit@logopath{\hitvipath hit-vi-logo-horizontal}
 \newdimen\hit@navavail
 \newsavebox\hit@navbox
 \newsavebox\hit@headbox
@@ -222,13 +200,12 @@
   \end{beamercolorbox}\vskip0.9mm}
 
 % ---------------------------------------------------------------- footline ----
+\providecommand{\hit@footerleft}{\insertshortinstitute}
 \setbeamertemplate{footline}{%
   \hbox to\paperwidth{\hspace{.7cm}\color{muted}\fontsize{6.3}{8}\selectfont
-    \hit@footertext\hfill\insertpagenumber\hspace{.7cm}}\vskip2.3mm}
+    \hit@footerleft\hfill\insertpagenumber\hspace{.7cm}}\vskip2.3mm}
 
 % ==================================================== 公共命令的主题实现 ====
-\setbeamertemplate{hit end slot}{{\color{muted}\insertshorttitle\par}}
-
 % ------------------------------------------------------------- title page ----
 \def\hit@titleslidepage{%
   \vspace{.1cm}
@@ -236,51 +213,22 @@
   \vspace{.22cm}
   \begin{beamercolorbox}[wd=\textwidth,sep=.4cm,center]{palette primary}
     {\fontsize{23}{30}\selectfont\bfseries\inserttitle\par}
-    \hit@ifsubtitle{%
-      \vspace{.22cm}{\fontsize{11.5}{15}\selectfont\insertsubtitle\par}}{}%
-    \hit@ifenglish{%
-      \vspace{.38cm}{\fontsize{12.1}{16}\selectfont\hit@english\par}}{}%
+    \ifx\insertsubtitle\@empty\else
+      \vspace{.22cm}{\fontsize{11.5}{15}\selectfont\insertsubtitle\par}%
+    \fi
   \end{beamercolorbox}
   \vspace{.22cm}
-  \begin{center}\smalltext
-    \hit@ifsource{\hit@source\par\vspace{.14cm}}{}%
+  \begin{center}\small
     \insertauthor\par\smallskip
     \insertinstitute\par\smallskip\insertdate
   \end{center}}
 
-% 蓝色照片封面与白色封面在本主题下使用同一套版式。
-\def\hit@bluetitleslidepage{\hit@titleslidepage}
-
-% ----------------------------------------------------------------- outline ----
-% 版块版式：左侧标题色块与副标题，右侧圆角横条由公共渲染器统一排布。
-\def\hit@outlineblockpaint{%
-  \fill[canvas] (0,0) rectangle (\paperwidth,\paperheight);
-  \fill[brand!40!white] (-.02\paperwidth,.255\paperheight) -- (.18\paperwidth,.255\paperheight)
-    arc[start angle=-90,end angle=90,x radius=.15\paperwidth,y radius=.245\paperheight]
-    -- (-.02\paperwidth,.745\paperheight) -- cycle;
-  \fill[brand] (-.02\paperwidth,.27\paperheight) -- (.18\paperwidth,.27\paperheight)
-    arc[start angle=-90,end angle=90,x radius=.137\paperwidth,y radius=.23\paperheight]
-    -- (-.02\paperwidth,.73\paperheight) -- cycle;
-  \node[text=white,align=center,text width=.28\paperwidth,
-    font=\bfseries\fontsize{32}{36}\selectfont,inner sep=0pt]
-    at (.157\paperwidth,.55\paperheight) {\hit@getoutlinetitle};
-  \node[text=white,align=center,text width=.28\paperwidth,
-    font=\bfseries\fontsize{10.5}{13}\selectfont,inner sep=0pt]
-    at (.157\paperwidth,.415\paperheight) {\hit@getoutlinesubtitle};
-}
-\def\hit@drawlistheader#1{%
-  {\usebeamerfont{hit outline title}\usebeamercolor[fg]{structure}%
-   \hit@getoutlinetitle\ifnum#1>1\relax\space\mdseries\small（续）\fi\par}%
-  \vskip2mm{\color{linegray}\rule{\textwidth}{.45pt}}%
-  \vskip4mm}
-
 % ------------------------------------------------------------- focus slide ----
-\long\def\hit@focuspage#1#2{%
+\long\def\hit@focuspage#1{%
   \setbeamercolor{background canvas}{bg=brand}%
   \begin{frame}[plain]
     \color{white}\vspace{6mm}
-    \hit@iffocuslabel{#1}{{\fontsize{10}{14}\selectfont\bfseries #1\par}\vspace{7mm}}{}%
-    {\fontsize{25}{34}\selectfont\bfseries #2\par}\vspace{6mm}
+    {\fontsize{25}{34}\selectfont\bfseries #1\par}\vspace{6mm}
     {\color{cyan}\rule{3cm}{2pt}}
   \end{frame}}
 
@@ -289,7 +237,6 @@
   \begin{frame}[plain]
     \centering\includegraphics[width=4.4cm]{\hit@logopath}\par\vspace{.9cm}
     {\color{brand}\fontsize{26}{34}\selectfont\bfseries #1\par}
-    \vspace{.4cm}\usebeamertemplate*{hit end slot}
   \end{frame}}
 
 % ---------------------------------------------------------------- appendix ----

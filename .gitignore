@@ -1,10 +1,4 @@
 .DS_Store
-.work/
-tmp/
-w/
-__pycache__/
-*.py[cod]
-Thumbs.db
 
 # LaTeX 编译产物
 *.aux
@@ -23,22 +17,16 @@ Thumbs.db
 *.blg
 *.run.xml
 *.synctex.gz
-*.synctex(busy)
 
-# 本地记录、CI 对照树与回归产物
-/CHANGELOG.md
-.audit/
+# CI 的对照源码树与回归产物
 .ci-base/
 ci-out/
+.audit/
 
-# 打包产物与本地编辑器临时文件
+# 本地打包与临时产物
 dist/
 *.zip
-.vscode/
-.idea/
-*.swp
-*.bak
 
-# PDF 文件规则：默认忽略编译 PDF，明确放行 examples 预览与示例 PDF
+# 除 examples 预览成品外的 PDF 都不入库
 *.pdf
 !examples/*.pdf
