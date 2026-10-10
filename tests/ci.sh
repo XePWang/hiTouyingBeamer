@@ -34,13 +34,16 @@ trap 'rm -rf "$work"' EXIT INT TERM
 head_tree="$work/head"
 mkdir -p "$head_tree"
 cp "$root/template.tex" "$root/ref.bib" "$root"/*.sty "$head_tree"/
+[ -d "$root/styles" ] && cp -R "$root/styles" "$head_tree"/
 cp -R "$root/vi" "$head_tree"/
 
 # 主题发现：读 beamerthemehit*.sty 文件头的 %% Preview: 标记，输出 theme|aspectratio|output。
 theme_list() {
-  for f in "$1"/beamerthemehit*.sty; do
+  dir="$1"
+  [ -d "$1/styles" ] && dir="$1/styles"
+  for f in "$dir"/beamerthemehit*.sty; do
     [ -e "$f" ] || continue
-    [ "${f##*/}" = "beamerthemehit.sty" ] && continue
+    case "$f" in */beamerthemehit.sty|beamerthemehit.sty) continue ;; esac
     meta=$(grep -m1 '^%% Preview:' "$f" || true)
     [ -n "$meta" ] || continue
     t=$(printf '%s\n' "$meta" | sed -n 's/.*theme=\([^ ]*\).*/\1/p')
@@ -51,15 +54,17 @@ theme_list() {
 }
 
 # ---------------------------------------------------------------- 标记与版本 ----
-for f in "$root"/beamerthemehit*.sty; do
+chk_dir="$root"
+[ -d "$root/styles" ] && chk_dir="$root/styles"
+for f in "$chk_dir"/beamerthemehit*.sty; do
   [ -e "$f" ] || continue
-  [ "${f##*/}" = "beamerthemehit.sty" ] && continue
+  case "$f" in */beamerthemehit.sty|beamerthemehit.sty) continue ;; esac
   grep -q '^%% Preview:' "$f" || problem "${f##*/} 缺少 %% Preview: 标记，新增主题请按 CONTRIBUTING 补上"
 done
 themes=$(theme_list "$root")
 [ -n "$themes" ] || problem "没有发现任何带 %% Preview: 标记的主题"
 
-vers=$(sed -n 's/^\\ProvidesPackage{[^}]*}\[[0-9/]* *\(v[0-9A-Za-z.]*\).*/\1/p' "$root"/*.sty | sort -u)
+vers=$(sed -n 's/^\\ProvidesPackage{[^}]*}\[[0-9/]* *\(v[0-9A-Za-z.]*\).*/\1/p' "$root"/*.sty "$root"/styles/*.sty 2>/dev/null | sort -u)
 if [ "$(printf '%s\n' "$vers" | grep -c .)" -ne 1 ]; then
   problem "各 .sty 的版本号不一致：$(printf '%s ' $vers)"
 fi
@@ -72,8 +77,8 @@ fi
 # 公开命令 = 所有 .sty 里的 \newcommand / \providecommand / \def（排除带 @ 的内部名）。
 cmds=$(
   {
-    grep -hoE '\\(new|provide)command\{\\[A-Za-z][A-Za-z0-9]*\}' "$root"/*.sty | sed 's/.*{\\//; s/}$//'
-    grep -hoE '\\def\\[A-Za-z][A-Za-z0-9]*#' "$root"/*.sty | sed 's/^\\def\\//; s/#$//'
+    grep -hoE '\\(new|provide)command\{\\[A-Za-z][A-Za-z0-9]*\}' "$root"/*.sty "$root"/styles/*.sty 2>/dev/null | sed 's/.*{\\//; s/}$//'
+    grep -hoE '\\def\\[A-Za-z][A-Za-z0-9]*#' "$root"/*.sty "$root"/styles/*.sty 2>/dev/null | sed 's/^\\def\\//; s/#$//'
   } | sort -u
 )
 [ -n "$cmds" ] || problem "没有从 .sty 里提取到公开命令"
@@ -118,6 +123,7 @@ if [ -n "$base" ]; then
   base_tree="$work/base"
   mkdir -p "$base_tree"
   cp "$base/template.tex" "$base/ref.bib" "$base"/*.sty "$base_tree"/
+  [ -d "$base/styles" ] && cp -R "$base/styles" "$base_tree"/
   cp -R "$base/vi" "$base_tree"/
 
   for line in $themes; do

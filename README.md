@@ -1,6 +1,6 @@
 # hiTouyingBeamer
 
-**预览**：[现代主题（默认，16:9）](template.pdf)　·　[极简主题（`minimalist` 选项，16:9）](template-minimalist.pdf)　·　[经典主题（`classic` 选项，4:3）](template-classic.pdf)
+**预览**：[现代主题（默认，16:9）](examples/template.pdf)　·　[极简主题（`minimalist` 选项，16:9）](examples/template-minimalist.pdf)　·　[经典主题（`classic` 选项，4:3）](examples/template-classic.pdf)
 
 哈尔滨工业大学 Beamer 幻灯片模板。各主题共用正文和内容组件，仅通过一行主题声明即可切换外观风格。
 
@@ -111,16 +111,18 @@ Windows 环境亦可直接运行提供的辅助脚本：
 
 | 路径 | 说明 |
 | --- | --- |
-| `starter.tex` | 唯一推荐起步文件 |
+| `template.tex` | 统一演示文档入口与全主题参考示例 |
+| `ref.bib` | 示例参考文献数据库 |
+| `starter.tex` | 快速起步入口 |
 | `slides/` | 用户正文（`content.tex`）与插图目录（`images/`） |
-| `example/` | 页面版式库（`layouts/`）、示例报告与预览产物 |
+| `example/` | 页面版式库（`layouts/`）与示例报告源码 |
 | `beamerthemehit.sty` | 主题统一入口与选项分派 |
 | `beamercmdhit.sty` | 跨主题共享公开命令层 |
-| `beamerthemehitouying.sty` | 现代主题实现（默认） |
-| `beamerthemehitclassic.sty` | 经典主题实现 |
-| `beamerthemehitminimalist.sty` | 极简主题实现（原 Academic 风格） |
+| `styles/` | 主题具体实现（现代 `hitouying`、经典 `hitclassic`、极简 `hitminimalist`） |
+| `examples/` | 各主题与版式示例预览 PDF |
 | `vi/` | 哈工大视觉形象基础素材（矢量校徽、主楼等） |
 | `tests/` | 命令可用性测试与回归验证套件 |
+| `build-previews.sh` | 自动化生成全主题预览脚本 |
 
 ## 许可与来源
 

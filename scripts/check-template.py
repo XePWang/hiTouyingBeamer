@@ -46,7 +46,7 @@ report = {'documents': {}, 'font_files': font_count,
           'licensed_resource_files': len(manifest['files'])}
 
 for name, (expected_pages, expected_ratio, bundled_only) in DOCUMENTS.items():
-    path = root / 'example/preview' / name
+    path = root / 'examples' / name
     if not path.exists():
         raise ValueError(f'缺少预览：{name}，先运行 python scripts/build.py --document all --theme all')
     pdf = PdfReader(path)

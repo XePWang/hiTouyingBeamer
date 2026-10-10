@@ -55,7 +55,7 @@ def build_document(name, theme=None, root=ROOT):
     print(f'编译 {job}', flush=True)
     pdf = compile_tex(root, root / DOCUMENTS[name], job, root / '.work/build', theme)
     target = root / ('slides/starter.pdf' if name == 'starter' and theme is None
-                     else f'example/preview/{job}.pdf')
+                     else f'examples/{job}.pdf')
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(pdf, target)
     return target

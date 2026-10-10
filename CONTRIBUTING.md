@@ -7,7 +7,7 @@
 ### 1. 新增命令必须在所有主题下都可以用
 
 公开命令统一定义在共用命令层 `beamercmdhit.sty`，不要定义只有某个主题能用的命令；
-确实与主题相关的外观，放到主题文件里用模板/颜色实现，而不是新命令。
+确实与主题相关的外观，放到 `styles/` 下的主题文件里用模板/颜色实现，而不是新命令。
 
 CI 会扫描所有 `.sty` 里的公开命令（`\newcommand`、`\providecommand`、`\def`，排除带
 `@` 的内部名），逐主题用 `\ifcsname` 探测，缺一个就不通过。新命令请同时：
@@ -29,9 +29,9 @@ CI 会把 PR 的每个主题与目标分支逐页对比（同环境各编一遍�
 
 - **版本号**：所有 `.sty` 的 `\ProvidesPackage` 与 `template.tex` 的 `\subtitle`
   同步更新（格式 `v2.2026a` 这样），CI 会核对一致。
-- **预览 PDF**：发布前跑一次 `./build-previews.sh`，把 `template.pdf`（现代 16:9）和
-  `template-classic.pdf`（经典 4:3）更新进仓库。README 顶部的预览入口指向它们。
-- **新增主题**：加 `beamerthemehit<名字>.sty`，在文件头写标记
+- **预览 PDF**：发布前跑一次 `./build-previews.sh`，把 `examples/template.pdf`（现代 16:9）、
+  `examples/template-classic.pdf`（经典 4:3）和 `examples/template-minimalist.pdf`（极简 16:9）更新进仓库。README 顶部的预览入口指向它们。
+- **新增主题**：在 `styles/` 目录加 `beamerthemehit<名字>.sty`，在文件头写标记
   `%% Preview: theme=<名字> aspectratio=<169|43> output=<预览文件名>`；
   `build-previews.sh` 与 CI 会自动发现，不用改脚本。
 - 打 tag（如 `v2.2026a`）并推送。

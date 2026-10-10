@@ -19,7 +19,7 @@ python scripts/build.py --document starter
 python scripts/build.py --document all --theme all
 ```
 
-普通构建遵循源文件的主题，起步成品输出到 `slides/starter.pdf`。三主题构建只在 `.work/` 生成临时入口，不改动用户源文件；九份正式预览输出到 `example/preview/`。
+普通构建遵循源文件的主题，起步成品输出到 `slides/starter.pdf`。三主题构建只在 `.work/` 生成临时入口，不改动用户源文件；九份正式预览输出到 `examples/`。
 
 ## 自动检查
 

@@ -45,7 +45,7 @@ def main():
     rendered = 0
     for name in common_fields:
         for theme in THEMES:
-            pdf = ROOT / f'example/preview/{name}-{theme}.pdf'
+            pdf = ROOT / f'examples/{name}-{theme}.pdf'
             text = compact('\n'.join(p.extract_text() for p in PdfReader(pdf).pages))
             expected = list(common_fields[name])
             if theme == 'minimalist':

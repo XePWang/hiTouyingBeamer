@@ -39,9 +39,6 @@ dist/
 *.swp
 *.bak
 
-# PDF 文件规则：默认忽略编译 PDF，明确放行发布预览 PDF
+# PDF 文件规则：默认忽略编译 PDF，明确放行 examples 预览与示例 PDF
 *.pdf
-!template.pdf
-!template-classic.pdf
-!template-minimalist.pdf
-!example/preview/*.pdf
+!examples/*.pdf

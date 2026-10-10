@@ -14,7 +14,7 @@ try {
       'example' { 'example/main.tex' }
       'layouts' { 'example/layouts.tex' }
     }
-    $target = if ($doc -eq 'starter') { 'slides/starter.pdf' } else { "example/preview/$doc.pdf" }
+    $target = if ($doc -eq 'starter') { 'slides/starter.pdf' } else { "examples/$doc.pdf" }
     Write-Host "正在编译 $source"
     latexmk -xelatex -interaction=nonstopmode -halt-on-error -file-line-error `
       "-jobname=$doc" "-outdir=$OutDir" $source

@@ -17,14 +17,17 @@ fi
 work=$(mktemp -d "${TMPDIR:-/tmp}/hitouying-preview.XXXXXX")
 trap 'rm -rf "$work"' EXIT INT TERM
 
-cp template.tex ref.bib ./*.sty "$work"/
-cp -R vi "$work"/
+cp template.tex ref.bib "$root"/*.sty "$work"/
+[ -d "$root/styles" ] && cp -R "$root/styles" "$work"/
+cp -R "$root/vi" "$work"/
+
+theme_dir="$root"
+[ -d "$root/styles" ] && theme_dir="$root/styles"
 
 found=0
-for f in beamerthemehit*.sty; do
-  if [ "$f" = "beamerthemehit.sty" ]; then
-    continue
-  fi
+for f in "$theme_dir"/beamerthemehit*.sty; do
+  [ -e "$f" ] || continue
+  case "$f" in */beamerthemehit.sty|beamerthemehit.sty) continue ;; esac
   meta=$(grep -m1 '^%% Preview:' "$f" || true)
   if [ -z "$meta" ]; then
     continue
@@ -47,7 +50,9 @@ for f in beamerthemehit*.sty; do
     tail -n 40 "$work/$job.build.log" >&2 || true
     exit 1
   fi
-  cp "$work/$job.pdf" "$root/$out"
+  dest_dir="$root"
+  [ -d "$root/examples" ] && dest_dir="$root/examples"
+  cp "$work/$job.pdf" "$dest_dir/${out##*/}"
   found=$((found + 1))
 done
 

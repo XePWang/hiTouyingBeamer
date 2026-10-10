@@ -48,5 +48,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='检查已构建的 Minimalist 起步示例顶部导航')
     parser.add_argument('pdf', nargs='?', type=Path,
                         default=Path(__file__).resolve().parents[1]
-                        / 'example/preview/starter-minimalist.pdf')
+                        / 'examples/starter-minimalist.pdf')
     check_navigation(parser.parse_args().pdf)

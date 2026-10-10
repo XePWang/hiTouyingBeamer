@@ -117,7 +117,7 @@ def main():
                           f'author-workflow-{theme}', out, theme)
         report['themes'][theme] = check_workflow(pdf)
         for name in ('starter', 'layouts', 'example'):
-            check_visibility(root / f'example/preview/{name}-{theme}.pdf')
+            check_visibility(root / f'examples/{name}-{theme}.pdf')
     for case, message in [(0, 'Column ratio'), (1, 'Column ratio'), (2, 'missing-author-image')]:
         job = f'author-error-{case}'
         result = subprocess.run(['xelatex', '-interaction=nonstopmode', '-halt-on-error',
