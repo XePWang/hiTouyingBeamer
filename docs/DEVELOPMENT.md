@@ -16,10 +16,10 @@ python -m pip install -r scripts/requirements-dev.txt
 
 ```sh
 python scripts/build.py --document starter
-python scripts/build.py --document all --theme both
+python scripts/build.py --document all --theme all
 ```
 
-普通构建遵循源文件的主题，起步成品输出到 `slides/starter.pdf`。双主题构建只在 `.work/` 生成临时入口，不改动用户源文件；六份正式预览输出到 `example/preview/`。
+普通构建遵循源文件的主题，起步成品输出到 `slides/starter.pdf`。三主题构建只在 `.work/` 生成临时入口，不改动用户源文件；九份正式预览输出到 `example/preview/`。
 
 ## 自动检查
 
@@ -27,7 +27,7 @@ python scripts/build.py --document all --theme both
 python scripts/test-suite.py
 ```
 
-检查包括字体原文件校验、PDF 画幅和嵌入字体、编译日志、双主题内容字段、目录真实跳转、目录边界、接口加载顺序、4:3 画幅和覆盖层。顶部导航检查核对章节名称、当前章节高亮及章节首页链接；构建 Minimalist 起步预览后，也可单独运行 `python scripts/check-navigation.py`。作者流程检查补充常见图片格式、图片比例和结论文字可见性。输出证据保存在 `.work/`。
+检查包括字体原文件校验、PDF 画幅和嵌入字体、编译日志、三主题内容字段、目录真实跳转、目录边界、接口加载顺序、4:3 画幅和覆盖层。顶部导航检查核对章节名称、当前章节高亮及章节首页链接；构建 Minimalist 起步预览后，也可单独运行 `python scripts/check-navigation.py`。作者流程检查补充常见图片格式、图片比例和结论文字可见性。输出证据保存在 `.work/`。
 
 PDF 渲染成功仅表示渲染器能够读取文件；发布前仍应逐页查看九份预览，检查重叠、裁剪、颜色和可读性。不要将机器检查描述为任意用户内容都不会溢出。
 
@@ -64,4 +64,4 @@ Mermaid 源文件为 `assets/figures/pipeline.mmd`。需要重新生成时，在
 
 构建、测试和发布验收均在本地执行，仓库不包含 GitHub Actions 工作流。提交前运行上述测试和打包命令，并查看生成的 PDF 与检查结果。
 
-提交前检查文件清单，保留版权和资源许可。改动按独立功能提交，预览随源码更新；本地详细工作记录可以保存在已忽略的 `CHANGELOG.md`。新增布局应在两种主题下使用同一份正文。
+提交前检查文件清单，保留版权和资源许可。改动按独立功能提交，预览随源码更新；本地详细工作记录可以保存在已忽略的 `CHANGELOG.md`。新增布局应在三种主题（classic / touying / minimalist）下使用同一份正文。

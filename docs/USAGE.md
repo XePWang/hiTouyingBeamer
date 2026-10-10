@@ -15,7 +15,7 @@
 以下是完整的结构示例，可用于理解层级；日常继续编辑 `starter.tex` 和 `slides/content.tex`。
 
 ```latex
-\documentclass[aspectratio=169,11pt,fontset=none]{ctexbeamer}
+\documentclass[aspectratio=169,11pt]{ctexbeamer}
 \usetheme[minimalist]{hit}
 \hitnosectionpages
 \hitoutlinesubs
@@ -44,7 +44,7 @@
 - `\OutlineSlide[title={汇报提纲}]` 设置本次目录的标题。旧文档的全局标题变量仍可用 `\renewcommand{\hitoutlinetitle}{汇报提纲}` 修改。
 - `\hittocmode{list}` 选择列表目录；`\hittocmode{block}` 请求色块目录，主题未提供或条目数量不适合时使用列表。
 
-`starter.tex` 明确关闭章节过渡页和子章节显示，两种主题保持相同设置。目录信息需要多次编译，推荐的 `latexmk` 命令会自动处理。
+`starter.tex` 明确关闭章节过渡页和子章节显示，三种主题保持相同设置。目录信息需要多次编译，推荐的 `latexmk` 命令会自动处理。
 
 ## 图片与图注
 
@@ -93,7 +93,7 @@
 \end{frame}
 ```
 
-正文组件包括 `\subhead{小标题}`、`\insight{关键判断}`、`\notebox{条件说明}`、`\captiontext{图注}` 和 `\metric{宽度}{数值}{说明}`。这些组件和布局在两种主题中共享。
+正文组件包括 `\subhead{小标题}`、`\insight{关键判断}`、`\notebox{条件说明}`、`\captiontext{图注}` 和 `\metric{宽度}{数值}{说明}`。这些组件和布局在三种主题中共享。
 
 代码页保留 `\begin{frame}[fragile]`，参照[代码示例](../example/layouts/11-code.tex)。内容太多时可以减少重复文字、拆页或重新分栏；查看 PDF 确认可读性。
 

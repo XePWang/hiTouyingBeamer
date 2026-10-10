@@ -39,14 +39,36 @@
 \def\hit@theme@minimalist{}
 \RequirePackage{beamercmdhit}
 
+% 单独加载本文件时补全选项开关默认值
+\@ifundefined{ifhit@serif}{\newif\ifhit@serif}{}
+\@ifundefined{ifhit@sans}{\newif\ifhit@sans}{}
+\@ifundefined{ifhit@top}{\newif\ifhit@top}{}
+\@ifundefined{ifhit@navsymbols}{\newif\ifhit@navsymbols}{}
+\@ifundefined{ifhit@sectionpage}{\newif\ifhit@sectionpage\hit@sectionpagefalse}{}
+\@ifundefined{ifhit@opt@sectionpage}{\newif\ifhit@opt@sectionpage}{}
+\@ifundefined{ifhit@nofonts}{\newif\ifhit@nofonts}{}
+
 \RequirePackage{lmodern}
-\IfFileExists{fonts/source-sans/SourceSans3-Regular.ttf}{\RequirePackage{hit-fonts}}{}
-\usefonttheme{professionalfonts}
+\ifhit@nofonts\else
+  \RequirePackage{hit-fonts}
+\fi
+\ifhit@serif
+  \usefonttheme[stillsansserifmath]{serif}
+\else
+  \usefonttheme{professionalfonts}
+\fi
 \RequirePackage{totcount}
 \@ifundefined{c@hit@sectiontotal}{\newcounter{hit@sectiontotal}\regtotcounter{hit@sectiontotal}}{}
 
-% Minimalist 主题不插入章节过渡页，目录不显示子章节。
-\hitnosectionpages
+% 正文垂直对齐：默认居中，top 选项改为顶部对齐
+\ifhit@top\beamer@centeredfalse\fi
+
+% Minimalist 主题默认不插入章节过渡页（除非显式指定 sectionpage），目录默认不显示子章节。
+\ifhit@opt@sectionpage
+  \hitsectionpages
+\else
+  \hitnosectionpages
+\fi
 \hitnooutlinesubs
 \hittocmode{block}
 
@@ -57,20 +79,20 @@
 \lstset{
   language=C++,
   basicstyle=\ttfamily\fontsize{7.3}{10}\selectfont,
-  keywordstyle=\color{structure.fg}\bfseries,
-  commentstyle=\color{normal text.fg!60},
-  stringstyle=\color{structure.fg!80!black},
+  keywordstyle=\color{brand}\bfseries,
+  commentstyle=\color{muted},
+  stringstyle=\color{good},
   showstringspaces=false,
   breaklines=true,
   columns=fullflexible,
   keepspaces=true,
-  backgroundcolor=\color{structure.fg!8},
+  backgroundcolor=\color{pale},
   frame=none,
   aboveskip=5pt,
   belowskip=5pt,
   xleftmargin=5pt,
   xrightmargin=5pt,
-  rulecolor=\color{normal text.fg!20}
+  rulecolor=\color{linegray}
 }
 
 % ----------------------------------------------------------------- colors ----
@@ -109,10 +131,10 @@
 \setbeamercolor{hit block capsule}{fg=white,bg=brand}
 
 % ------------------------------------------------------------------ fonts ----
-% size 里只写 \fontsize，不写 \selectfont：beamer 取用 size 时会当场求值，
-% 带上 \selectfont 会把当前行的基线间距也改掉，正文行高随之变大。
+% 字体尺寸与系列配置
 \setbeamerfont{normal text}{size=\fontsize{9.5}{13}}
 \setbeamerfont{frametitle}{size=\fontsize{15}{19},series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\fontsize{9.5}{13},series=\mdseries}
 \setbeamerfont{hit outline title}{size=\fontsize{20}{24},series=\bfseries}
 \setbeamerfont{hit outline entry}{size=\fontsize{11.5}{14},series=\bfseries}
 \setbeamerfont{hit agenda list number}{size=\fontsize{13}{16},series=\bfseries}
@@ -123,9 +145,9 @@
 \setbeamerfont{hit content metric}{size=\fontsize{24}{28},series=\bfseries}
 \setbeamerfont{hit content metric note}{size=\fontsize{8.3}{11},series=\mdseries}
 
-% 正文区域与经典主题对齐：同一份内容在两种主题下都有同样的可用宽度。
+% 正文区域与经典主题对齐：同一份内容在各主题下都有同样的可用宽度。
 \setbeamersize{text margin left=.7cm,text margin right=.7cm}
-\setbeamertemplate{navigation symbols}{}
+\ifhit@navsymbols\else\setbeamertemplate{navigation symbols}{}\fi
 \setbeamertemplate{background}{}
 \setbeamertemplate{section in head/foot}{\colorbox{brand}{\strut\color{white}\bfseries\insertsectionhead}}
 \setbeamertemplate{section in head/foot shaded}{\colorbox{canvas}{\strut\color{muted}\insertsectionhead}}
@@ -133,16 +155,25 @@
 \setbeamertemplate{enumerate items}[default]
 \setbeamertemplate{section in toc}{%
   \color{brand}\inserttocsectionnumber\quad\color{ink}\inserttocsection\par\vspace{3mm}}
-\lstset{language=C++,basicstyle=\ttfamily\fontsize{7.3}{10}\selectfont,
-  keywordstyle=\color{brand}\bfseries,commentstyle=\color{muted},stringstyle=\color{good},
-  showstringspaces=false,breaklines=true,columns=fullflexible,keepspaces=true,
-  backgroundcolor=\color{pale},frame=none,aboveskip=5pt,belowskip=5pt,
-  xleftmargin=5pt,xrightmargin=5pt,rulecolor=\color{linegray}}
-\renewcommand{\arraystretch}{1.18}
-\renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
-\setlength{\tabcolsep}{5pt}
-\AtBeginEnvironment{frame}{\bodytext}
-\AtBeginDocument{\renewcommand{\normalsize}{\fontsize{9.5}{13}\selectfont}\normalsize}
+\setbeamertemplate{section in toc shaded}{%
+  \color{muted!50}\inserttocsectionnumber\quad\inserttocsection\par\vspace{3mm}}
+
+% 章节过渡页实现与节计数器挂钩
+\newcommand{\hit@minimalist@sectionframe}{%
+  \begin{frame}
+    \setbox\@tempboxa=\vbox{\hsize=\textwidth
+      \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]}%
+    \@tempdima=\dimexpr\textheight-2pt\relax
+    \ifdim\dimexpr\ht\@tempboxa+\dp\@tempboxa\relax>\@tempdima
+      \hit@scaleboxto\@tempboxa{\@tempdima}%
+    \fi
+    \noindent\box\@tempboxa
+  \end{frame}}
+\AtBeginSection[]{%
+  \stepcounter{hit@sectiontotal}%
+  \ifhit@sectionpage
+    \hit@minimalist@sectionframe
+  \fi}
 % ---------------------------------------------------------------- headline ----
 % 固定页眉高度；章节名称由正文自动生成，当前章节显示蓝色背景。
 % 导航盒子的测量与输出在同一分组内完成，保留局部赋值。
@@ -178,11 +209,17 @@
   \nointerlineskip{\color{linegray}\rule{\paperwidth}{.45pt}}}
 
 % -------------------------------------------------------------- frametitle ----
+\setbeamercolor{framesubtitle}{fg=white}
+\setbeamerfont{framesubtitle}{size=\fontsize{9.5}{13},series=\mdseries}
 \setbeamertemplate{frametitle}{%
-  \vskip1.7mm
+  \vskip1.2mm
   \begin{beamercolorbox}[wd=\textwidth,sep=.20cm,leftskip=.03cm,rightskip=.03cm]{frametitle}
     \usebeamerfont{frametitle}\strut\insertframetitle\strut
-  \end{beamercolorbox}\vskip1.2mm}
+    \ifx\insertframesubtitle\@empty\else
+      \par\vskip.8mm
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\strut\insertframesubtitle\strut}%
+    \fi
+  \end{beamercolorbox}\vskip0.9mm}
 
 % ---------------------------------------------------------------- footline ----
 \setbeamertemplate{footline}{%
