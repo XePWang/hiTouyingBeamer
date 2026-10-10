@@ -442,21 +442,42 @@
 
 % ==================================================== 公共命令的主题实现 ====
 % ------------------------------------------------------------- title page ----
+% 封面采用固定三段比例（顶部约 32%、中间蓝带约 42%、底部约 26%）：
+% 顶部居中校徽，中间品牌蓝全通栏贯通左右边缘并居中排布标题组，底部居中作者信息组。
 \def\hit@titleslidepage{%
-  \vspace{.1cm}
-  \begin{center}\includegraphics[width=4.4cm]{\hit@logopath}\end{center}
-  \vspace{.22cm}
-  \begin{beamercolorbox}[wd=\textwidth,sep=.4cm,center]{palette primary}
-    {\fontsize{23}{30}\selectfont\bfseries\inserttitle\par}
-    \ifx\insertsubtitle\@empty\else
-      \vspace{.22cm}{\fontsize{11.5}{15}\selectfont\insertsubtitle\par}%
-    \fi
-  \end{beamercolorbox}
-  \vspace{.22cm}
-  \begin{center}\small
-    \insertauthor\par\smallskip
-    \insertinstitute\par\smallskip\insertdate
-  \end{center}}
+  \begin{tikzpicture}[remember picture,overlay]
+    % 浅灰画布全屏背景
+    \fill[canvas] (current page.south west) rectangle (current page.north east);
+    % 顶部校徽：宽约 37% 页宽，高不超过 15% 页高，在顶部浅灰区域居中（中心约距顶部 0.16\paperheight）
+    \node[inner sep=0pt] at ([yshift=-0.16\paperheight]current page.north) {%
+      \includegraphics[width=0.37\paperwidth,height=0.15\paperheight,keepaspectratio]{\hit@logopath}%
+    };
+    % 中部通栏主色蓝带：贯通页面左右边缘（0 到 \paperwidth），高度 0.42\paperheight（0.26H 至 0.68H）
+    \fill[brand] ([yshift=0.26\paperheight]current page.south west)
+      rectangle ([yshift=0.68\paperheight]current page.south east);
+    % 蓝带内居中主标题与可选副标题（垂直中心约在 0.47\paperheight）
+    \node[inner sep=0pt,text=white] at ([yshift=0.47\paperheight]current page.south) {%
+      \parbox[c][0.42\paperheight][c]{0.88\paperwidth}{%
+        \centering
+        {\fontsize{23}{30}\selectfont\bfseries \inserttitle\par}%
+        \ifx\insertsubtitle\@empty\else
+          \vskip 2.5mm
+          {\fontsize{11.5}{15}\selectfont \insertsubtitle\par}%
+        \fi
+      }%
+    };
+    % 底部作者、单位、日期信息组（垂直中心约在 0.13\paperheight）
+    \node[inner sep=0pt,text=brand] at ([yshift=0.13\paperheight]current page.south) {%
+      \parbox[c][0.26\paperheight][c]{0.88\paperwidth}{%
+        \centering\fontsize{10}{14}\selectfont
+        \def\hit@cov@sep{}%
+        \ifx\insertauthor\@empty\else\insertauthor\def\hit@cov@sep{\par\smallskip}\fi
+        \ifx\insertinstitute\@empty\else\hit@cov@sep\insertinstitute\def\hit@cov@sep{\par\smallskip}\fi
+        \ifx\insertdate\@empty\else\hit@cov@sep\insertdate\fi
+      }%
+    };
+  \end{tikzpicture}%
+}
 
 % ----------------------------------------------------------- outline slide ----
 \newdimen\hit@ol@R
