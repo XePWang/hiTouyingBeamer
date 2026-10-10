@@ -382,12 +382,12 @@
     \tableofcontents[sectionstyle=show,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]
   \end{frame}}
 
-% 极简主题的目录页：简洁 frame，标准 \tableofcontents，条目样式由主题 section in toc 模板决定。
+% 极简主题的目录页：简洁 frame，默认展示主章节目录（隐藏子节避免溢出），条目样式由主题 section in toc 模板决定。
 \newcommand{\hit@OutlineSlide@minimalist}{%
   \begingroup
   \stepcounter{hit@front}\hit@frontmattertrue
   \begin{frame}[t]{\hitoutlinetitle}
-    \tableofcontents
+    \tableofcontents[hideallsubsections]
   \end{frame}
   \endgroup}
 

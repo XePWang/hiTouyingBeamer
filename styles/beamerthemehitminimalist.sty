@@ -175,7 +175,12 @@
 
 \newcommand{\hit@minimalist@nav}{%
   \ifhit@inappendix
-    \hbox to \hit@navavailwd{\hfill\color{muted}\fontsize{8.5}{11}\selectfont\bfseries APPENDIX\hspace*{0.04\paperwidth}}%
+    \begin{tikzpicture}[x=1pt,y=1pt,baseline=0pt]
+      \useasboundingbox (0,0) rectangle (\the\hit@navavailwd,\the\hit@headheight);
+      \node[anchor=east,inner sep=0pt] at (\the\dimexpr\hit@navavailwd-0.04\paperwidth\relax, 0.5*\the\hit@headheight) {%
+        \color{muted}\fontsize{8.5}{11}\selectfont\bfseries APPENDIX%
+      };
+    \end{tikzpicture}%
   \else
     \hit@nav@count=0\relax
     \def\slideentry##1##2##3##4##5##6{}%
@@ -186,7 +191,9 @@
     }%
     \dohead
     \ifnum\hit@nav@count<1\relax
-      \hbox to \hit@navavailwd{\hfill}%
+      \begin{tikzpicture}[x=1pt,y=1pt,baseline=0pt]
+        \useasboundingbox (0,0) rectangle (\the\hit@navavailwd,\the\hit@headheight);
+      \end{tikzpicture}%
     \else
       \hit@nav@cellwd=\dimexpr\hit@navavailwd / \hit@nav@count\relax
       \hit@nav@lastcellwd=\dimexpr\hit@navavailwd - \hit@nav@cellwd * (\hit@nav@count - 1)\relax
@@ -207,13 +214,17 @@
             \fi
           \fi
           \hyperlink{Navigation##3}{%
-            \begin{tikzpicture}[x=1pt,y=1pt]
+            \begin{tikzpicture}[x=1pt,y=1pt,baseline=0pt]
+              \useasboundingbox (0,0) rectangle (\the\dimen@,\the\hit@headheight);
               \clip (0,0) rectangle (\the\dimen@,\the\hit@headheight);
               \ifnum\count@=1\relax
                 \fill[brand] (0,0) rectangle (\the\dimen@,\the\hit@headheight);
                 \node[inner sep=0pt,text width=\the\dimexpr\dimen@-4pt\relax,align=center,text=white]
-                  at (0.5*\the\dimen@, 0.5*\the\hit@headheight)
-                  {\fontsize{7.5}{9.5}\selectfont\bfseries ##2};
+                  at (0.5*\the\dimen@, 0.5*\the\hit@headheight) {%
+                  \def\newline{\unskip\break\ignorespaces}%
+                  \let\\\newline
+                  \fontsize{7.5}{9.5}\selectfont\bfseries ##2%
+                };
               \else
                 \fill[canvas] (0,0) rectangle (\the\dimen@,\the\hit@headheight);
                 \ifnum\hit@nav@cur>1\relax
@@ -222,8 +233,11 @@
                   \fi
                 \fi
                 \node[inner sep=0pt,text width=\the\dimexpr\dimen@-4pt\relax,align=center,text=muted]
-                  at (0.5*\the\dimen@, 0.5*\the\hit@headheight)
-                  {\fontsize{7.5}{9.5}\selectfont ##2};
+                  at (0.5*\the\dimen@, 0.5*\the\hit@headheight) {%
+                  \def\newline{\unskip\break\ignorespaces}%
+                  \let\\\newline
+                  \fontsize{7.5}{9.5}\selectfont ##2%
+                };
               \fi
             \end{tikzpicture}%
           }%
@@ -237,9 +251,12 @@
 
 \setbeamertemplate{headline}{%
   \hbox to \paperwidth{%
-    \parbox[c][\hit@headheight][c]{\hit@headlogowd}{%
-      \hspace*{0.03\paperwidth}\includegraphics[height=0.065\paperheight,width=\dimexpr\hit@headlogowd-0.05\paperwidth\relax,keepaspectratio]{\hit@logopath}\hfill
-    }%
+    \begin{tikzpicture}[x=1pt,y=1pt,baseline=0pt]
+      \useasboundingbox (0,0) rectangle (\the\hit@headlogowd,\the\hit@headheight);
+      \node[anchor=west,inner sep=0pt] at (0.03*\the\paperwidth, 0.5*\the\hit@headheight) {%
+        \includegraphics[height=0.065\paperheight,width=\dimexpr\hit@headlogowd-0.05\paperwidth\relax,keepaspectratio]{\hit@logopath}%
+      };
+    \end{tikzpicture}%
     \hit@minimalist@nav
   }%
   \nointerlineskip{\color{linegray}\rule{\paperwidth}{0.45pt}}%

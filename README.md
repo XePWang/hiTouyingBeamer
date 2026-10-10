@@ -71,7 +71,7 @@ latexmk -xelatex template.tex
 | `\renewcommand{\hitvipath}{...}` | `vi/` 视觉形象资产目录路径（默认 `vi/`） |
 
 封面与目录属于前置页，用小写罗马数字计数（`i`、`ii`、`iii`），正文页码从 1 重新起算
-（现代主题；极简主题显示当前正文帧号；经典主题按 beamer 原样连续编号）。`\hitfooter` 在现代与极简主题生效，
+（现代主题）；极简主题右下角显示当前物理页码（`\insertpagenumber`）；经典主题按 beamer 原样连续编号。`\hitfooter` 在现代与极简主题生效，
 经典主题的页脚固定为旧 HITBeamer 的两行样式。
 
 ## 主题选项
@@ -92,8 +92,9 @@ latexmk -xelatex template.tex
 ## 极简主题（minimalist 选项）
 
 `\usetheme[minimalist]{hit}` 切换到极简学术主题（原 Academic 风格）：
-- **顶部章节导航**：页眉左侧展示校徽，右侧等宽连续铺满 2–6 章节导航，当前章以整格蓝色（`#0070C0`）高亮，附录页自动切换为 APPENDIX 标识。
+- **顶部章节导航**：页眉左侧展示校徽，右侧等宽连续铺满 2–6 章节导航，当前章以整格蓝色（`#0070C0`）高亮，附录页自动切换为 APPENDIX 标识。支持两行短标题（用 `\newline` 或 `\\` 分割并逐行居中）。章节标题过长时推荐使用标准 `\section[短标题]{完整长标题}`。
 - **浅灰背景画布**：正文使用高雅浅灰背景（`#F7F9FB`）与蓝色标题栏（`#0070C0`），适合学术答辩与技术报告。
+- **目录页政策**：`\OutlineSlide` 默认使用 `\tableofcontents[hideallsubsections]` 展示主章节目录，避免多子节导致的排版溢出；如需展示子节，可使用标准 frame 与 `\tableofcontents` 参数自定义。
 - **三段式致谢页**：`\EndSlide{...}` 统一提供顶部校徽、中部通栏蓝底白色致谢、底部作者/单位信息的典雅版式。
 - **共用正文**：与现代主题、经典主题共用完全一致的 LaTeX 正文与命令，无需按主题分支编写内容。
 - **选项兼容**：支持 `top`（顶端对齐）、`navsymbols`（导航按钮）、`serif`（衬线字体）、`sectionpage`（显式开启章节过渡页）等通用选项。
