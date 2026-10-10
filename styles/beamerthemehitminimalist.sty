@@ -37,6 +37,10 @@
 \def\hit@theme@minimalist{}
 \RequirePackage{beamercmdhit}
 
+% 本主题的作者与目录标题默认值；模板里用 \author{\themeauthor}、\hitoutlinetitle。
+\renewcommand{\themeauthor}{XePWang}
+\renewcommand{\hitoutlinetitle}{Outline}
+
 % 单独加载本文件时补全选项开关默认值
 \@ifundefined{ifhit@serif}{\newif\ifhit@serif}{}
 \@ifundefined{ifhit@sans}{\newif\ifhit@sans}{}
@@ -92,6 +96,7 @@
 
 % ----------------------------------------------------------------- colors ----
 \definecolor{brand}{HTML}{0070C0}
+\definecolor{borderblue}{HTML}{99C7E8}
 \definecolor{cyan}{HTML}{00A3D9}
 \definecolor{ink}{HTML}{263B4D}
 \definecolor{muted}{HTML}{526779}
@@ -298,6 +303,130 @@
     \insertauthor\par\smallskip
     \insertinstitute\par\smallskip\insertdate
   \end{center}}
+
+% ----------------------------------------------------------- outline slide ----
+\newdimen\hit@ol@R
+\newdimen\hit@ol@TotalW
+\newdimen\hit@ol@StraightW
+\newdimen\hit@ol@caph
+\newdimen\hit@ol@pitch
+\newdimen\hit@ol@xnum
+\newdimen\hit@ol@wnum
+\newdimen\hit@ol@gap
+\newdimen\hit@ol@xtitle
+\newdimen\hit@ol@xend
+\newdimen\hit@ol@wtitle
+
+\def\hit@ol@count@section#1#2#3#4#5{%
+  \ifnum#5=\c@part\relax
+    \advance\hit@nav@count by 1\relax
+  \fi
+}
+
+\def\hit@ol@render@section#1#2#3#4#5{%
+  \ifnum#5=\c@part\relax
+    \advance\hit@nav@cur by 1\relax
+    \pgfmathsetmacro{\yoffset}{(0.5*(\hit@nav@count + 1) - \hit@nav@cur) * \the\hit@ol@pitch / 1pt - 0.5*\the\hit@ol@caph / 1pt}%
+    \coordinate (rowB) at ([yshift=\yoffset pt]current page.west);
+    % 编号胶囊（带跳转链接）
+    \fill[brand,rounded corners=0.5*\the\hit@ol@caph]
+      ([xshift=\hit@ol@xnum]rowB) rectangle ++(\the\hit@ol@wnum, \the\hit@ol@caph);
+    \node[inner sep=0pt,text=white]
+      at ([xshift=\the\dimexpr\hit@ol@xnum+0.5\hit@ol@wnum\relax,yshift=0.5*\the\hit@ol@caph]rowB) {%
+      \hyperlink{Navigation#3}{%
+        \fontsize{\hit@ol@fsize}{\hit@ol@skip}\selectfont\bfseries
+        \ifnum#1<10 0\fi#1%
+      }%
+    };
+    % 标题胶囊（带跳转链接与换行居中支持）
+    \fill[brand,rounded corners=0.5*\the\hit@ol@caph]
+      ([xshift=\hit@ol@xtitle]rowB) rectangle ++(\the\hit@ol@wtitle, \the\hit@ol@caph);
+    \node[inner sep=0pt,text width=\the\dimexpr\hit@ol@wtitle-16pt\relax,align=center,text=white]
+      at ([xshift=\the\dimexpr\hit@ol@xtitle+0.5\hit@ol@wtitle\relax,yshift=0.5*\the\hit@ol@caph]rowB) {%
+      \hyperlink{Navigation#3}{%
+        \def\newline{\unskip\break\ignorespaces}%
+        \let\\\newline
+        \fontsize{\hit@ol@fsize}{\hit@ol@skip}\selectfont\bfseries #2%
+      }%
+    };
+  \fi
+}
+
+\def\hit@outline@draw{%
+  \begin{tikzpicture}[remember picture,overlay]
+    % 浅灰画布背景
+    \fill[canvas] (current page.south west) rectangle (current page.north east);
+
+    % 左侧大号 Outline 蓝底区域
+    \coordinate (W) at (current page.west);
+    \hit@ol@R=0.23\paperheight
+    \hit@ol@TotalW=0.32\paperwidth
+    \hit@ol@StraightW=\dimexpr\hit@ol@TotalW-\hit@ol@R\relax
+
+    % 浅蓝外沿轮廓
+    \fill[borderblue]
+      ([yshift=-\hit@ol@R-6.5pt]W) --
+      ++(\hit@ol@StraightW, 0)
+      arc (-90:90:\dimexpr\hit@ol@R+6.5pt\relax) --
+      ([yshift=\hit@ol@R+6.5pt]W) -- cycle;
+
+    % 主色蓝底主体
+    \fill[brand]
+      ([yshift=-\hit@ol@R]W) --
+      ++(\hit@ol@StraightW, 0)
+      arc (-90:90:\hit@ol@R) --
+      ([yshift=\hit@ol@R]W) -- cycle;
+
+    % 蓝底内水平垂直居中大号白色 Outline 标题
+    \node[text=white,inner sep=0pt] at ([xshift=0.5\hit@ol@TotalW]W) {%
+      \fontsize{24}{28}\selectfont\bfseries \hitoutlinetitle%
+    };
+
+    % 统计当前主章节数 N
+    \hit@nav@count=0\relax
+    \let\slideentry\hit@ol@slideentry
+    \let\sectionentry\hit@ol@count@section
+    \dohead
+
+    % 根据章节数 N 动态调整胶囊高度、行距与字号
+    \ifcase\hit@nav@count
+      \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
+    \or
+      \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
+    \or
+      \hit@ol@caph=26pt\hit@ol@pitch=50pt\def\hit@ol@fsize{12}\def\hit@ol@skip{14}%
+    \or
+      \hit@ol@caph=25pt\hit@ol@pitch=46pt\def\hit@ol@fsize{11.5}\def\hit@ol@skip{13.5}%
+    \or
+      \hit@ol@caph=23pt\hit@ol@pitch=38pt\def\hit@ol@fsize{11}\def\hit@ol@skip{13}%
+    \or
+      \hit@ol@caph=21pt\hit@ol@pitch=32pt\def\hit@ol@fsize{10}\def\hit@ol@skip{12}%
+    \else
+      \hit@ol@caph=19pt\hit@ol@pitch=27pt\def\hit@ol@fsize{9}\def\hit@ol@skip{11}%
+    \fi
+
+    % 右侧章节胶囊几何参数
+    \hit@ol@xnum=0.44\paperwidth
+    \hit@ol@wnum=34pt
+    \hit@ol@gap=8pt
+    \hit@ol@xtitle=\dimexpr\hit@ol@xnum+\hit@ol@wnum+\hit@ol@gap\relax
+    \hit@ol@xend=0.94\paperwidth
+    \hit@ol@wtitle=\dimexpr\hit@ol@xend-\hit@ol@xtitle\relax
+
+    % 逐章排版编号胶囊与标题胶囊，垂直居中排布
+    \hit@nav@cur=0\relax
+    \let\sectionentry\hit@ol@render@section
+    \dohead
+  \end{tikzpicture}%
+}
+
+\def\hit@ol@slideentry#1#2#3#4#5#6{}
+
+\newcommand{\hit@outline@minimalist}{%
+  \begin{frame}[plain,noframenumbering]
+    \setbeamertemplate{navigation symbols}{}%
+    \hit@outline@draw
+  \end{frame}}
 
 % ------------------------------------------------------------- focus slide ----
 \long\def\hit@focuspage#1{%
